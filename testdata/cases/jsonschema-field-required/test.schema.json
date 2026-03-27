@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Root",
+  "$defs": {
+    ".tests.Bar": {
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/.tests.Bar.value"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Bar.value": {
+      "type": "string"
+    },
+    ".tests.Root": {
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "nickname"
+              ]
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "nickname"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/.tests.Root.name"
+        },
+        "age": {
+          "$ref": "#/$defs/.tests.Root.age"
+        },
+        "nickname": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Root.nickname"
+            }
+          ]
+        },
+        "bar": {
+          "$ref": "#/$defs/.tests.Root.bar"
+        }
+      },
+      "type": "object",
+      "required": [
+        "name",
+        "bar"
+      ]
+    },
+    ".tests.Root.age": {
+      "type": "integer"
+    },
+    ".tests.Root.bar": {
+      "$ref": "#/$defs/.tests.Bar"
+    },
+    ".tests.Root.name": {
+      "type": "string"
+    },
+    ".tests.Root.nickname": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

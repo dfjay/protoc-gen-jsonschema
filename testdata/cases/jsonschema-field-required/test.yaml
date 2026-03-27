@@ -1,0 +1,10 @@
+name: "jsonschema-field-required"
+description: "test that explicit field required option works with respect_protojson_presence"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_protojson_presence: true
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false

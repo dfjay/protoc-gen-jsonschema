@@ -216,6 +216,16 @@ message FieldOptions {
   string description = 3;
   bool nullable = 5;
 
+  /**
+    required explicitly controls whether this field is required in the output JSON Schema.
+    When set to true, the field is always required regardless of other options.
+    When set to false, the field is never required regardless of other options.
+    When not set, the default behavior is used (based on plugin options).
+
+    default: not set
+   */
+  optional bool required = 6;
+
   google.protobuf.Any default = 10;
   ArrayKeywords array = 11;
   NumericKeywords numeric = 12;

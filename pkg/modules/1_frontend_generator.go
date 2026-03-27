@@ -62,10 +62,15 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 }
 
 func isRequiredField(pluginOptions *proto.PluginOptions, field pgs.Field) bool {
+	// Explicit per-field required option always takes precedence
+	if fo := proto.GetFieldOptions(field); fo != nil && fo.Required != nil {
+		return fo.GetRequired()
+	}
+
 	if pluginOptions.GetRespectProtojsonPresence() {
-		// To see the below link for more details
-		// https://github.com/protocolbuffers/protobuf/blob/main/docs/implementing_proto3_presence.md#to-test-whether-a-field-should-have-presence
-		return !field.InRealOneOf() && field.HasPresence()
+		// Per ProtoJSON spec, parsers must accept absent fields and use default values,
+		// so no field is required. See https://protobuf.dev/programming-guides/json/
+		return false
 	} else {
 		return !field.InRealOneOf() && !field.HasOptionalKeyword() && !field.Type().IsRepeated() && !field.Type().IsMap()
 	}

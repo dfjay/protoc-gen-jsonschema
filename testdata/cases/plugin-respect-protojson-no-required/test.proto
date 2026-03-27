@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package tests;
+
+import "jsonschema.proto";
+
+option (pubg.jsonschema.file) = {entrypoint_message: "Root"};
+
+message Root {
+  string name = 1;
+  int32 age = 2;
+  optional string nickname = 3;
+  repeated string tags = 4;
+  Bar bar = 5;
+}
+
+message Bar {
+  string value = 1;
+}

@@ -1,0 +1,10 @@
+name: "plugin-respect-protojson-no-required"
+description: "test that respect_protojson_presence generates no auto-required per ProtoJSON spec"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_protojson_presence: true
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
