@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/utils"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/utils"
 )
 
 func GetPluginOptions(params pgs.Parameters) *PluginOptions {

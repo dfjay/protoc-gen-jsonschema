@@ -1,14 +1,14 @@
 package modules
 
 import (
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_04"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_06"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_07"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_201909"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_202012"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema/draft_04"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema/draft_06"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema/draft_07"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema/draft_201909"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema/draft_202012"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/proto"
 )
 
 type BackendTargetGenerator interface {
@@ -61,21 +61,6 @@ func (g *MultiDraftGenerator) Generate(registry *jsonschema.Registry, entrypoint
 	case proto.Draft_Draft202012:
 		rootSchema.Version = draft202012Version
 		return draft_202012.New(rootSchema)
-	}
-	return nil
-}
-
-func (g *MultiDraftGenerator) getEntrypointMessage(messages []pgs.Message, fileOptions *proto.FileOptions) pgs.Message {
-	entryPointMessage := proto.GetEntrypointMessage(g.pluginOptions, fileOptions)
-	if entryPointMessage == "" {
-		// TODO: print debug message
-		return nil
-	}
-
-	for _, message := range messages {
-		if message.Name().String() == entryPointMessage {
-			return message
-		}
 	}
 	return nil
 }

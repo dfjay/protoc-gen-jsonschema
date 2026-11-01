@@ -1,5 +1,9 @@
 # protoc-gen-jsonschema
 
+> Maintained fork of [pubg/protoc-gen-jsonschema](https://github.com/pubg/protoc-gen-jsonschema), which is no longer actively developed. Releases continue from `v0.8.0`.
+>
+> **Migrating from pubg/protoc-gen-jsonschema:** the options file moved from `jsonschema.proto` to `dfjay/jsonschema/options.proto` and its package from `pubg.jsonschema` to `dfjay.jsonschema`. Update the import, replace `(pubg.jsonschema.` with `(dfjay.jsonschema.` and point `-I` at the `proto` directory.
+
 `protoc-gen-jsonschema` is a plugin that converts `protocol buffer` files into `JSON Schema`. While it primarily focuses on the protobuf standard, it also supports certain non-standard specifications, such as those used by Kubernetes, Node.js, and ArgoCD. Rather than trying to cover the entire JSON Schema specification, the plugin is intentionally designed to focus on [ProtoJSON](https://protobuf.dev/programming-guides/json/) and the patterns most frequently used in practice. It supports JSON Schema versions `draft-04`, `draft-06`, `draft-07`, `draft-2019-09`, and `draft-2020-12`. as well as support protocol buffer `syntax proto2`, `syntax proto3`.
 
 If you’d like to support another specification, contributions are always welcome! Feel free to submit a PR.
@@ -8,10 +12,13 @@ If you’d like to support another specification, contributions are always welco
 
 If you have go runtime, you can `go install` it.
 ```
-go install github.com/pubg/protoc-gen-jsonschema
+go install github.com/dfjay/protoc-gen-jsonschema@latest
 ```
 
-Alternatively, you can download a pre-built binary from [GitHub Release](https://github.com/pubg/protoc-gen-jsonschema/releases).
+Alternatively, you can download a pre-built binary from [GitHub Release](https://github.com/dfjay/protoc-gen-jsonschema/releases). Releases are signed with cosign and carry build provenance:
+```
+gh attestation verify protoc-gen-jsonschema_<version>_<os>_<arch>.tar.gz --repo dfjay/protoc-gen-jsonschema
+```
 
 # Usage
 
@@ -40,10 +47,16 @@ protoc --jsonschema_out=. --jsonschema_opt=respect_protojson_int64=true --jsonsc
 ```
 
 ### I'm not satisfied with the plugin's options. I want to customize every field
-This plugin offers options for fields, messages, and enums. You can utilize these options in the jsonschema.proto file within your proto.
+This plugin offers options for fields, messages, and enums. Import `dfjay/jsonschema/options.proto` (from the [`proto`](proto) directory of this repository, also shipped in every release archive) and set them in your proto:
+```proto
+import "dfjay/jsonschema/options.proto";
+
+message Form {
+  string name = 1 [(dfjay.jsonschema.field) = {title: "Name", nullable: true}];
+}
 ```
-cp jsonschema.proto examples/jsonschema.proto
-protoc --jsonschema_out=. --proto_path=examples examples/jsonschema.proto
+```
+protoc -I path/to/protoc-gen-jsonschema/proto -I . --jsonschema_out=. your.proto
 ```
 
 # Options

@@ -1,10 +1,11 @@
 options:
 	protoc \
-	--go_out=./pkg/proto \
-	--go_opt=paths=source_relative \
+	-I ./proto \
+	--go_out=. \
+	--go_opt=module=github.com/dfjay/protoc-gen-jsonschema \
 	--doc_out=. \
 	--doc_opt=markdown,options.md \
-	./*.proto
+	./proto/dfjay/jsonschema/options.proto
 
 test-examples:
 	go build -o protoc-gen-jsonschema main.go
@@ -14,7 +15,7 @@ test-examples:
 	--jsonschema_opt=additional_properties=AlwaysTrue \
 	--jsonschema_opt=draft=Draft04 \
 	--jsonschema_opt=output_file_suffix=.schema.json \
-	-I ./ \
+	-I ./proto \
 	-I ./examples \
 	./examples/example.proto
 	rm protoc-gen-jsonschema
@@ -46,7 +47,7 @@ generate-examples:
 	--plugin=protoc-gen-jsonschemayaml=./protoc-gen-jsonschema \
 	--jsonschemayaml_out=./ \
 	--jsonschemayaml_opt=output_file_suffix=.yaml \
-	-I ./ \
+	-I ./proto \
 	-I ./examples \
 	./examples/example.proto
 	rm protoc-gen-jsonschema
@@ -56,6 +57,6 @@ dump-testdata:
     --debug_out=./ \
     --debug_opt=dump_binary=true \
     --debug_opt=file_binary=request.pb.bin \
-    -I ./ \
+    -I ./proto \
     -I ./testdata/cases/plugin-consist-output \
     ./testdata/cases/plugin-consist-output/test.proto

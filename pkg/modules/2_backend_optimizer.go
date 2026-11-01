@@ -3,9 +3,9 @@ package modules
 import (
 	"fmt"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/proto"
 )
 
 type BackendOptimizer interface {
@@ -40,7 +40,7 @@ func (o *OptimizerImpl) optimizeDefinitions(registry *jsonschema.Registry) {
 	var deleteKeys []string
 	for _, key := range registry.GetKeys() {
 		schema := registry.GetSchema(key)
-		if schema.GetExtrasItem(linkedFromEntrypoint) == nil || schema.GetExtrasItem(linkedFromEntrypoint).(bool) == false {
+		if linked, _ := schema.GetExtrasItem(linkedFromEntrypoint).(bool); !linked {
 			deleteKeys = append(deleteKeys, key)
 		}
 	}
@@ -48,21 +48,6 @@ func (o *OptimizerImpl) optimizeDefinitions(registry *jsonschema.Registry) {
 	for _, key := range deleteKeys {
 		registry.DeleteSchema(key)
 	}
-}
-
-func (o *OptimizerImpl) getEntrypointMessage(messages []pgs.Message, fileOptions *proto.FileOptions) pgs.Message {
-	entryPointMessage := proto.GetEntrypointMessage(o.pluginOptions, fileOptions)
-	if entryPointMessage == "" {
-		// TODO: print debug message
-		return nil
-	}
-
-	for _, message := range messages {
-		if message.Name().String() == entryPointMessage {
-			return message
-		}
-	}
-	return nil
 }
 
 // return true if the first visit to schema

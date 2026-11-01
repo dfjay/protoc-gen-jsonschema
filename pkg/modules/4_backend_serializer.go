@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/proto"
 	"sigs.k8s.io/yaml"
 )
 

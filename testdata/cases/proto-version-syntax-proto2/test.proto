@@ -2,9 +2,9 @@ syntax = "proto2";
 
 package tests;
 
-import "jsonschema.proto";
+import "dfjay/jsonschema/options.proto";
 
-option (pubg.jsonschema.file) = {entrypoint_message: "Values"};
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
 
 message Values {
   optional string string_value = 1;

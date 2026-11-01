@@ -1,15 +1,14 @@
 package testdata
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
 	pgs "github.com/lyft/protoc-gen-star/v2"
 	"github.com/lyft/protoc-gen-star/v2/testutils"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/modules"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -34,7 +33,7 @@ type Testcase struct {
 }
 
 const testdataDir = "./cases"
-const optionsDir = "../"
+const optionsDir = "../proto"
 
 func TestPlugin(t *testing.T) {
 	dirs, err := os.ReadDir(testdataDir)
@@ -166,14 +165,4 @@ func loadExpectedResult(dirPath string, files []string) (*ExpectedResult, error)
 		result.results[file] = a
 	}
 	return result, nil
-}
-
-func convertToComparableComponent(buf []byte) ([]any, error) {
-	containers := [][]any{}
-	err := json.Unmarshal(buf, &containers)
-	if err != nil {
-		return nil, err
-	}
-
-	return lo.FlatMap[[]any, any](containers, func(container []any, _ int) []any { return container }), nil
 }

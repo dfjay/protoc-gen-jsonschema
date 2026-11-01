@@ -1,9 +1,9 @@
 package modules
 
 import (
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/proto"
 )
 
 // FrontendVisitor generate intermediate jsonschema from protobuf
@@ -79,7 +79,6 @@ func (v *FrontendVisitor) VisitField(field pgs.Field) (pgs.Visitor, error) {
 	}
 
 	panic("not supported field type")
-	return v, nil
 }
 
 func (v *FrontendVisitor) VisitEnum(enum pgs.Enum) (pgs.Visitor, error) {
