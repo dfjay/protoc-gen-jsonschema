@@ -48,12 +48,12 @@
     ".tests.Values.string4": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9]+$",
-      "description": "pattern\n TODO: pattern이 regex가 아닌 경우 에러내야 함"
+      "description": "pattern\n TODO: fail when pattern is not a valid regex"
     },
     ".tests.Values.string6": {
       "type": "string",
       "format": "date-time",
-      "description": "format\n TODO: 논의) pre-defined format이 아니면 경고해야 하나?"
+      "description": "format\n TODO: discuss) warn when format is not a predefined one?"
     }
   },
   "type": "object"

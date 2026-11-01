@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package tests;
 
-import "jsonschema.proto";
+import "dfjay/jsonschema/options.proto";
 
-option (pubg.jsonschema.file) = {entrypoint_message: "Values"};
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
 
 message Values {
   MandatorySetAdditionalPropertiesToFalse messages = 1;
@@ -13,7 +13,7 @@ message Values {
 }
 
 message MandatorySetAdditionalPropertiesToFalse {
-  option (pubg.jsonschema.message) = {
+  option (dfjay.jsonschema.message) = {
     title: "MyMessage";
     object:{
       additional_properties: false
@@ -26,7 +26,7 @@ message MandatorySetAdditionalPropertiesToFalse {
 }
 
 message MandatorySetAdditionalPropertiesToTrue {
-  option (pubg.jsonschema.message) = {
+  option (dfjay.jsonschema.message) = {
     title: "MyMessage";
     object:{
       additional_properties: true

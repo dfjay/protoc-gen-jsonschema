@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package tests;
 
-import "jsonschema.proto";
+import "dfjay/jsonschema/options.proto";
 
-option (pubg.jsonschema.file) = {entrypoint_message: "Values"};
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
 
 message Values {
   Default default = 1;
@@ -31,30 +31,30 @@ enum Default {
 }
 
 enum MapToNumber {
-  option (pubg.jsonschema.enum) = {mapping_type: MapToNumber};
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToNumber};
 
   FOOMapToNumber0 = 0;
   FOOMapToNumber1 = 1;
 }
 
 enum MapToString {
-  option (pubg.jsonschema.enum) = {mapping_type: MapToString};
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToString};
 
   FOOMapToString0 = 0;
   FOOMapToString1 = 1;
 }
 
 enum MapToCustom {
-  option (pubg.jsonschema.enum) = {mapping_type: MapToCustom};
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToCustom};
 
-  FOOMapToCustom0 = 0 [(pubg.jsonschema.enum_value) = {custom_value: {value:"\"foo\""}}];
-  FOOMapToCustom1 = 1 [(pubg.jsonschema.enum_value) = {custom_value: {value:"123"}}];
+  FOOMapToCustom0 = 0 [(dfjay.jsonschema.enum_value) = {custom_value: {value:"\"foo\""}}];
+  FOOMapToCustom1 = 1 [(dfjay.jsonschema.enum_value) = {custom_value: {value:"123"}}];
 }
 
 enum MapToCustomIncomplete {
-  option (pubg.jsonschema.enum) = {mapping_type: MapToCustom};
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToCustom};
 
-  FOOMapToCustomIncomplete0 = 0 [(pubg.jsonschema.enum_value) = {custom_value: {value:"\"foo\""}}];
-  FOOMapToCustomIncomplete1 = 1 [(pubg.jsonschema.enum_value) = {custom_value: {value:"123"}}];
+  FOOMapToCustomIncomplete0 = 0 [(dfjay.jsonschema.enum_value) = {custom_value: {value:"\"foo\""}}];
+  FOOMapToCustomIncomplete1 = 1 [(dfjay.jsonschema.enum_value) = {custom_value: {value:"123"}}];
   FOOMapToCustomIncomplete2 = 2;
 }

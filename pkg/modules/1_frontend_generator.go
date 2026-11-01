@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"slices"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/proto"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -360,8 +360,6 @@ func buildFromWellKnownField(field pgs.Field, fo *proto.FieldOptions) *jsonschem
 
 	if field.Type().IsRepeated() {
 		return wrapSchemaInArray(schema, field, fo)
-	} else {
-		return schema
 	}
 	return schema
 }

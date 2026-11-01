@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package tests;
 
-import "jsonschema.proto";
+import "dfjay/jsonschema/options.proto";
 
-option go_package = "github.com/pubg/fooo";
+option go_package = "example.com/fooo";
 
-option (pubg.jsonschema.file) = {entrypoint_message: "Values"};
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
 
 import "k8s.io/apimachinery/pkg/util/intstr/generated.proto";
 

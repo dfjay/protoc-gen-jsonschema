@@ -3,9 +3,9 @@ package modules
 import (
 	"fmt"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/proto"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

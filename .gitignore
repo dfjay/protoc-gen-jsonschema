@@ -1,4 +1,5 @@
 .idea/
-**/request.pb.bin
+.bin/
 
 protoc-gen-jsonschema
+dist/

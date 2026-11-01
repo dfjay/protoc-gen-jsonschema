@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package tests;
 
-import "jsonschema.proto";
+import "dfjay/jsonschema/options.proto";
 
-option (pubg.jsonschema.file) = {entrypoint_message: "Values"};
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
 
 // 1. Leading Comment of Values
 message Values {
@@ -29,7 +29,7 @@ message Values {
   }
 
   // A Leading Comment will be override
-  string str = 7 [(pubg.jsonschema.field) = {description:"This description "}];
+  string str = 7 [(dfjay.jsonschema.field) = {description:"This description "}];
 }
 
 // 1. Leading Detached Comment of Default

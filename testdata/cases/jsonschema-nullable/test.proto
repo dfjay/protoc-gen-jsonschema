@@ -2,18 +2,18 @@ syntax = "proto3";
 
 package tests;
 
-import "jsonschema.proto";
+import "dfjay/jsonschema/options.proto";
 
-option (pubg.jsonschema.file) = {entrypoint_message: "Values"};
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
 
 message Values {
-  MyMessage messages = 1 [(pubg.jsonschema.field) = {nullable:true}];
+  MyMessage messages = 1 [(dfjay.jsonschema.field) = {nullable:true}];
 
-  MyEnum enums = 2 [(pubg.jsonschema.field) = {nullable:true}];
+  MyEnum enums = 2 [(dfjay.jsonschema.field) = {nullable:true}];
 
-  string strings = 3 [(pubg.jsonschema.field) = {nullable:true}];
+  string strings = 3 [(dfjay.jsonschema.field) = {nullable:true}];
 
-  int64 ints = 4 [(pubg.jsonschema.field) = {nullable:false}];
+  int64 ints = 4 [(dfjay.jsonschema.field) = {nullable:false}];
 }
 
 message MyMessage {

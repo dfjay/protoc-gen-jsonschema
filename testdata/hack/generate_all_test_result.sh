@@ -12,16 +12,16 @@ for proto_dir in $proto_dirs; do
 
   command="protoc \
   --plugin=protoc-gen-jsonschema=./testdata/hack/protoc-gen-jsonschema \
-  --jsonschema_out=. "  # 결과 문자열 초기화
+  --jsonschema_out=testdata/cases/$proto_dir "
 
-  # test.yaml 파일의 존재 여부 확인
+  # Plugin options come from test.yaml, if there is one
   if [[ -f "./testdata/cases/$proto_dir/test.yaml" ]]; then
-    # test.yaml에서 inputParameters 부분을 읽고 JSON 형식으로 파싱
+    # Read inputParameters from test.yaml
     parameters=$(yq eval '.inputParameters' ./testdata/cases/$proto_dir/test.yaml)
 
-    # inputParameters가 없거나 비어 있지 않은지 확인
+    # Skip when inputParameters is missing or empty
     if [[ "$parameters" != "null" && "$parameters" != "{}" ]]; then
-        # key-value 쌍을 반복하면서 --jsonschema_opt=<key>=<value> 형태로 문자열 결합
+        # Turn each key: value pair into --jsonschema_opt=<key>=<value>
         while IFS=":" read -r key value; do
             key=$(echo $key | tr -d ' "')
             value=$(echo $value | tr -d ' "')
@@ -31,7 +31,7 @@ for proto_dir in $proto_dirs; do
   fi
 
   command="$command \
-  -I ./ \
+  -I ./proto \
   -I testdata/cases/$proto_dir \
   testdata/cases/$proto_dir/*.proto
   "

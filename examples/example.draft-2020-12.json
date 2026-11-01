@@ -2,6 +2,64 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/.schema.Values",
   "$defs": {
+    ".schema.FirstForm": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/.schema.FirstForm.name"
+        },
+        "secondMessage": {
+          "$ref": "#/$defs/.schema.FirstForm.second_message"
+        },
+        "myEnum": {
+          "$ref": "#/$defs/.schema.FirstForm.my_enum"
+        },
+        "mymap": {
+          "$ref": "#/$defs/.schema.FirstForm.mymap"
+        },
+        "v1": {
+          "$ref": "#/$defs/.schema.FirstForm.v1"
+        },
+        "v2": {
+          "$ref": "#/$defs/.schema.FirstForm.v2"
+        },
+        "v3": {
+          "$ref": "#/$defs/.schema.FirstForm.v3"
+        }
+      },
+      "type": "object",
+      "required": [
+        "name",
+        "secondMessage",
+        "myEnum",
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    ".schema.FirstForm.my_enum": {
+      "$ref": "#/$defs/.schema.MyEnum"
+    },
+    ".schema.FirstForm.mymap": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    ".schema.FirstForm.name": {
+      "type": "string"
+    },
+    ".schema.FirstForm.second_message": {
+      "$ref": "#/$defs/.schema.SecondMessage"
+    },
+    ".schema.FirstForm.v1": {
+      "type": "string"
+    },
+    ".schema.FirstForm.v2": {
+      "type": "integer"
+    },
+    ".schema.FirstForm.v3": {
+      "type": "number"
+    },
     ".schema.MyEnum": {
       "type": "string",
       "enum": [
@@ -10,6 +68,27 @@
         "ME_AAA",
         "ME_BAZ"
       ]
+    },
+    ".schema.SecondMessage": {
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/.schema.SecondMessage.a"
+        },
+        "b": {
+          "$ref": "#/$defs/.schema.SecondMessage.b"
+        }
+      },
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ]
+    },
+    ".schema.SecondMessage.a": {
+      "type": "string"
+    },
+    ".schema.SecondMessage.b": {
+      "type": "string"
     },
     ".schema.Values": {
       "allOf": [
@@ -128,6 +207,12 @@
       },
       "type": "object"
     },
+    ".schema.Values.a": {
+      "type": "string"
+    },
+    ".schema.Values.b": {
+      "type": "string"
+    },
     ".schema.Values.first": {
       "$ref": "#/$defs/.schema.FirstForm",
       "title": "A lorem ipsum",
@@ -135,91 +220,6 @@
     },
     ".schema.Values.second": {
       "$ref": "#/$defs/.schema.FirstForm"
-    },
-    ".schema.Values.a": {
-      "type": "string"
-    },
-    ".schema.Values.b": {
-      "type": "string"
-    },
-    ".schema.FirstForm": {
-      "properties": {
-        "name": {
-          "$ref": "#/$defs/.schema.FirstForm.name"
-        },
-        "secondMessage": {
-          "$ref": "#/$defs/.schema.FirstForm.second_message"
-        },
-        "myEnum": {
-          "$ref": "#/$defs/.schema.FirstForm.my_enum"
-        },
-        "mymap": {
-          "$ref": "#/$defs/.schema.FirstForm.mymap"
-        },
-        "v1": {
-          "$ref": "#/$defs/.schema.FirstForm.v1"
-        },
-        "v2": {
-          "$ref": "#/$defs/.schema.FirstForm.v2"
-        },
-        "v3": {
-          "$ref": "#/$defs/.schema.FirstForm.v3"
-        }
-      },
-      "type": "object",
-      "required": [
-        "name",
-        "secondMessage",
-        "myEnum",
-        "v1",
-        "v2",
-        "v3"
-      ]
-    },
-    ".schema.FirstForm.name": {
-      "type": "string"
-    },
-    ".schema.FirstForm.second_message": {
-      "$ref": "#/$defs/.schema.SecondMessage"
-    },
-    ".schema.FirstForm.my_enum": {
-      "$ref": "#/$defs/.schema.MyEnum"
-    },
-    ".schema.FirstForm.mymap": {
-      "additionalProperties": {
-        "type": "string"
-      },
-      "type": "object"
-    },
-    ".schema.FirstForm.v1": {
-      "type": "string"
-    },
-    ".schema.FirstForm.v2": {
-      "type": "integer"
-    },
-    ".schema.FirstForm.v3": {
-      "type": "number"
-    },
-    ".schema.SecondMessage": {
-      "properties": {
-        "a": {
-          "$ref": "#/$defs/.schema.SecondMessage.a"
-        },
-        "b": {
-          "$ref": "#/$defs/.schema.SecondMessage.b"
-        }
-      },
-      "type": "object",
-      "required": [
-        "a",
-        "b"
-      ]
-    },
-    ".schema.SecondMessage.a": {
-      "type": "string"
-    },
-    ".schema.SecondMessage.b": {
-      "type": "string"
     }
   },
   "type": "object"

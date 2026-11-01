@@ -4,28 +4,32 @@ func CopyIntP(i *int) *int {
 	if i == nil {
 		return nil
 	}
-	return &*i
+	c := *i
+	return &c
 }
 
 func CopyFloat64P(f *float64) *float64 {
 	if f == nil {
 		return nil
 	}
-	return &*f
+	c := *f
+	return &c
 }
 
 func CopyBoolP(b *bool) *bool {
 	if b == nil {
 		return nil
 	}
-	return &*b
+	c := *b
+	return &c
 }
 
 func CopyAnyP(a *any) *any {
 	if a == nil {
 		return nil
 	}
-	return &*a
+	c := *a
+	return &c
 }
 
 func CopyStringArray(slice []string) []string {

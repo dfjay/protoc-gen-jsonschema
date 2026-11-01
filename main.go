@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/modules"
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
@@ -32,10 +32,9 @@ EXAMPLE: Don't convert my proto field names to lowerCamelCase
 protoc --jsonschema_out=. --jsonschema_opt=preserve_proto_field_names=true
 
 EXAMPLE: I'm not satisfied with the plugin's options. I want to customize every fields
-cp jsonschema.proto examples/jsonschema.proto
-protoc --jsonschema_out=. --proto_path=examples examples/jsonschema.proto
+protoc -I path/to/protoc-gen-jsonschema/proto -I . --jsonschema_out=. your.proto
 
-Please check https://github.com/pubg/protoc-gen-jsonschema for more details.
+Please check https://github.com/dfjay/protoc-gen-jsonschema for more details.
 
 FLAGS:
   --version  : print version
@@ -44,9 +43,10 @@ FLAGS:
 
 func main() {
 	if len(os.Args) == 2 {
-		if os.Args[1] == "--version" {
+		switch os.Args[1] {
+		case "--version":
 			fmt.Println(version)
-		} else if os.Args[1] == "--help" {
+		case "--help":
 			fmt.Print(helpMessage)
 		}
 		return

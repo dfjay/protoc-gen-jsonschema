@@ -1,9 +1,9 @@
 package draft_07
 
 import (
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
+	"github.com/dfjay/protoc-gen-jsonschema/pkg/utils"
 	"github.com/iancoleman/orderedmap"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/pubg/protoc-gen-jsonschema/pkg/utils"
 )
 
 type Schema struct {

@@ -2,6 +2,65 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$ref": "#/definitions/.schema.Values",
   "definitions": {
+    ".schema.FirstForm": {
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/.schema.FirstForm.name"
+        },
+        "secondMessage": {
+          "$ref": "#/definitions/.schema.FirstForm.second_message"
+        },
+        "myEnum": {
+          "$ref": "#/definitions/.schema.FirstForm.my_enum"
+        },
+        "mymap": {
+          "$ref": "#/definitions/.schema.FirstForm.mymap"
+        },
+        "v1": {
+          "$ref": "#/definitions/.schema.FirstForm.v1"
+        },
+        "v2": {
+          "$ref": "#/definitions/.schema.FirstForm.v2"
+        },
+        "v3": {
+          "$ref": "#/definitions/.schema.FirstForm.v3"
+        }
+      },
+      "additionalProperties": {},
+      "type": "object",
+      "required": [
+        "name",
+        "secondMessage",
+        "myEnum",
+        "v1",
+        "v2",
+        "v3"
+      ]
+    },
+    ".schema.FirstForm.my_enum": {
+      "$ref": "#/definitions/.schema.MyEnum"
+    },
+    ".schema.FirstForm.mymap": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    ".schema.FirstForm.name": {
+      "type": "string"
+    },
+    ".schema.FirstForm.second_message": {
+      "$ref": "#/definitions/.schema.SecondMessage"
+    },
+    ".schema.FirstForm.v1": {
+      "type": "string"
+    },
+    ".schema.FirstForm.v2": {
+      "type": "integer"
+    },
+    ".schema.FirstForm.v3": {
+      "type": "number"
+    },
     ".schema.MyEnum": {
       "type": "string",
       "enum": [
@@ -10,6 +69,28 @@
         "ME_AAA",
         "ME_BAZ"
       ]
+    },
+    ".schema.SecondMessage": {
+      "properties": {
+        "a": {
+          "$ref": "#/definitions/.schema.SecondMessage.a"
+        },
+        "b": {
+          "$ref": "#/definitions/.schema.SecondMessage.b"
+        }
+      },
+      "additionalProperties": {},
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ]
+    },
+    ".schema.SecondMessage.a": {
+      "type": "string"
+    },
+    ".schema.SecondMessage.b": {
+      "type": "string"
     },
     ".schema.Values": {
       "allOf": [
@@ -129,6 +210,12 @@
       "additionalProperties": {},
       "type": "object"
     },
+    ".schema.Values.a": {
+      "type": "string"
+    },
+    ".schema.Values.b": {
+      "type": "string"
+    },
     ".schema.Values.first": {
       "$ref": "#/definitions/.schema.FirstForm",
       "title": "A lorem ipsum",
@@ -136,93 +223,6 @@
     },
     ".schema.Values.second": {
       "$ref": "#/definitions/.schema.FirstForm"
-    },
-    ".schema.Values.a": {
-      "type": "string"
-    },
-    ".schema.Values.b": {
-      "type": "string"
-    },
-    ".schema.FirstForm": {
-      "properties": {
-        "name": {
-          "$ref": "#/definitions/.schema.FirstForm.name"
-        },
-        "secondMessage": {
-          "$ref": "#/definitions/.schema.FirstForm.second_message"
-        },
-        "myEnum": {
-          "$ref": "#/definitions/.schema.FirstForm.my_enum"
-        },
-        "mymap": {
-          "$ref": "#/definitions/.schema.FirstForm.mymap"
-        },
-        "v1": {
-          "$ref": "#/definitions/.schema.FirstForm.v1"
-        },
-        "v2": {
-          "$ref": "#/definitions/.schema.FirstForm.v2"
-        },
-        "v3": {
-          "$ref": "#/definitions/.schema.FirstForm.v3"
-        }
-      },
-      "additionalProperties": {},
-      "type": "object",
-      "required": [
-        "name",
-        "secondMessage",
-        "myEnum",
-        "v1",
-        "v2",
-        "v3"
-      ]
-    },
-    ".schema.FirstForm.name": {
-      "type": "string"
-    },
-    ".schema.FirstForm.second_message": {
-      "$ref": "#/definitions/.schema.SecondMessage"
-    },
-    ".schema.FirstForm.my_enum": {
-      "$ref": "#/definitions/.schema.MyEnum"
-    },
-    ".schema.FirstForm.mymap": {
-      "additionalProperties": {
-        "type": "string"
-      },
-      "type": "object"
-    },
-    ".schema.FirstForm.v1": {
-      "type": "string"
-    },
-    ".schema.FirstForm.v2": {
-      "type": "integer"
-    },
-    ".schema.FirstForm.v3": {
-      "type": "number"
-    },
-    ".schema.SecondMessage": {
-      "properties": {
-        "a": {
-          "$ref": "#/definitions/.schema.SecondMessage.a"
-        },
-        "b": {
-          "$ref": "#/definitions/.schema.SecondMessage.b"
-        }
-      },
-      "additionalProperties": {},
-      "type": "object",
-      "required": [
-        "a",
-        "b"
-      ]
-    },
-    ".schema.SecondMessage.a": {
-      "type": "string"
-    },
-    ".schema.SecondMessage.b": {
-      "type": "string"
     }
   },
   "type": "object"

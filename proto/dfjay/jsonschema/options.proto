@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package pubg.jsonschema;
-option go_package = "github.com/pubg/protoc-gen-jsonschema/pkg/proto";
+package dfjay.jsonschema;
+option go_package = "github.com/dfjay/protoc-gen-jsonschema/pkg/proto";
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/any.proto";
