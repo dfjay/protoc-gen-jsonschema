@@ -13,6 +13,12 @@ go build -o ./testdata/hack/protoc-gen-jsonschema main.go
 function generateProtoFile() {
   proto_dir=$1
 
+  # Cases that expect the plugin to fail have no schema to write
+  if [[ "$(yq eval '.expectFail' "./testdata/cases/$proto_dir/test.yaml")" == "true" ]]; then
+    echo "$proto_dir expects a failure; nothing to generate"
+    return
+  fi
+
   command="protoc \
   --plugin=protoc-gen-jsonschema=./testdata/hack/protoc-gen-jsonschema \
   --jsonschema_out=testdata/cases/$proto_dir "

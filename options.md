@@ -201,7 +201,7 @@ default: .schema.json example: - --jsonschema_opt=output_file_suffix=.schema.jso
 | pretty_json_output | [bool](#bool) |  | pretty_json_output is used to determine output json should be pretty printed. This option is only used when output_file_suffix is &#39;.json&#39;.
 
 default: true example: - --jsonschema_opt=pretty_json_output=true - --jsonschema_opt=pretty_json_output=false |
-| draft | [Draft](#dfjay-jsonschema-Draft) |  | draft is used to determine which draft version should be used. The value should be one of Draft04, Draft05, Draft06, Draft07, Draft201909, Draft202012.
+| draft | [Draft](#dfjay-jsonschema-Draft) |  | draft is used to determine which draft version should be used. The value should be one of Draft04, Draft06, Draft07, Draft201909, Draft202012.
 
 default: Draft202012 example: - --jsonschema_opt=draft=Draft202012 |
 | mandatory_nullable | [bool](#bool) |  | mandatory_nullable determines whether this plugin should treat optional field as nullable. Many programming languages do not differentiate between undefined and null. However, scripting languages like JavaScript and TypeScript can distinguish between them. By default, optional field is treated as nullable and undefined.
@@ -218,7 +218,7 @@ default: false example: - --jsonschema_opt=preserve_proto_field_names=true - --j
 | additional_properties | [PluginAdditionalProperties](#dfjay-jsonschema-PluginAdditionalProperties) |  | additional_properties option can control all message&#39;s additional_properties property. If you want set additional properties for all messages, use always_true or always_false. If you want to set additional properties for not defined messages, use default_true or default_false.
 
 default: &#39;DoNothing&#39; example: - --jsonschema_opt=additional_properties=AlwaysTrue - --jsonschema_opt=additional_properties=AlwaysFalse - --jsonschema_opt=additional_properties=DefaultTrue - --jsonschema_opt=additional_properties=DefaultFalse - --jsonschema_opt=additional_properties=DoNothing |
-| respect_protojson_presence | [bool](#bool) |  | This options is used to determine if the plugin should respect the presence of fields in the ProtoJSON format. If set to true and fields that does have presence, plugin will generate the `required` keyword in the output schema for those fields.
+| respect_protojson_presence | [bool](#bool) |  | respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message with any field absent. If set to true, the plugin does not add fields to `required` on its own; only fields with the `required` field option set to true are required. If set to false, every field that is not optional, repeated, a map or a oneof member is required.
 
 default: false example: - --jsonschema_opt=respect_protojson_presence=true - --jsonschema_opt=respect_protojson_presence=false |
 | respect_protojson_int64 | [bool](#bool) |  | This options is used to determine if the plugin should respect the int64 fields in the ProtoJSON format. If set to true, int64 fields will be treated as strings in the output schema, otherwise they will be treated as numbers.
@@ -259,7 +259,6 @@ default: false example: - --jsonschema_opt=respect_protojson_int64=true - --json
 | ---- | ------ | ----------- |
 | DraftDefault | 0 |  |
 | Draft04 | 1 |  |
-| Draft05 | 2 |  |
 | Draft06 | 3 |  |
 | Draft07 | 4 |  |
 | Draft201909 | 5 |  |

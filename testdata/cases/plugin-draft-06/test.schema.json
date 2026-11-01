@@ -15,6 +15,9 @@
         },
         "int64": {
           "$ref": "#/definitions/.tests.Values.int64"
+        },
+        "tags": {
+          "$ref": "#/definitions/.tests.Values.tags"
         }
       },
       "type": "object",
@@ -44,6 +47,14 @@
       "maxLength": 0,
       "minLength": 0,
       "description": "min/max with zero value"
+    },
+    ".tests.Values.tags": {
+      "items": {
+        "type": "string",
+        "description": "repeated: the element schema goes under items"
+      },
+      "type": "array",
+      "description": "repeated: the element schema goes under items"
     }
   },
   "type": "object"

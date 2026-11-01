@@ -1,0 +1,11 @@
+name: "jsonschema-number-invalid-multiple-of"
+description: "multiple_of must be greater than 0"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: []
+expectResultIsNull: false
+expectFail: true
+
+expectedBehaviorDescription: ""

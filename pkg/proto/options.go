@@ -2,43 +2,68 @@ package proto
 
 import (
 	"cmp"
+	"errors"
 	"fmt"
 	"strings"
 
 	pgs "github.com/lyft/protoc-gen-star/v2"
 )
 
-func GetPluginOptions(params pgs.Parameters) *PluginOptions {
+// GetPluginOptions parses the --jsonschema_opt parameters. Omitted
+// parameters take their defaults; malformed values are errors.
+func GetPluginOptions(params pgs.Parameters) (*PluginOptions, error) {
 	options := &PluginOptions{}
+	var errs []error
+	check := func(err error) {
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	parseBool := func(name string, def bool) bool {
+		v, err := params.BoolDefault(name, def)
+		check(err)
+		return v
+	}
 
-	visibilityLevel, _ := params.UintDefault("visibility_level", 0)
+	visibilityLevel, err := params.UintDefault("visibility_level", 0)
+	check(err)
 	options.VisibilityLevel = uint32(visibilityLevel)
 
 	options.EntrypointMessage = params.StrDefault("entrypoint_message", "")
 	options.OutputFileSuffix = params.StrDefault("output_file_suffix", ".schema.json")
-	options.PrettyJsonOutput, _ = params.BoolDefault("pretty_json_output", true)
-	options.MandatoryNullable, _ = params.BoolDefault("mandatory_nullable", false)
-	options.PreserveProtoFieldNames, _ = params.BoolDefault("preserve_proto_field_names", false)
-	options.RespectProtojsonPresence, _ = params.BoolDefault("respect_protojson_presence", false)
-
+	options.PrettyJsonOutput = parseBool("pretty_json_output", true)
+	options.MandatoryNullable = parseBool("mandatory_nullable", false)
+	options.PreserveProtoFieldNames = parseBool("preserve_proto_field_names", false)
+	options.RespectProtojsonPresence = parseBool("respect_protojson_presence", false)
 	if _, ok := params["int64_as_string"]; ok {
-		options.RespectProtojsonInt64, _ = params.Bool("int64_as_string")
+		options.RespectProtojsonInt64 = parseBool("int64_as_string", false)
 	} else {
-		options.RespectProtojsonInt64, _ = params.BoolDefault("respect_protojson_int64", false)
+		options.RespectProtojsonInt64 = parseBool("respect_protojson_int64", false)
 	}
 
-	// Default Value
 	options.AdditionalProperties = PluginAdditionalProperties_DoNothing
-	if v, ok := PluginAdditionalProperties_value[params.Str("additional_properties")]; ok {
-		options.AdditionalProperties = PluginAdditionalProperties(v)
+	if name := params.Str("additional_properties"); name != "" {
+		v, ok := PluginAdditionalProperties_value[name]
+		switch {
+		case !ok:
+			check(fmt.Errorf("unknown additional_properties %q", name))
+		case PluginAdditionalProperties(v) != PluginAdditionalProperties_DefaultAdditionalProperties:
+			options.AdditionalProperties = PluginAdditionalProperties(v)
+		}
 	}
 
-	// Default Value
 	options.Draft = Draft_Draft202012
-	if v, ok := Draft_value[params.Str("draft")]; ok {
-		options.Draft = Draft(v)
+	if name := params.Str("draft"); name != "" {
+		v, ok := Draft_value[name]
+		switch {
+		case !ok:
+			check(fmt.Errorf("unknown draft %q", name))
+		case Draft(v) != Draft_DraftDefault:
+			options.Draft = Draft(v)
+		}
 	}
-	return options
+
+	return options, errors.Join(errs...)
 }
 
 func GetFileOptions(file pgs.File) *FileOptions {

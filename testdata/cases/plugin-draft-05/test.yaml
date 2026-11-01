@@ -1,0 +1,12 @@
+name: "plugin-draft-05"
+description: "Draft05 was removed and is an unknown draft"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  draft: Draft05
+
+expectResultFiles: []
+expectResultIsNull: false
+expectFail: true
+
+expectedBehaviorDescription: ""

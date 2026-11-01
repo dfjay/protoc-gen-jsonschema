@@ -14,28 +14,6 @@
       "type": "string"
     },
     ".tests.Root": {
-      "allOf": [
-        {
-          "oneOf": [
-            {
-              "required": [
-                "nickname"
-              ]
-            },
-            {
-              "not": {
-                "anyOf": [
-                  {
-                    "required": [
-                      "nickname"
-                    ]
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      ],
       "properties": {
         "name": {
           "$ref": "#/$defs/.tests.Root.name"

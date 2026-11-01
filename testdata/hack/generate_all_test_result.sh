@@ -9,6 +9,10 @@ cd $(git rev-parse --show-toplevel)
 go build -o ./testdata/hack/protoc-gen-jsonschema main.go
 
 for proto_dir in $proto_dirs; do
+  # Cases that expect the plugin to fail have no schema to write
+  if [[ "$(yq eval '.expectFail' "./testdata/cases/$proto_dir/test.yaml")" == "true" ]]; then
+    continue
+  fi
 
   command="protoc \
   --plugin=protoc-gen-jsonschema=./testdata/hack/protoc-gen-jsonschema \

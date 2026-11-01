@@ -22,9 +22,10 @@ type Schema struct {
 	OneOf []*Schema `json:"oneOf,omitempty"`
 	Not   *Schema   `json:"not,omitempty"`
 
-	Items           []*Schema `json:"items,omitempty"`
-	AdditionalItems *Schema   `json:"additionalItems,omitempty"`
-	Contains        *Schema   `json:"contains,omitempty"`
+	// Items is a *Schema for every element, or a []*Schema for a tuple.
+	Items           any     `json:"items,omitempty"`
+	AdditionalItems *Schema `json:"additionalItems,omitempty"`
+	Contains        *Schema `json:"contains,omitempty"`
 
 	Properties           *orderedmap.OrderedMap `json:"properties,omitempty"`
 	PatternProperties    *orderedmap.OrderedMap `json:"patternProperties,omitempty"`
@@ -85,8 +86,12 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	dst.OneOf = deepCopyArray(origin.OneOf)
 	dst.Not = deepCopy(origin.Not)
 
-	dst.Items = deepCopyArray(origin.PrefixItems)
-	dst.AdditionalItems = deepCopy(origin.Items)
+	if len(origin.PrefixItems) > 0 {
+		dst.Items = deepCopyArray(origin.PrefixItems)
+		dst.AdditionalItems = deepCopy(origin.Items)
+	} else if origin.Items != nil {
+		dst.Items = deepCopy(origin.Items)
+	}
 	dst.Contains = deepCopy(origin.Contains)
 
 	dst.Properties = deepCopyMap(origin.Properties)

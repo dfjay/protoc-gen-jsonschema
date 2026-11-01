@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Root",
+  "$defs": {
+    ".tests.Root": {
+      "properties": {
+        "visible": {
+          "$ref": "#/$defs/.tests.Root.visible"
+        },
+        "visibleChoice": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Root.visible_choice"
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "visible"
+      ]
+    },
+    ".tests.Root.visible": {
+      "type": "string"
+    },
+    ".tests.Root.visible_choice": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

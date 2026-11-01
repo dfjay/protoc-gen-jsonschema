@@ -2,6 +2,7 @@ package modules
 
 import (
 	"encoding/json"
+	"reflect"
 	"slices"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
@@ -20,10 +21,9 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 	fillSchemaByObjectKeywords(pluginOptions, schema, mo.GetObject())
 
 	for _, field := range message.Fields() {
-		// Skip OneOf Block field
-		//if field.OneOf() != nil {
-		//	continue
-		//}
+		if isHiddenField(pluginOptions, field) {
+			continue
+		}
 
 		propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
 		fieldSchema := &jsonschema.Schema{Ref: toRefId(field)}
@@ -42,12 +42,20 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 		schema.Properties.Set(propName, fieldSchema)
 	}
 
-	// Convert Protobuf OneOfs to JSONSchema keywords
-	for _, oneOf := range message.OneOfs() {
+	// Convert Protobuf OneOfs to JSONSchema keywords. A oneof with a single
+	// member (the synthetic oneof of a proto3 optional field, or one left with
+	// a single visible field) would constrain nothing.
+	for _, oneOf := range message.RealOneOfs() {
 		var oneOfSchemas []*jsonschema.Schema
 		for _, field := range oneOf.Fields() {
+			if isHiddenField(pluginOptions, field) {
+				continue
+			}
 			propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
 			oneOfSchemas = append(oneOfSchemas, &jsonschema.Schema{Required: []string{propName}})
+		}
+		if len(oneOfSchemas) < 2 {
+			continue
 		}
 
 		negativeSchema := &jsonschema.Schema{Not: &jsonschema.Schema{AnyOf: slices.Clone(oneOfSchemas)}}
@@ -213,14 +221,15 @@ func buildFromMapField(pluginOptions *proto.PluginOptions, field pgs.Field, fo *
 	protoType := value.ProtoType()
 	if protoType.IsInt() {
 		if pluginOptions.GetRespectProtojsonInt64() && isInt64(protoType) {
-			schema.Type = "string"
-			schema.Format = "int64"
+			valueSchema.Type = "string"
+			valueSchema.Format = "int64"
 		} else {
-			schema.Type = "integer"
-			fillSchemaByNumericKeywords(schema, fo.GetNumeric())
+			valueSchema.Type = "integer"
+			fillSchemaByNumericKeywords(valueSchema, fo.GetNumeric())
 		}
 	} else if protoType.IsNumeric() {
 		valueSchema.Type = "number"
+		fillSchemaByNumericKeywords(valueSchema, fo.GetNumeric())
 	} else if protoType == pgs.MessageT {
 		valueSchema.Ref = toRefId(value.Embed())
 	} else if protoType == pgs.BoolT {
@@ -284,23 +293,16 @@ func buildFromEnum(enum pgs.Enum) (*jsonschema.Schema, error) {
 	eo := proto.GetEnumOptions(enum)
 
 	schema := &jsonschema.Schema{}
-	switch eo.GetMappingType() {
-	case proto.EnumOptions_MapToString:
-		schema.Type = "string"
-	case proto.EnumOptions_MapToNumber:
-		schema.Type = "number"
-	case proto.EnumOptions_MapToCustom:
-		schema.Type = "string"
-	}
 	schema.Title = proto.GetTitleOrEmpty(eo)
 	schema.Description = proto.GetDescriptionOrComment(enum, eo)
 
 	for _, enumValue := range enum.Values() {
+		var value any
 		switch eo.GetMappingType() {
 		case proto.EnumOptions_MapToString:
-			schema.Enum = append(schema.Enum, enumValue.Name().String())
+			value = enumValue.Name().String()
 		case proto.EnumOptions_MapToNumber:
-			schema.Enum = append(schema.Enum, enumValue.Value())
+			value = enumValue.Value()
 		case proto.EnumOptions_MapToCustom:
 			evo := proto.GetEnumValueOptions(enumValue)
 
@@ -308,15 +310,39 @@ func buildFromEnum(enum pgs.Enum) (*jsonschema.Schema, error) {
 			if err != nil {
 				return nil, err
 			}
-
-			if customValue == nil {
-				schema.Enum = append(schema.Enum, enumValue.Name().String())
-			} else {
-				schema.Enum = append(schema.Enum, customValue)
+			value = customValue
+			if value == nil {
+				value = enumValue.Name().String()
 			}
+		}
+
+		// Aliases (allow_alias) share a number, and custom values may repeat;
+		// draft-04/06/07 require unique enum items.
+		if !slices.ContainsFunc(schema.Enum, func(v any) bool { return reflect.DeepEqual(v, value) }) {
+			schema.Enum = append(schema.Enum, value)
+		}
+	}
+
+	switch eo.GetMappingType() {
+	case proto.EnumOptions_MapToString:
+		schema.Type = "string"
+	case proto.EnumOptions_MapToNumber:
+		schema.Type = "integer"
+	case proto.EnumOptions_MapToCustom:
+		// Custom values may be of any JSON type; only narrow when all agree.
+		if !slices.ContainsFunc(schema.Enum, func(v any) bool { _, ok := v.(string); return !ok }) {
+			schema.Type = "string"
 		}
 	}
 	return schema, nil
+}
+
+func isHiddenMessage(pluginOptions *proto.PluginOptions, message pgs.Message) bool {
+	return proto.GetMessageOptions(message).GetVisibilityLevel() < pluginOptions.GetVisibilityLevel()
+}
+
+func isHiddenField(pluginOptions *proto.PluginOptions, field pgs.Field) bool {
+	return proto.GetFieldOptions(field).GetVisibilityLevel() < pluginOptions.GetVisibilityLevel()
 }
 
 func wrapSchemaInArray(schema *jsonschema.Schema, field pgs.Field, fo *proto.FieldOptions) *jsonschema.Schema {

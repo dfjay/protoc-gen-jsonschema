@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+enum ByNumber {
+  option allow_alias = true;
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToNumber};
+  ZERO = 0;
+  ONE = 1;
+  UNO = 1;
+}
+
+enum ByName {
+  option allow_alias = true;
+  ZERO_NAME = 0;
+  ONE_NAME = 1;
+  UNO_NAME = 1;
+}
+
+message Values {
+  ByNumber by_number = 1;
+  ByName by_name = 2;
+}

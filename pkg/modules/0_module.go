@@ -24,7 +24,9 @@ func (m *Module) Name() string {
 
 func (m *Module) InitContext(c pgs.BuildContext) {
 	m.ModuleBase.InitContext(c)
-	m.pluginOptions = proto.GetPluginOptions(c.Parameters())
+	var err error
+	m.pluginOptions, err = proto.GetPluginOptions(c.Parameters())
+	m.CheckErr(err, "invalid plugin options")
 
 	m.Debugf("pluginOptions: %v", protojson.MarshalOptions{EmitUnpopulated: true}.Format(m.pluginOptions))
 }
@@ -65,7 +67,10 @@ func (m *Module) BackendPhase(file pgs.File, registry *jsonschema.Registry, opti
 	}
 
 	copiedRegistry := jsonschema.DeepCopyRegistry(registry)
-	optimizer.Optimize(copiedRegistry, entrypointMessage)
+	if err := optimizer.Optimize(copiedRegistry, entrypointMessage); err != nil {
+		m.Failf("Failed to generate schema for entrypoint %s: %v", entrypointMessage.FullyQualifiedName(), err)
+		return nil
+	}
 	m.Debugf("# of Schemas After Optimized : %d", len(copiedRegistry.GetKeys()))
 
 	fileOptions := proto.GetFileOptions(file)

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Root"};
+
+message Root {
+  option (dfjay.jsonschema.message) = {visibility_level: 1};
+
+  string visible = 1 [(dfjay.jsonschema.field) = {visibility_level: 1}];
+  string hidden = 2;
+
+  oneof choice {
+    string visible_choice = 3 [(dfjay.jsonschema.field) = {visibility_level: 1}];
+    string hidden_choice = 4;
+  }
+}

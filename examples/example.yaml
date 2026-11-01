@@ -73,20 +73,6 @@ $defs:
             - a
           - required:
             - b
-    - oneOf:
-      - required:
-        - first
-      - not:
-          anyOf:
-          - required:
-            - first
-    - oneOf:
-      - required:
-        - second
-      - not:
-          anyOf:
-          - required:
-            - second
     properties:
       a:
         oneOf:

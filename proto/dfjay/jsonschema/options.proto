@@ -52,7 +52,7 @@ message PluginOptions {
 
   /**
     draft is used to determine which draft version should be used.
-    The value should be one of Draft04, Draft05, Draft06, Draft07, Draft201909, Draft202012.
+    The value should be one of Draft04, Draft06, Draft07, Draft201909, Draft202012.
 
     default: Draft202012
     example:
@@ -120,9 +120,11 @@ message PluginOptions {
   PluginAdditionalProperties additional_properties = 16;
 
   /**
-    This options is used to determine if the plugin should respect the presence of fields
-    in the ProtoJSON format. If set to true and fields that does have presence, plugin will
-    generate the `required` keyword in the output schema for those fields.
+    respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message
+    with any field absent. If set to true, the plugin does not add fields to `required` on
+    its own; only fields with the `required` field option set to true are required.
+    If set to false, every field that is not optional, repeated, a map or a oneof member
+    is required.
 
     default: false
     example:
@@ -161,7 +163,9 @@ enum PluginAdditionalProperties {
 enum Draft {
   DraftDefault = 0;
   Draft04 = 1;
-  Draft05 = 2;
+  // Draft05 was a rewording of draft-04 with no keywords or meta-schema of its own.
+  reserved 2;
+  reserved "Draft05";
   Draft06 = 3;
   Draft07 = 4;
   Draft201909 = 5;
