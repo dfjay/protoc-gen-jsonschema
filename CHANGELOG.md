@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.1](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.9.0...v0.9.1) (2026-11-01)
+
+
+### Bug Fixes
+
+* explain the required entrypoint message ([#5](https://github.com/dfjay/protoc-gen-jsonschema/issues/5)) ([a340ce3](https://github.com/dfjay/protoc-gen-jsonschema/commit/a340ce3d9ab90a9fb0b749d7c44e0b2f41253306))
+* report the module version for go install builds ([a340ce3](https://github.com/dfjay/protoc-gen-jsonschema/commit/a340ce3d9ab90a9fb0b749d7c44e0b2f41253306))
+
 ## [0.9.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.8.0...v0.9.0) (2026-11-02)
 
 This is the first release of the fork continuing the unmaintained [pubg/protoc-gen-jsonschema](https://github.com/pubg/protoc-gen-jsonschema). Versioning continues from upstream v0.8.0.
