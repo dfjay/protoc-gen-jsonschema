@@ -1,6 +1,11 @@
 package jsonschema
 
-import "github.com/iancoleman/orderedmap"
+import (
+	"maps"
+	"slices"
+
+	"github.com/iancoleman/orderedmap"
+)
 
 type SchemaMap interface {
 	Get(key string) (*Schema, bool)
@@ -21,11 +26,7 @@ func (m SimpleSchemaMap) Set(key string, value *Schema) {
 }
 
 func (m SimpleSchemaMap) Keys() []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
+	return slices.Collect(maps.Keys(m))
 }
 
 func (m SimpleSchemaMap) Delete(key string) {

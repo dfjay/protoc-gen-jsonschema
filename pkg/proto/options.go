@@ -1,10 +1,10 @@
 package proto
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
-	"github.com/dfjay/protoc-gen-jsonschema/pkg/utils"
 	pgs "github.com/lyft/protoc-gen-star/v2"
 )
 
@@ -29,18 +29,14 @@ func GetPluginOptions(params pgs.Parameters) *PluginOptions {
 
 	// Default Value
 	options.AdditionalProperties = PluginAdditionalProperties_DoNothing
-	for additionalPropertiesIter, index := range PluginAdditionalProperties_value {
-		if params.Str("additional_properties") == additionalPropertiesIter {
-			options.AdditionalProperties = PluginAdditionalProperties(index)
-		}
+	if v, ok := PluginAdditionalProperties_value[params.Str("additional_properties")]; ok {
+		options.AdditionalProperties = PluginAdditionalProperties(v)
 	}
 
 	// Default Value
 	options.Draft = Draft_Draft202012
-	for draftIter, index := range Draft_value {
-		if params.Str("draft") == draftIter {
-			options.Draft = Draft(index)
-		}
+	if v, ok := Draft_value[params.Str("draft")]; ok {
+		options.Draft = Draft(v)
 	}
 	return options
 }
@@ -128,37 +124,28 @@ func GetDescriptionOrComment(name NameWithSourceResolver, description Descriptio
 	}
 	builder.WriteString(srcInfo.LeadingComments())
 	builder.WriteString(srcInfo.TrailingComments())
-	comment := strings.TrimSpace(strings.Trim(builder.String(), "\n"))
-
-	if comment != "" {
-		return comment
-	}
-	return ""
+	return strings.TrimSpace(strings.Trim(builder.String(), "\n"))
 }
 
 func GetEntrypointMessage(pluginOptions *PluginOptions, fileOptions *FileOptions) string {
-	if fileOptions != nil && fileOptions.GetEntrypointMessage() != "" {
-		return fileOptions.GetEntrypointMessage()
-	} else {
-		return pluginOptions.GetEntrypointMessage()
-	}
+	return cmp.Or(fileOptions.GetEntrypointMessage(), pluginOptions.GetEntrypointMessage())
 }
 
 func GetAdditionalProperties(pluginOptions *PluginOptions, keywords *ObjectKeywords) *bool {
 	switch pluginOptions.AdditionalProperties {
 	case PluginAdditionalProperties_AlwaysTrue:
-		return utils.Bool(true)
+		return new(true)
 	case PluginAdditionalProperties_AlwaysFalse:
-		return utils.Bool(false)
+		return new(false)
 	case PluginAdditionalProperties_DefaultTrue:
 		if keywords == nil || keywords.AdditionalProperties == nil {
-			return utils.Bool(true)
+			return new(true)
 		} else {
 			return keywords.AdditionalProperties
 		}
 	case PluginAdditionalProperties_DefaultFalse:
 		if keywords == nil || keywords.AdditionalProperties == nil {
-			return utils.Bool(false)
+			return new(false)
 		} else {
 			return keywords.AdditionalProperties
 		}

@@ -1,84 +1,23 @@
 package utils
 
-func CopyIntP(i *int) *int {
-	if i == nil {
+import "slices"
+
+// ClonePtr returns a pointer to a copy of *p, or nil when p is nil.
+func ClonePtr[T any](p *T) *T {
+	if p == nil {
 		return nil
 	}
-	c := *i
-	return &c
+	return new(*p)
 }
 
-func CopyFloat64P(f *float64) *float64 {
-	if f == nil {
-		return nil
-	}
-	c := *f
-	return &c
-}
-
-func CopyBoolP(b *bool) *bool {
-	if b == nil {
-		return nil
-	}
-	c := *b
-	return &c
-}
-
-func CopyAnyP(a *any) *any {
-	if a == nil {
-		return nil
-	}
-	c := *a
-	return &c
-}
-
-func CopyStringArray(slice []string) []string {
-	if slice == nil {
-		return nil
-	}
-	dst := make([]string, len(slice))
-	copy(dst, slice)
-	return dst
-}
-
-func CopyAnyArray(slice []any) []any {
-	if slice == nil {
-		return nil
-	}
-	dst := make([]any, len(slice))
-	copy(dst, slice)
-	return dst
-}
-
-func CopyMapAny(m map[string]any) map[string]any {
+// CloneMapSlices copies m and each slice in it.
+func CloneMapSlices[K comparable, V any](m map[K][]V) map[K][]V {
 	if m == nil {
 		return nil
 	}
-	dst := make(map[string]any, len(m))
+	dst := make(map[K][]V, len(m))
 	for k, v := range m {
-		dst[k] = v
-	}
-	return dst
-}
-
-func CopyMapString(m map[string]string) map[string]string {
-	if m == nil {
-		return nil
-	}
-	dst := make(map[string]string, len(m))
-	for k, v := range m {
-		dst[k] = v
-	}
-	return dst
-}
-
-func CopyMapStringArray(m map[string][]string) map[string][]string {
-	if m == nil {
-		return nil
-	}
-	dst := make(map[string][]string, len(m))
-	for k, v := range m {
-		dst[k] = CopyStringArray(v)
+		dst[k] = slices.Clone(v)
 	}
 	return dst
 }
