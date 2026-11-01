@@ -1,0 +1,12 @@
+name: "plugin-invalid-option"
+description: "An unknown option value is rejected"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  additional_properties: AlwaysTru
+
+expectResultFiles: []
+expectResultIsNull: false
+expectFail: true
+
+expectedBehaviorDescription: ""

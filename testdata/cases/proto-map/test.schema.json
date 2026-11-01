@@ -76,8 +76,10 @@
       "type": "object"
     },
     ".tests.Values.int_map": {
-      "additionalProperties": {},
-      "type": "integer"
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "type": "object"
     },
     ".tests.Values.nested_map": {
       "additionalProperties": {

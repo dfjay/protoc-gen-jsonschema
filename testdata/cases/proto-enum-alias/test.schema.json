@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.ByName": {
+      "type": "string",
+      "enum": [
+        "ZERO_NAME",
+        "ONE_NAME",
+        "UNO_NAME"
+      ]
+    },
+    ".tests.ByNumber": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    ".tests.Values": {
+      "properties": {
+        "byNumber": {
+          "$ref": "#/$defs/.tests.Values.by_number"
+        },
+        "byName": {
+          "$ref": "#/$defs/.tests.Values.by_name"
+        }
+      },
+      "type": "object",
+      "required": [
+        "byNumber",
+        "byName"
+      ]
+    },
+    ".tests.Values.by_name": {
+      "$ref": "#/$defs/.tests.ByName"
+    },
+    ".tests.Values.by_number": {
+      "$ref": "#/$defs/.tests.ByNumber"
+    }
+  },
+  "type": "object"
+}

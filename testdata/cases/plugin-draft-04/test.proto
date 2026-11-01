@@ -18,4 +18,7 @@ message Values {
 
   // Exclusive maximum should convert to maximum: 10 and exclusive_maximum: true
   int64 int64 = 4 [(dfjay.jsonschema.field) = {numeric:{exclusive_maximum: 10}}];
+
+  // repeated: the element schema goes under items
+  repeated string tags = 100;
 }

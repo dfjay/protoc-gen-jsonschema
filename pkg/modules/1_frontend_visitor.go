@@ -1,6 +1,8 @@
 package modules
 
 import (
+	"fmt"
+
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
@@ -29,10 +31,10 @@ func NewVisitor(debugger pgs.DebuggerCommon, pluginOptions *proto.PluginOptions)
 }
 
 func (v *FrontendVisitor) VisitMessage(message pgs.Message) (pgs.Visitor, error) {
-	mo := proto.GetMessageOptions(message)
-	if mo.GetVisibilityLevel() < v.pluginOptions.GetVisibilityLevel() {
+	if isHiddenMessage(v.pluginOptions, message) {
 		return nil, nil
 	}
+	mo := proto.GetMessageOptions(message)
 
 	var schema *jsonschema.Schema
 	// if message is well-known type
@@ -46,9 +48,12 @@ func (v *FrontendVisitor) VisitMessage(message pgs.Message) (pgs.Visitor, error)
 }
 
 func (v *FrontendVisitor) VisitField(field pgs.Field) (pgs.Visitor, error) {
-	fo := proto.GetFieldOptions(field)
-	if fo.GetVisibilityLevel() < v.pluginOptions.GetVisibilityLevel() {
+	if isHiddenField(v.pluginOptions, field) {
 		return nil, nil
+	}
+	fo := proto.GetFieldOptions(field)
+	if numeric := fo.GetNumeric(); numeric != nil && numeric.MultipleOf != nil && numeric.GetMultipleOf() <= 0 {
+		return nil, fmt.Errorf("%s: multiple_of must be greater than 0, got %d", field.FullyQualifiedName(), numeric.GetMultipleOf())
 	}
 
 	// if field is well-known type

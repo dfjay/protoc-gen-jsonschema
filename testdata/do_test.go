@@ -57,11 +57,17 @@ func TestPlugin(t *testing.T) {
 			artifacts := module.Execute(ast.Targets(), ast.Packages())
 
 			// Check testcase result
+			// The plugin fails through Fail/Failf or CheckErr; the mock
+			// debugger records them as Failed and Err.
+			failed := debugger.Failed() || debugger.Err() != nil
 			if tc.ExpectFail {
-				if !debugger.Failed() {
+				if !failed {
 					t.Errorf("Expect failed, but got success")
 				}
 				return
+			}
+			if failed {
+				t.Fatalf("Expect success, but the plugin failed: %v", debugger.Err())
 			}
 
 			if tc.ExpectResultIsNull {

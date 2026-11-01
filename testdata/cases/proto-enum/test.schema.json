@@ -10,14 +10,12 @@
       ]
     },
     ".tests.MapToCustom": {
-      "type": "string",
       "enum": [
         "foo",
         123
       ]
     },
     ".tests.MapToCustomIncomplete": {
-      "type": "string",
       "enum": [
         "foo",
         123,
@@ -25,7 +23,7 @@
       ]
     },
     ".tests.MapToNumber": {
-      "type": "number",
+      "type": "integer",
       "enum": [
         0,
         1

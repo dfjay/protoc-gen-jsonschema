@@ -91,7 +91,6 @@ type Draft int32
 const (
 	Draft_DraftDefault Draft = 0
 	Draft_Draft04      Draft = 1
-	Draft_Draft05      Draft = 2
 	Draft_Draft06      Draft = 3
 	Draft_Draft07      Draft = 4
 	Draft_Draft201909  Draft = 5
@@ -103,7 +102,6 @@ var (
 	Draft_name = map[int32]string{
 		0: "DraftDefault",
 		1: "Draft04",
-		2: "Draft05",
 		3: "Draft06",
 		4: "Draft07",
 		5: "Draft201909",
@@ -112,7 +110,6 @@ var (
 	Draft_value = map[string]int32{
 		"DraftDefault": 0,
 		"Draft04":      1,
-		"Draft05":      2,
 		"Draft06":      3,
 		"Draft07":      4,
 		"Draft201909":  5,
@@ -200,113 +197,115 @@ func (EnumOptions_MappingType) EnumDescriptor() ([]byte, []int) {
 // Plugin wide options
 type PluginOptions struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	//*
-	//WIP: visibility_level is used to determine which message should be generated.
-	//Currently not work.
+	// *
+	// WIP: visibility_level is used to determine which message should be generated.
+	// Currently not work.
 	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
-	//*
-	//entrypoint_message is used which message should be entrypoint object of schema.
+	// *
+	// entrypoint_message is used which message should be entrypoint object of schema.
 	//
-	//default: null or empty
-	//example:
-	//- --jsonschema_opt=entrypoint_message=MyMessage
+	// default: null or empty
+	// example:
+	// - --jsonschema_opt=entrypoint_message=MyMessage
 	EntrypointMessage string `protobuf:"bytes,2,opt,name=entrypoint_message,json=entrypointMessage,proto3" json:"entrypoint_message,omitempty"`
-	//*
-	//output_file_suffix is used to determine output file name suffix.
-	//Values should end with '.json' or '.yaml' or '.yml'.
+	// *
+	// output_file_suffix is used to determine output file name suffix.
+	// Values should end with '.json' or '.yaml' or '.yml'.
 	//
-	//default: .schema.json
-	//example:
-	//- --jsonschema_opt=output_file_suffix=.schema.json
-	//- --jsonschema_opt=output_file_suffix=.schema.yaml
+	// default: .schema.json
+	// example:
+	// - --jsonschema_opt=output_file_suffix=.schema.json
+	// - --jsonschema_opt=output_file_suffix=.schema.yaml
 	OutputFileSuffix string `protobuf:"bytes,10,opt,name=output_file_suffix,json=outputFileSuffix,proto3" json:"output_file_suffix,omitempty"`
-	//*
-	//pretty_json_output is used to determine output json should be pretty printed.
-	//This option is only used when output_file_suffix is '.json'.
+	// *
+	// pretty_json_output is used to determine output json should be pretty printed.
+	// This option is only used when output_file_suffix is '.json'.
 	//
-	//default: true
-	//example:
-	//- --jsonschema_opt=pretty_json_output=true
-	//- --jsonschema_opt=pretty_json_output=false
+	// default: true
+	// example:
+	// - --jsonschema_opt=pretty_json_output=true
+	// - --jsonschema_opt=pretty_json_output=false
 	PrettyJsonOutput bool `protobuf:"varint,11,opt,name=pretty_json_output,json=prettyJsonOutput,proto3" json:"pretty_json_output,omitempty"`
-	//*
-	//draft is used to determine which draft version should be used.
-	//The value should be one of Draft04, Draft05, Draft06, Draft07, Draft201909, Draft202012.
+	// *
+	// draft is used to determine which draft version should be used.
+	// The value should be one of Draft04, Draft06, Draft07, Draft201909, Draft202012.
 	//
-	//default: Draft202012
-	//example:
-	//- --jsonschema_opt=draft=Draft202012
+	// default: Draft202012
+	// example:
+	// - --jsonschema_opt=draft=Draft202012
 	Draft Draft `protobuf:"varint,12,opt,name=draft,proto3,enum=dfjay.jsonschema.Draft" json:"draft,omitempty"`
-	//*
-	//mandatory_nullable determines whether this plugin should treat optional field as nullable.
-	//Many programming languages do not differentiate between undefined and null.
-	//However, scripting languages like JavaScript and TypeScript can distinguish between them.
-	//By default, optional field is treated as nullable and undefined.
+	// *
+	// mandatory_nullable determines whether this plugin should treat optional field as nullable.
+	// Many programming languages do not differentiate between undefined and null.
+	// However, scripting languages like JavaScript and TypeScript can distinguish between them.
+	// By default, optional field is treated as nullable and undefined.
 	//
-	//default: false
-	//example:
-	//- --jsonschema_opt=mandatory_nullable=true
-	//- --jsonschema_opt=mandatory_nullable=false
+	// default: false
+	// example:
+	// - --jsonschema_opt=mandatory_nullable=true
+	// - --jsonschema_opt=mandatory_nullable=false
 	MandatoryNullable bool `protobuf:"varint,13,opt,name=mandatory_nullable,json=mandatoryNullable,proto3" json:"mandatory_nullable,omitempty"`
-	//*
-	//Deprecated: use `respect_protojson_int64` instead. It's has same functionality.
-	//Just change the name to be more clear.
+	// *
+	// Deprecated: use `respect_protojson_int64` instead. It's has same functionality.
+	// Just change the name to be more clear.
 	//
-	//Old Description:
-	//int64_as_string determines whether int64 field treat as string.
-	//Depends on Javascript specification, The JS stores integer to only 53bits.
-	//So, if you want to use int64 field in JS, you should use string type.
-	//References:
+	// Old Description:
+	// int64_as_string determines whether int64 field treat as string.
+	// Depends on Javascript specification, The JS stores integer to only 53bits.
+	// So, if you want to use int64 field in JS, you should use string type.
+	// References:
 	//
-	//default: false
-	//example:
-	//- --jsonschema_opt=int64_as_string=true
-	//- --jsonschema_opt=int64_as_string=false
+	// default: false
+	// example:
+	// - --jsonschema_opt=int64_as_string=true
+	// - --jsonschema_opt=int64_as_string=false
 	Int64AsString bool `protobuf:"varint,14,opt,name=int64_as_string,json=int64AsString,proto3" json:"int64_as_string,omitempty"`
-	//*
-	//preserve_proto_field_names is used to determine if output json field names
-	//should be identical to the proto field names.
-	//Otherwise field names either use the value of the `json_name` field option
-	//or they are automatically converted to lowerCamelCase.
-	//This default behaviour mirrors the behaviour of Protobuf's canonical JSON format (ProtoJSON).
+	// *
+	// preserve_proto_field_names is used to determine if output json field names
+	// should be identical to the proto field names.
+	// Otherwise field names either use the value of the `json_name` field option
+	// or they are automatically converted to lowerCamelCase.
+	// This default behaviour mirrors the behaviour of Protobuf's canonical JSON format (ProtoJSON).
 	//
-	//default: false
-	//example:
-	//- --jsonschema_opt=preserve_proto_field_names=true
-	//- --jsonschema_opt=preserve_proto_field_names=false
+	// default: false
+	// example:
+	// - --jsonschema_opt=preserve_proto_field_names=true
+	// - --jsonschema_opt=preserve_proto_field_names=false
 	PreserveProtoFieldNames bool `protobuf:"varint,15,opt,name=preserve_proto_field_names,json=preserveProtoFieldNames,proto3" json:"preserve_proto_field_names,omitempty"`
-	//*
-	//additional_properties option can control all message's additional_properties property.
-	//If you want set additional properties for all messages, use always_true or always_false.
-	//If you want to set additional properties for not defined messages, use default_true or default_false.
+	// *
+	// additional_properties option can control all message's additional_properties property.
+	// If you want set additional properties for all messages, use always_true or always_false.
+	// If you want to set additional properties for not defined messages, use default_true or default_false.
 	//
-	//default: 'DoNothing'
-	//example:
-	//- --jsonschema_opt=additional_properties=AlwaysTrue
-	//- --jsonschema_opt=additional_properties=AlwaysFalse
-	//- --jsonschema_opt=additional_properties=DefaultTrue
-	//- --jsonschema_opt=additional_properties=DefaultFalse
-	//- --jsonschema_opt=additional_properties=DoNothing
+	// default: 'DoNothing'
+	// example:
+	// - --jsonschema_opt=additional_properties=AlwaysTrue
+	// - --jsonschema_opt=additional_properties=AlwaysFalse
+	// - --jsonschema_opt=additional_properties=DefaultTrue
+	// - --jsonschema_opt=additional_properties=DefaultFalse
+	// - --jsonschema_opt=additional_properties=DoNothing
 	AdditionalProperties PluginAdditionalProperties `protobuf:"varint,16,opt,name=additional_properties,json=additionalProperties,proto3,enum=dfjay.jsonschema.PluginAdditionalProperties" json:"additional_properties,omitempty"`
-	//*
-	//This options is used to determine if the plugin should respect the presence of fields
-	//in the ProtoJSON format. If set to true and fields that does have presence, plugin will
-	//generate the `required` keyword in the output schema for those fields.
+	// *
+	// respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message
+	// with any field absent. If set to true, the plugin does not add fields to `required` on
+	// its own; only fields with the `required` field option set to true are required.
+	// If set to false, every field that is not optional, repeated, a map or a oneof member
+	// is required.
 	//
-	//default: false
-	//example:
-	//- --jsonschema_opt=respect_protojson_presence=true
-	//- --jsonschema_opt=respect_protojson_presence=false
+	// default: false
+	// example:
+	// - --jsonschema_opt=respect_protojson_presence=true
+	// - --jsonschema_opt=respect_protojson_presence=false
 	RespectProtojsonPresence bool `protobuf:"varint,17,opt,name=respect_protojson_presence,json=respectProtojsonPresence,proto3" json:"respect_protojson_presence,omitempty"`
-	//*
-	//This options is used to determine if the plugin should respect the int64 fields
-	//in the ProtoJSON format. If set to true, int64 fields will be treated as strings
-	//in the output schema, otherwise they will be treated as numbers.
+	// *
+	// This options is used to determine if the plugin should respect the int64 fields
+	// in the ProtoJSON format. If set to true, int64 fields will be treated as strings
+	// in the output schema, otherwise they will be treated as numbers.
 	//
-	//default: false
-	//example:
-	//- --jsonschema_opt=respect_protojson_int64=true
-	//- --jsonschema_opt=respect_protojson_int64=false
+	// default: false
+	// example:
+	// - --jsonschema_opt=respect_protojson_int64=true
+	// - --jsonschema_opt=respect_protojson_int64=false
 	RespectProtojsonInt64 bool `protobuf:"varint,18,opt,name=respect_protojson_int64,json=respectProtojsonInt64,proto3" json:"respect_protojson_int64,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
@@ -421,13 +420,13 @@ func (x *PluginOptions) GetRespectProtojsonInt64() bool {
 
 type FileOptions struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	//*
-	//WIP: visibility_level is used to determine which message should be generated.
-	//Currently not work.
+	// *
+	// WIP: visibility_level is used to determine which message should be generated.
+	// Currently not work.
 	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
-	//*
-	//entrypoint_message is used which message should be entrypoint object of schema.
-	//default: inherit from PluginOptions.entrypoint_message
+	// *
+	// entrypoint_message is used which message should be entrypoint object of schema.
+	// default: inherit from PluginOptions.entrypoint_message
 	EntrypointMessage string `protobuf:"bytes,2,opt,name=entrypoint_message,json=entrypointMessage,proto3" json:"entrypoint_message,omitempty"`
 	Title             string `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
 	Description       string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
@@ -495,9 +494,9 @@ func (x *FileOptions) GetDescription() string {
 
 type MessageOptions struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	//*
-	//WIP: visibility_level is used to determine which message should be generated.
-	//Currently not work.
+	// *
+	// WIP: visibility_level is used to determine which message should be generated.
+	// Currently not work.
 	VisibilityLevel uint32          `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
 	Title           string          `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Description     string          `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
@@ -627,20 +626,20 @@ func (x *ObjectKeywords) GetMaxProperties() uint32 {
 
 type FieldOptions struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	//*
-	//WIP: visibility_level is used to determine which message should be generated.
-	//Currently not work.
+	// *
+	// WIP: visibility_level is used to determine which message should be generated.
+	// Currently not work.
 	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
 	Title           string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Description     string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Nullable        bool   `protobuf:"varint,5,opt,name=nullable,proto3" json:"nullable,omitempty"`
-	//*
-	//required explicitly controls whether this field is required in the output JSON Schema.
-	//When set to true, the field is always required regardless of other options.
-	//When set to false, the field is never required regardless of other options.
-	//When not set, the default behavior is used (based on plugin options).
+	// *
+	// required explicitly controls whether this field is required in the output JSON Schema.
+	// When set to true, the field is always required regardless of other options.
+	// When set to false, the field is never required regardless of other options.
+	// When not set, the default behavior is used (based on plugin options).
 	//
-	//default: not set
+	// default: not set
 	Required      *bool            `protobuf:"varint,6,opt,name=required,proto3,oneof" json:"required,omitempty"`
 	Default       *anypb.Any       `protobuf:"bytes,10,opt,name=default,proto3" json:"default,omitempty"`
 	Array         *ArrayKeywords   `protobuf:"bytes,11,opt,name=array,proto3" json:"array,omitempty"`
@@ -1278,15 +1277,14 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\vAlwaysFalse\x10\x02\x12\x0f\n" +
 	"\vDefaultTrue\x10\x03\x12\x10\n" +
 	"\fDefaultFalse\x10\x04\x12\r\n" +
-	"\tDoNothing\x10\x05*o\n" +
+	"\tDoNothing\x10\x05*q\n" +
 	"\x05Draft\x12\x10\n" +
 	"\fDraftDefault\x10\x00\x12\v\n" +
 	"\aDraft04\x10\x01\x12\v\n" +
-	"\aDraft05\x10\x02\x12\v\n" +
 	"\aDraft06\x10\x03\x12\v\n" +
 	"\aDraft07\x10\x04\x12\x0f\n" +
 	"\vDraft201909\x10\x05\x12\x0f\n" +
-	"\vDraft202012\x10\x06:P\n" +
+	"\vDraft202012\x10\x06\"\x04\b\x02\x10\x02*\aDraft05:P\n" +
 	"\x04file\x12\x1c.google.protobuf.FileOptions\x18\xcdX \x01(\v2\x1d.dfjay.jsonschema.FileOptionsR\x04file:\\\n" +
 	"\amessage\x12\x1f.google.protobuf.MessageOptions\x18\xceX \x01(\v2 .dfjay.jsonschema.MessageOptionsR\amessage:T\n" +
 	"\x05field\x12\x1d.google.protobuf.FieldOptions\x18\xcfX \x01(\v2\x1e.dfjay.jsonschema.FieldOptionsR\x05field:P\n" +

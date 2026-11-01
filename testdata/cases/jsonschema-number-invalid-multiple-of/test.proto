@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  int32 value = 1 [(dfjay.jsonschema.field) = {numeric: {multiple_of: 0}}];
+}

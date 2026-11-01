@@ -100,7 +100,7 @@ example:
 ### draft
 ```
 draft is used to determine which draft version should be used.
-The value should be one of Draft04, Draft05, Draft06, Draft07, Draft201909, Draft202012.
+The value should be one of Draft04, Draft06, Draft07, Draft201909, Draft202012.
 
 default: Draft202012
 example:

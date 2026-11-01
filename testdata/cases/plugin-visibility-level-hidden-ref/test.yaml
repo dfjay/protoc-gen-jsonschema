@@ -1,0 +1,12 @@
+name: "plugin-visibility-level-hidden-ref"
+description: "A visible field of a hidden message type is an error"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  visibility_level: "1"
+
+expectResultFiles: []
+expectResultIsNull: false
+expectFail: true
+
+expectedBehaviorDescription: ""

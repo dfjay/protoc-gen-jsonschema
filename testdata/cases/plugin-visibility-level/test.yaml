@@ -1,0 +1,12 @@
+name: "plugin-visibility-level"
+description: "Fields and messages below visibility_level are left out"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  visibility_level: "1"
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
