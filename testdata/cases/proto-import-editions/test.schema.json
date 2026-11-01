@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Values": {
+      "properties": {
+        "outer": {
+          "$ref": "#/$defs/.tests.Values.outer"
+        }
+      },
+      "type": "object",
+      "required": [
+        "outer"
+      ]
+    },
+    ".tests.Values.outer": {
+      "$ref": "#/$defs/.tests.editions.Outer"
+    },
+    ".tests.editions.Inner": {
+      "properties": {
+        "x": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.editions.Inner.x"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    ".tests.editions.Inner.x": {
+      "type": "integer"
+    },
+    ".tests.editions.Outer": {
+      "properties": {
+        "child": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.editions.Outer.child"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    ".tests.editions.Outer.child": {
+      "$ref": "#/$defs/.tests.editions.Inner",
+      "description": "DELIMITED encoding makes this a group in protoreflect."
+    }
+  },
+  "type": "object"
+}

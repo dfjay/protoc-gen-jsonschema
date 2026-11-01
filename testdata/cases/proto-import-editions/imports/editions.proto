@@ -1,0 +1,12 @@
+edition = "2023";
+
+package tests.editions;
+
+message Inner {
+  int32 x = 1;
+}
+
+message Outer {
+  // DELIMITED encoding makes this a group in protoreflect.
+  Inner child = 1 [features.message_encoding = DELIMITED];
+}

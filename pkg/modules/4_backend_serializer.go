@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
-	pgs "github.com/lyft/protoc-gen-star/v2"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"sigs.k8s.io/yaml"
 )
 
 type BackendSerializer interface {
-	Serialize(schema any, file pgs.File) ([]byte, error)
-	ToFileName(file pgs.File) string
+	Serialize(schema any, file protoreflect.FileDescriptor) ([]byte, error)
+	ToFileName(file protoreflect.FileDescriptor) string
 }
 
 var _ BackendSerializer = (*SerializerImpl)(nil)
@@ -25,7 +25,7 @@ func NewSerializerImpl(pluginOptions *proto.PluginOptions) *SerializerImpl {
 	return &SerializerImpl{pluginOptions: pluginOptions}
 }
 
-func (s *SerializerImpl) Serialize(schema any, file pgs.File) ([]byte, error) {
+func (s *SerializerImpl) Serialize(schema any, file protoreflect.FileDescriptor) ([]byte, error) {
 	outputFileSuffix := s.ToFileName(file)
 
 	if strings.HasSuffix(outputFileSuffix, ".json") {
@@ -41,7 +41,6 @@ func (s *SerializerImpl) Serialize(schema any, file pgs.File) ([]byte, error) {
 	}
 }
 
-func (s *SerializerImpl) ToFileName(file pgs.File) string {
-	outputFileSuffix := s.pluginOptions.OutputFileSuffix
-	return file.InputPath().SetExt(outputFileSuffix).String()
+func (s *SerializerImpl) ToFileName(file protoreflect.FileDescriptor) string {
+	return outputFileName(file.Path(), s.pluginOptions.OutputFileSuffix)
 }

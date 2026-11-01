@@ -6,24 +6,19 @@ import (
 	"strings"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
-	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
-	pgs "github.com/lyft/protoc-gen-star/v2"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type BackendOptimizer interface {
-	Optimize(registry *jsonschema.Registry, entrypointMessage pgs.Message) error
+	Optimize(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor) error
 }
 
 var _ BackendOptimizer = (*OptimizerImpl)(nil)
 
-type OptimizerImpl struct {
-	module        *pgs.ModuleBase
-	schemaByRef   jsonschema.SchemaMap
-	pluginOptions *proto.PluginOptions
-}
+type OptimizerImpl struct{}
 
-func NewOptimizerImpl(module *pgs.ModuleBase, pluginOptions *proto.PluginOptions) *OptimizerImpl {
-	return &OptimizerImpl{module: module, schemaByRef: jsonschema.NewOrderedSchemaMap(), pluginOptions: pluginOptions}
+func NewOptimizerImpl() *OptimizerImpl {
+	return &OptimizerImpl{}
 }
 
 const linkedFromEntrypoint = "linkedFromEntrypoint"
@@ -31,7 +26,7 @@ const linkedFromEntrypoint = "linkedFromEntrypoint"
 // Optimize keeps only the schemas reachable from the entrypoint. It fails
 // when a reachable $ref has no schema, e.g. a message hidden by
 // visibility_level but used by a visible field.
-func (o *OptimizerImpl) Optimize(registry *jsonschema.Registry, entrypointMessage pgs.Message) error {
+func (o *OptimizerImpl) Optimize(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor) error {
 	var missing []string
 	o.visitRef(registry, toRefId(entrypointMessage).String(), &missing)
 	if len(missing) > 0 {

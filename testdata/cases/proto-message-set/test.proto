@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  optional string name = 1;
+}
+
+// A proto1 MessageSet: legacy, but valid proto2.
+message Container {
+  option message_set_wire_format = true;
+  extensions 4 to max;
+}
