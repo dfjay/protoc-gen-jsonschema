@@ -22,7 +22,10 @@ import (
 // for protoc to report.
 func Generate(req *pluginpb.CodeGeneratorRequest, logw io.Writer, debug bool) *pluginpb.CodeGeneratorResponse {
 	resp := &pluginpb.CodeGeneratorResponse{
-		SupportedFeatures: new(uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)),
+		SupportedFeatures: new(uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL |
+			pluginpb.CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS)),
+		MinimumEdition: new(int32(descriptorpb.Edition_EDITION_PROTO2)),
+		MaximumEdition: new(int32(descriptorpb.Edition_EDITION_2024)),
 	}
 	files, err := generate(req, logger{w: logw, debug: debug})
 	if err != nil {

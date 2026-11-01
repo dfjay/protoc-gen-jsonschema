@@ -1,0 +1,41 @@
+edition = "2024";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option features.field_presence = IMPLICIT;
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  string string_value = 1 [features.field_presence = EXPLICIT];
+
+  int32 int32_value = 2 [features.field_presence = EXPLICIT];
+
+  int64 int64_value = 3 [features.field_presence = EXPLICIT];
+
+  string string_value2 = 4;
+
+  int32 int32_value2 = 5;
+
+  Nested nested_value = 6;
+
+  Enum enum_value = 7;
+
+  // Without the optional keyword a message field follows the file's
+  // presence, so this one is not nullable as it is in proto3.
+  Nested optional_nested_value = 8;
+
+  Enum optional_enum_value = 9 [features.field_presence = EXPLICIT];
+}
+
+message Nested {
+  string value = 1;
+}
+
+enum Enum {
+  UNKNOWN = 0;
+  ONE = 1;
+  TWO = 2;
+  THREE = 3;
+}
