@@ -41,89 +41,51 @@ just golden <test case name>
 # Test all cases
 
 ```sh
-go test do_test.go
+just test
 ```
 
 # Test single case
 
-Add ad-hoc filter code to the test code
-```go
-46 for _, dir := range dirs {
-47     if dir.Name() != "proto-json-name-ignore" {
-48        continue
-49    }
-    ...
-}
-```
+Each case is a subtest named after its directory:
 
 ```sh
-go test do_test.go
+cd testdata && go test -run 'TestPlugin/proto-enum$' .
 ```
 
-# Description of each test case
+# Test cases
 
-proto-oneof-single oneof가 잘 전환되는지 테스트
-
-proto-oneof-multiple oneof가 잘 전환되는지 테스트
-
-proto-number int32, int64등이 number로 잘 전환되는지 테스트
-
-proto-string string가 string으로 잘 전환되는지 테스트, bytes가 base64 string으로 잘 전환되는지 테스트
-
-proto-repeated-scala repeated가 array로 잘 전환되는지 테스트
-
-proto-repeated-wellknown
-
-proto-repeated-message-and-map
-
-proto-optional optional이 있다면 required에서 빠지는지 테스트
-
-proto-message message가 object로 잘 전환되는지 테스트
-
-proto-circular-dependent 순환 의존성이 있는 메시지를 잘 전환하는지 테스트
-
-proto-enum enum이 enum으로 잘 전환되는지 테스트
-
-plugin-preserve-field-name-false json_name이 잘 적용되는지 테스트
-
-plugin-preserve-field-name-true json_name이 무시되는지 테스트
-
-proto-map map이 object로 잘 전환되는지 테스트, array 속성이 들어가면 안됨
-
-proto-nested-message nested message가 잘 전환되는지 테스트
-
-jsonschema-nullable nullable 속성이 있으면 oneof로 잘 전환되는지 테스트
-
-jsonschema-number number validation keyword 테스트
-
-jsonschema-string string validation keyword 테스트
-
-jsonschema-array array validation keyword 테스트
-
-jsonschema-object object validation keyword 테스트
-
-[//]: # (jsonschema-enum enum validation keyword 테스트)
-[//]: # (jsonschema-const const validation keyword 테스트)
-
-plugin-entrypoint-options plugin entrypoint가 잘 작동하는지 테스트
-
-plugin-output-options output 관련 옵션이 잘 작동하는지 테스트
-
-plugin-draft-04 draft-04 스키마가 잘 작동하는지 테스트
-
-plugin-draft-06 draft-06 스키마가 잘 작동하는지 테스트
-
-plugin-draft-07 draft-07 스키마가 잘 작동하는지 테스트
-
-plugin-draft-201909 draft-2019-09 스키마가 잘 작동하는지 테스트
-
-plugin-draft-202012 draft-2020-12 스키마가 잘 작동하는지 테스트
-
-wellknown-any google.protobuf.Any가 잘 전환되는지 테스트
-
-wellknown-timestamp google.protobuf.Timestamp가 잘 전환되는지 테스트
-
-wellknown-duration google.protobuf.Duration가 잘 전환되는지 테스트
-
-wellknown-k8s-intorstring k8s.io.apimachinery.pkg.util.intstr.IntOrString가 잘 전환되는지 테스트
-
+| Case | Checks |
+|------|--------|
+| `jsonschema-array` | array validation keywords |
+| `jsonschema-description` | leading, trailing and detached comments become `description` |
+| `jsonschema-field-required` | the per-field `required` option with `respect_protojson_presence` |
+| `jsonschema-nullable` | `nullable` wraps the field schema in a `oneOf` with `null` |
+| `jsonschema-number` | numeric validation keywords |
+| `jsonschema-object` | object validation keywords |
+| `jsonschema-string` | string validation keywords |
+| `plugin-additional-properties-always-false` | `additional_properties=AlwaysFalse` sets `additionalProperties: false` on every message |
+| `plugin-additional-properties-always-true` | `additional_properties=AlwaysTrue` sets `additionalProperties: true` on every message |
+| `plugin-additional-properties-default-false` | `additional_properties=DefaultFalse` applies to messages that don't set it |
+| `plugin-additional-properties-default-true` | `additional_properties=DefaultTrue` applies to messages that don't set it |
+| `plugin-additional-properties-do-nothing` | `additional_properties=DoNothing` leaves `additionalProperties` alone |
+| `plugin-consist-output` | the output is identical across runs, with messages imported from other files |
+| `plugin-draft-04` | draft-04 output |
+| `plugin-draft-06` | draft-06 output |
+| `plugin-draft-07` | draft-07 output |
+| `plugin-draft-201909` | draft-2019-09 output |
+| `plugin-draft-202012` | draft-2020-12 output |
+| `plugin-entrypoint` | the `entrypoint_message` plugin option |
+| `plugin-output-yaml` | YAML output via `output_file_suffix` |
+| `plugin-preserve-field-name-false` | field names follow `json_name` |
+| `plugin-preserve-field-name-true` | field names keep the proto names, ignoring `json_name` |
+| `plugin-respect-protojson-no-required` | `respect_protojson_presence` adds no automatic `required` |
+| `proto-circular-dependent` | messages that reference each other |
+| `proto-enum` | enums become `enum` |
+| `proto-map` | maps become objects, with no array keywords |
+| `proto-oneof-multiple` | several oneofs in one message |
+| `proto-oneof-single` | a single oneof |
+| `proto-optional` | `optional` fields are left out of `required` |
+| `proto-version-syntax-proto2` | `syntax = "proto2"`, with `optional` and `required` labels |
+| `proto-version-syntax-proto3` | `syntax = "proto3"` |
+| `wellknown-k8s` | Kubernetes `IntOrString` |
+| `wellknown-proto` | `google.protobuf.Any`, `Duration` and `Timestamp` |

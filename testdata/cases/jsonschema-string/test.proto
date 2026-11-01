@@ -17,10 +17,10 @@ message Values {
   string string3 = 3 [(dfjay.jsonschema.field) = {string: {min_length: 0, max_length: 0, }}];
 
   // pattern
-  // TODO: pattern이 regex가 아닌 경우 에러내야 함
+  // TODO: fail when pattern is not a valid regex
   string string4 = 4 [(dfjay.jsonschema.field) = {string: {pattern: "^[a-zA-Z0-9]+$", }}];
 
   // format
-  // TODO: 논의) pre-defined format이 아니면 경고해야 하나?
+  // TODO: discuss) warn when format is not a predefined one?
   string string6 = 6 [(dfjay.jsonschema.field) = {string: {format: "date-time", }}];
 }
