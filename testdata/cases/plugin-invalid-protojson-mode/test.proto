@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  int32 int32 = 1;
+
+  int64 int64 = 2;
+
+  uint64 uint64 = 3;
+
+  double double = 4;
+
+  // Bounded, so only numbers are accepted.
+  int32 bounded_int32 = 5 [(dfjay.jsonschema.field) = {numeric: {inclusive_minimum: 0}}];
+
+  float bounded_float = 6 [(dfjay.jsonschema.field) = {numeric: {inclusive_minimum: 0}}];
+
+  bytes bytes = 7;
+
+  Enum enum = 8;
+
+  repeated int64 int64s = 9;
+
+  map<int32, Enum> int32_key_map = 10;
+
+  map<uint64, string> uint64_key_map = 11;
+
+  google.protobuf.Int32Value int32_wrapper = 12;
+
+  Nested nested = 13;
+
+  optional string optional_string = 14;
+
+  uint32 uint32 = 18;
+
+  google.protobuf.Duration duration = 19;
+
+  google.protobuf.NullValue null_value = 20;
+
+  // null is read as the list, so the field is not nullable.
+  repeated google.protobuf.Value values = 21;
+
+  oneof kind {
+    string a = 15;
+    Nested b = 16;
+    // Null sets a Value, so it counts as set.
+    google.protobuf.Value c = 17;
+  }
+}
+
+message Nested {
+  string value = 1;
+}
+
+enum Enum {
+  UNKNOWN = 0;
+  ONE = 1;
+}

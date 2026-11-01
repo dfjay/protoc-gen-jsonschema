@@ -18,6 +18,7 @@
     - [Draft](#dfjay-jsonschema-Draft)
     - [EnumOptions.MappingType](#dfjay-jsonschema-EnumOptions-MappingType)
     - [PluginAdditionalProperties](#dfjay-jsonschema-PluginAdditionalProperties)
+    - [ProtojsonMode](#dfjay-jsonschema-ProtojsonMode)
   
     - [File-level Extensions](#dfjay_jsonschema_options-proto-extensions)
     - [File-level Extensions](#dfjay_jsonschema_options-proto-extensions)
@@ -227,6 +228,11 @@ default: true example: - --jsonschema_opt=respect_protojson_int64=true - --jsons
 | respect_field_behavior | [bool](#bool) |  | respect_field_behavior applies the `google.api.field_behavior` field option (google/api/field_behavior.proto): a REQUIRED field is required, an OUTPUT_ONLY field is `readOnly` and an INPUT_ONLY field is `writeOnly`. `readOnly` and `writeOnly` need draft-07 or later. The `required` field option takes precedence over REQUIRED.
 
 default: true example: - --jsonschema_opt=respect_field_behavior=true - --jsonschema_opt=respect_field_behavior=false |
+| protojson_mode | [ProtojsonMode](#dfjay-jsonschema-ProtojsonMode) |  | protojson_mode chooses which JSON the schema accepts. Canonical accepts what protobuf&#39;s ProtoJSON serializer writes. Lenient also accepts what ProtoJSON parsers accept: null for any field, integers and floats as numbers or strings, enum values as names or numbers, URL-safe and unpadded base64, and integer map keys with leading zeros or a plus sign. Fields with numeric keywords accept only numbers. In Lenient, mandatory_nullable and respect_protojson_int64 have no effect; respect_protojson_presence still decides which fields are required. Field names stay as configured: parsers also accept the proto field name, but the schema does not.
+
+Use Canonical to generate types, document an API or check protobuf output; use Lenient to check JSON or YAML that people write and a protobuf parser reads, such as config files.
+
+default: Canonical example: - --jsonschema_opt=protojson_mode=Canonical - --jsonschema_opt=protojson_mode=Lenient |
 
 
 
@@ -295,6 +301,19 @@ default: true example: - --jsonschema_opt=respect_field_behavior=true - --jsonsc
 | DefaultTrue | 3 | default_true: all messages will have additional_properties set to true if not defined |
 | DefaultFalse | 4 | default_false: all messages will have additional_properties set to false if not defined |
 | DoNothing | 5 | do_nothing: do not set additional_properties default value |
+
+
+
+<a name="dfjay-jsonschema-ProtojsonMode"></a>
+
+### ProtojsonMode
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| ProtojsonModeDefault | 0 |  |
+| Canonical | 1 | Canonical: accept what protobuf writes |
+| Lenient | 2 | Lenient: accept what protobuf parsers accept |
 
 
  

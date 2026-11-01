@@ -54,6 +54,17 @@ func GetPluginOptions(params Parameters) (*PluginOptions, error) {
 		}
 	}
 
+	options.ProtojsonMode = ProtojsonMode_Canonical
+	if name := params.Str("protojson_mode"); name != "" {
+		v, ok := ProtojsonMode_value[name]
+		switch {
+		case !ok:
+			check(fmt.Errorf("unknown protojson_mode %q", name))
+		case ProtojsonMode(v) != ProtojsonMode_ProtojsonModeDefault:
+			options.ProtojsonMode = ProtojsonMode(v)
+		}
+	}
+
 	options.Draft = Draft_Draft202012
 	if name := params.Str("draft"); name != "" {
 		v, ok := Draft_value[name]
