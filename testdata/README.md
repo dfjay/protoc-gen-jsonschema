@@ -29,15 +29,13 @@ expectedBehaviorDescription: "" # not used
 ### Generate all test case results
 
 ```sh
-cd hack
-./generate_all_test_result.sh
+just golden
 ```
 
 ### Generate single test case result
 
 ```sh
-cd hack
-./generate_test_result.sh <test case name>
+just golden <test case name>
 ```
 
 # Test all cases
