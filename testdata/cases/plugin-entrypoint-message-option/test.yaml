@@ -1,0 +1,9 @@
+name: "plugin-entrypoint-message-option"
+description: "Each message with entrypoint: true gets its own schema file"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.Customer.schema.json", "test.Supplier.schema.json", "test.Outer.Inner.schema.json"]
+expectResultIsNull: false
+expectFail: false

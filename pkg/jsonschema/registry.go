@@ -3,11 +3,11 @@ package jsonschema
 import "slices"
 
 type Registry struct {
-	schemasByName SchemaMap
+	schemasByName *SchemaMap
 }
 
 func NewRegistry() *Registry {
-	return &Registry{schemasByName: NewOrderedSchemaMap()}
+	return &Registry{schemasByName: NewOrderedMap[*Schema]()}
 }
 
 func (r *Registry) AddSchema(id string, schema *Schema) {
@@ -38,10 +38,4 @@ func (r *Registry) SortSchemas() {
 		r.DeleteSchema(key)
 		r.AddSchema(key, schema)
 	}
-}
-
-func DeepCopyRegistry(registry *Registry) *Registry {
-	newRegistry := NewRegistry()
-	newRegistry.schemasByName = DeepCopyMap(registry.schemasByName)
-	return newRegistry
 }

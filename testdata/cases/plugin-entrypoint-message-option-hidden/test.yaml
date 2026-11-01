@@ -1,0 +1,10 @@
+name: "plugin-entrypoint-message-option-hidden"
+description: "A message with entrypoint: true hidden by visibility_level gets no schema"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  visibility_level: "1"
+
+expectResultFiles: ["test.Public.schema.json"]
+expectResultIsNull: false
+expectFail: false

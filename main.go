@@ -29,12 +29,15 @@ func getVersion() string {
 
 const helpMessage = `Usage: protoc --jsonschema_out=DIR [--jsonschema_opt=NAME=VALUE ...] FILE.proto
 
-protoc-gen-jsonschema writes a JSON Schema of the ProtoJSON form of one message per
-.proto file. It supports JSON Schema draft-04, draft-06, draft-07, 2019-09 and 2020-12.
+protoc-gen-jsonschema writes JSON Schemas of the ProtoJSON form of protobuf messages.
+It supports JSON Schema draft-04, draft-06, draft-07, 2019-09 and 2020-12.
 
-Every file needs an entrypoint: a top-level message of that file, by its simple name.
-Pass it with --jsonschema_opt=entrypoint_message=<Message> or set it in the file with
-option (dfjay.jsonschema.file) = {entrypoint_message: "<Message>"}.
+A schema is written for each entrypoint message. Name a top-level message of the file
+by its simple name with --jsonschema_opt=entrypoint_message=<Message> or
+option (dfjay.jsonschema.file) = {entrypoint_message: "<Message>"}, which writes
+<file>.schema.json. Or mark any number of messages with
+option (dfjay.jsonschema.message) = {entrypoint: true}, which writes
+<file>.<Message>.schema.json for each.
 
 EXAMPLES:
   # Schema of message Form in form.proto, written to form.schema.json (draft 2020-12)

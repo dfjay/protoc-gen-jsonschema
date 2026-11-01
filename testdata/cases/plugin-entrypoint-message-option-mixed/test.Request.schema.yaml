@@ -1,0 +1,13 @@
+$defs:
+  .tests.Request:
+    description: The file entrypoint keeps the file's name; marking it too adds a
+      second file.
+    properties:
+      id:
+        $ref: '#/$defs/.tests.Request.id'
+    type: object
+  .tests.Request.id:
+    type: string
+$ref: '#/$defs/.tests.Request'
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object

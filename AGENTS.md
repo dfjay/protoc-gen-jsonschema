@@ -1,7 +1,7 @@
 # AGENTS.md
 
-`protoc-gen-jsonschema`: a `protoc` plugin that writes a JSON Schema (draft-04 to 2020-12,
-JSON or YAML) of the ProtoJSON form of one entrypoint message per `.proto` file.
+`protoc-gen-jsonschema`: a `protoc` plugin that writes a self-contained JSON Schema
+(draft-04 to 2020-12, JSON or YAML) of the ProtoJSON form of each entrypoint message.
 User-facing usage is in `README.md`; contributor setup is in `CONTRIBUTING.md`.
 This file records implementation constraints for coding agents.
 
@@ -51,8 +51,12 @@ Tests and `just golden` shell out to `protoc` (CI pins its version in
 
 ## Rules
 
-- Output must be deterministic: same input, byte-identical schema. Use the ordered maps
-  (`jsonschema.NewOrderedSchemaMap`, `orderedmap`); never range over a Go map into output.
+- Each output file is a self-contained schema of one entrypoint: no `$ref` to other
+  files. Output names must not depend on how many entrypoints a file has
+  (`form.schema.json` for `entrypoint_message`, `form.<Message>.schema.json` for
+  `entrypoint: true`), so adding an entrypoint renames no file.
+- Output must be deterministic: same input, byte-identical schema. Use
+  `jsonschema.OrderedMap`; never range over a Go map into output.
 - Output must be valid for the selected draft. Don't emit keywords a draft lacks
   (`readOnly`/`writeOnly` need draft-07+, `propertyNames` draft-06+). Draft-07 and
   earlier ignore siblings of `$ref`: put the ref in `allOf` before adding keywords.

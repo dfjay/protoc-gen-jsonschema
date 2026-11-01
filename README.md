@@ -107,19 +107,36 @@ use [custom schema options](#custom-schema-options).
 
 ### Choose an entrypoint
 
-The plugin writes one schema per input `.proto` file. Each file must select a
-**top-level message in that file** as its entrypoint, using its simple name
-(for example, `Form`, rather than `example.Form`). The schema includes the types
-reachable from that message, including imported types.
+An entrypoint is a message the plugin writes a schema for. Each schema includes
+the types reachable from its entrypoint, including imported types. A file
+without an entrypoint produces no schema. There are two ways to choose one.
 
-Set the entrypoint with `--jsonschema_opt=entrypoint_message=Form`, or with the
-file annotation shown in [Custom schema options](#custom-schema-options).
-A nonempty file annotation takes precedence over the command-line option.
-Files with no entrypoint, or without a matching message, produce no schema.
+**One schema per file.** Name a **top-level message in that file** by its
+simple name (for example, `Form`, rather than `example.Form`), with
+`--jsonschema_opt=entrypoint_message=Form` or with the file annotation shown in
+[Custom schema options](#custom-schema-options). A nonempty file annotation
+takes precedence over the command-line option; a file without a matching
+message produces no schema. `api/form.proto` gives `api/form.schema.json`.
 
-Output paths preserve the input path relative to the `protoc` include directory:
-`api/form.proto` becomes `api/form.schema.json` under `--jsonschema_out`.
-Create the output directory before running `protoc`.
+**Any number of schemas per file.** Mark each message, top-level or nested:
+
+```proto
+message Customer {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+}
+```
+
+Each marked message gets its own self-contained schema, named after the file
+and the message: `api/form.proto` gives `api/form.Customer.schema.json`, and a
+nested `Outer.Inner` gives `api/form.Outer.Inner.schema.json`. Names do not
+depend on how many messages are marked, so marking another message renames no
+file. Types shared by several entrypoints appear in each schema. A marked
+message hidden by `visibility_level` is skipped. Both ways can be combined.
+Two entrypoints that get the same file name, such as message `Bar` of
+`foo.proto` and the entrypoint of `foo.Bar.proto`, are an error.
+
+Output paths preserve the input path relative to the `protoc` include directory,
+under `--jsonschema_out`. Create the output directory before running `protoc`.
 
 ### Select a format or draft
 
@@ -162,7 +179,7 @@ zero values in the generated reference do not necessarily match them.
 
 | Option | Default | Behavior |
 | --- | --- | --- |
-| `entrypoint_message` | Unset | Simple name of the top-level message to describe. A nonempty file annotation overrides it. |
+| `entrypoint_message` | Unset | Simple name of the top-level message to describe. A nonempty file annotation overrides it. Messages can also be marked with `entrypoint: true`; see [entrypoints](#choose-an-entrypoint). |
 | `output_file_suffix` | `.schema.json` | Output name suffix; must end in `.json`, `.yaml`, or `.yml`. |
 | `pretty_json_output` | `true` | Pretty-print JSON output. Has no effect on YAML. |
 | `draft` | `Draft202012` | One of `Draft04`, `Draft06`, `Draft07`, `Draft201909`, `Draft202012`. |

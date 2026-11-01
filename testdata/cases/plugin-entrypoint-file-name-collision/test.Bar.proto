@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package tests.bar;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Baz"};
+
+message Baz {
+  string value = 1;
+}

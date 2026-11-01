@@ -19,7 +19,7 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, behaviors fieldBehavio
 	schema.Type = "object"
 	schema.Title = proto.GetTitleOrEmpty(mo)
 	schema.Description = proto.GetDescriptionOrComment(message, mo)
-	schema.Properties = jsonschema.NewOrderedSchemaMap()
+	schema.Properties = jsonschema.NewOrderedMap[*jsonschema.Schema]()
 
 	fillSchemaByObjectKeywords(pluginOptions, schema, mo.GetObject())
 
@@ -66,7 +66,7 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, behaviors fieldBehavio
 			set := &jsonschema.Schema{Required: []string{propName}}
 			if isLenient(pluginOptions) && !acceptsNull(field) {
 				// A member set to null is unset, so another member may be set.
-				set.Properties = jsonschema.NewOrderedSchemaMap()
+				set.Properties = jsonschema.NewOrderedMap[*jsonschema.Schema]()
 				set.Properties.Set(propName, &jsonschema.Schema{Not: &jsonschema.Schema{Type: "null"}})
 			}
 			oneOfSchemas = append(oneOfSchemas, set)
