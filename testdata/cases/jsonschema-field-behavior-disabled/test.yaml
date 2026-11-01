@@ -1,0 +1,12 @@
+name: "jsonschema-field-behavior-disabled"
+description: "respect_field_behavior=false ignores google.api.field_behavior"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_field_behavior: false
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: "No field is required, readOnly or writeOnly"

@@ -1,0 +1,12 @@
+name: "plugin-respect-protojson-int64-false"
+description: "respect_protojson_int64=false writes 64-bit integers as integers"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_protojson_int64: false
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: "64-bit integer fields, repeated elements, map values and wrappers are integers"

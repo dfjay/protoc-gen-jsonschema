@@ -20,14 +20,7 @@
           "$ref": "#/$defs/.tests.Values.string6"
         }
       },
-      "type": "object",
-      "required": [
-        "string1",
-        "string2",
-        "string3",
-        "string4",
-        "string6"
-      ]
+      "type": "object"
     },
     ".tests.Values.string1": {
       "type": "string",

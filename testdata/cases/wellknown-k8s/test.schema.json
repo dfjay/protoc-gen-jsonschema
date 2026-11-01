@@ -20,9 +20,6 @@
         }
       },
       "type": "object",
-      "required": [
-        "intOrString"
-      ],
       "description": "TODO: import k8s proto files"
     },
     ".tests.Values.int_or_string": {

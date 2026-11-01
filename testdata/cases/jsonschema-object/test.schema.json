@@ -13,9 +13,6 @@
       },
       "additionalProperties": {},
       "type": "object",
-      "required": [
-        "val1"
-      ],
       "title": "MyMessage"
     },
     ".tests.MyMessage.val1": {
@@ -23,7 +20,8 @@
     },
     ".tests.MyMessage.val2": {
       "items": {
-        "type": "integer"
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "array"
     },
@@ -42,9 +40,6 @@
       "type": "object",
       "maxProperties": 10,
       "minProperties": 0,
-      "required": [
-        "val1"
-      ],
       "title": "MyMessage"
     },
     ".tests.MyMessage2.val1": {
@@ -52,7 +47,8 @@
     },
     ".tests.MyMessage2.val2": {
       "items": {
-        "type": "integer"
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "array"
     },
@@ -65,11 +61,7 @@
           "$ref": "#/$defs/.tests.Values.messages2"
         }
       },
-      "type": "object",
-      "required": [
-        "messages",
-        "messages2"
-      ]
+      "type": "object"
     },
     ".tests.Values.messages": {
       "$ref": "#/$defs/.tests.MyMessage"

@@ -2,6 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$ref": "#/$defs/.tests.Values",
   "$defs": {
+    ".google.protobuf.Empty": {
+      "properties": {},
+      "type": "object",
+      "description": "A generic empty message that you can re-use to avoid defining duplicated\n empty messages in your APIs. A typical example is to use it as the request\n or the response type of an API method. For instance:\n\n     service Foo {\n       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n     }"
+    },
     ".tests.Values": {
       "properties": {
         "any": {
@@ -12,26 +17,217 @@
         },
         "timestamp": {
           "$ref": "#/$defs/.tests.Values.timestamp"
+        },
+        "empty": {
+          "$ref": "#/$defs/.tests.Values.empty"
+        },
+        "fieldMask": {
+          "$ref": "#/$defs/.tests.Values.field_mask"
+        },
+        "struct": {
+          "$ref": "#/$defs/.tests.Values.struct"
+        },
+        "value": {
+          "$ref": "#/$defs/.tests.Values.value"
+        },
+        "listValue": {
+          "$ref": "#/$defs/.tests.Values.list_value"
+        },
+        "nullValue": {
+          "$ref": "#/$defs/.tests.Values.null_value"
+        },
+        "doubleValue": {
+          "$ref": "#/$defs/.tests.Values.double_value"
+        },
+        "floatValue": {
+          "$ref": "#/$defs/.tests.Values.float_value"
+        },
+        "int64Value": {
+          "$ref": "#/$defs/.tests.Values.int64_value"
+        },
+        "uint64Value": {
+          "$ref": "#/$defs/.tests.Values.uint64_value"
+        },
+        "int32Value": {
+          "$ref": "#/$defs/.tests.Values.int32_value"
+        },
+        "uint32Value": {
+          "$ref": "#/$defs/.tests.Values.uint32_value"
+        },
+        "boolValue": {
+          "$ref": "#/$defs/.tests.Values.bool_value"
+        },
+        "stringValue": {
+          "$ref": "#/$defs/.tests.Values.string_value"
+        },
+        "bytesValue": {
+          "$ref": "#/$defs/.tests.Values.bytes_value"
+        },
+        "timestamps": {
+          "$ref": "#/$defs/.tests.Values.timestamps"
+        },
+        "durationMap": {
+          "$ref": "#/$defs/.tests.Values.duration_map"
+        },
+        "int64ValueMap": {
+          "$ref": "#/$defs/.tests.Values.int64_value_map"
+        },
+        "optionalNullValue": {
+          "$ref": "#/$defs/.tests.Values.optional_null_value"
+        },
+        "optionalValue": {
+          "$ref": "#/$defs/.tests.Values.optional_value"
+        },
+        "double": {
+          "$ref": "#/$defs/.tests.Values.double"
+        },
+        "boundedFloat": {
+          "$ref": "#/$defs/.tests.Values.bounded_float"
+        },
+        "int64": {
+          "$ref": "#/$defs/.tests.Values.int64"
+        },
+        "fixed64": {
+          "$ref": "#/$defs/.tests.Values.fixed64"
         }
       },
-      "type": "object",
-      "required": [
-        "any",
-        "duration",
-        "timestamp"
-      ]
+      "type": "object"
     },
     ".tests.Values.any": {
       "type": "object"
     },
+    ".tests.Values.bool_value": {
+      "type": "boolean"
+    },
+    ".tests.Values.bounded_float": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Bounded, so NaN and the infinities are not accepted."
+    },
+    ".tests.Values.bytes_value": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    ".tests.Values.double": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.double_value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
     ".tests.Values.duration": {
       "type": "string",
-      "format": "duration"
+      "pattern": "^-?[0-9]+(\\.[0-9]{1,9})?s$"
+    },
+    ".tests.Values.duration_map": {
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^-?[0-9]+(\\.[0-9]{1,9})?s$"
+      },
+      "type": "object"
+    },
+    ".tests.Values.empty": {
+      "$ref": "#/$defs/.google.protobuf.Empty"
+    },
+    ".tests.Values.field_mask": {
+      "type": "string"
+    },
+    ".tests.Values.fixed64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    ".tests.Values.float_value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.int32_value": {
+      "type": "integer"
+    },
+    ".tests.Values.int64": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$"
+    },
+    ".tests.Values.int64_value": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$"
+    },
+    ".tests.Values.int64_value_map": {
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
+      },
+      "type": "object"
+    },
+    ".tests.Values.list_value": {
+      "type": "array"
+    },
+    ".tests.Values.null_value": {
+      "type": "null"
+    },
+    ".tests.Values.optional_null_value": {
+      "type": "null",
+      "description": "Already accept null, so they are not wrapped in a nullable oneOf."
+    },
+    ".tests.Values.optional_value": {},
+    ".tests.Values.string_value": {
+      "type": "string"
+    },
+    ".tests.Values.struct": {
+      "type": "object"
     },
     ".tests.Values.timestamp": {
       "type": "string",
       "format": "date-time"
-    }
+    },
+    ".tests.Values.timestamps": {
+      "items": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "type": "array"
+    },
+    ".tests.Values.uint32_value": {
+      "type": "integer"
+    },
+    ".tests.Values.uint64_value": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    ".tests.Values.value": {}
   },
   "type": "object"
 }

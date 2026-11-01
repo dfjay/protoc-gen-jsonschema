@@ -17,10 +17,7 @@
           "$ref": "#/$defs/.tests.Nested.value"
         }
       },
-      "type": "object",
-      "required": [
-        "value"
-      ]
+      "type": "object"
     },
     ".tests.Nested.value": {
       "type": "string"
@@ -47,6 +44,15 @@
         },
         "enumMap": {
           "$ref": "#/$defs/.tests.Values.enum_map"
+        },
+        "int32KeyMap": {
+          "$ref": "#/$defs/.tests.Values.int32_key_map"
+        },
+        "uint64KeyMap": {
+          "$ref": "#/$defs/.tests.Values.uint64_key_map"
+        },
+        "boolKeyMap": {
+          "$ref": "#/$defs/.tests.Values.bool_key_map"
         }
       },
       "type": "object"
@@ -54,6 +60,18 @@
     ".tests.Values.basic_map": {
       "additionalProperties": {
         "type": "string"
+      },
+      "type": "object"
+    },
+    ".tests.Values.bool_key_map": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "enum": [
+          "true",
+          "false"
+        ]
       },
       "type": "object"
     },
@@ -71,7 +89,28 @@
     },
     ".tests.Values.float_map": {
       "additionalProperties": {
-        "type": "number"
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ]
+      },
+      "type": "object"
+    },
+    ".tests.Values.int32_key_map": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "object"
     },
@@ -90,6 +129,15 @@
     ".tests.Values.string_map": {
       "additionalProperties": {
         "type": "string"
+      },
+      "type": "object"
+    },
+    ".tests.Values.uint64_key_map": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^(0|[1-9][0-9]*)$"
       },
       "type": "object"
     }

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Nested": {
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/.tests.Nested.value"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Nested.value": {
+      "type": "string"
+    },
+    ".tests.Values": {
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "required": [
+                "a"
+              ]
+            },
+            {
+              "required": [
+                "b"
+              ]
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "a"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "b"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/.tests.Values.name"
+        },
+        "displayName": {
+          "$ref": "#/$defs/.tests.Values.display_name"
+        },
+        "createTime": {
+          "$ref": "#/$defs/.tests.Values.create_time"
+        },
+        "password": {
+          "$ref": "#/$defs/.tests.Values.password"
+        },
+        "parent": {
+          "$ref": "#/$defs/.tests.Values.parent"
+        },
+        "etag": {
+          "$ref": "#/$defs/.tests.Values.etag"
+        },
+        "tags": {
+          "$ref": "#/$defs/.tests.Values.tags"
+        },
+        "nested": {
+          "$ref": "#/$defs/.tests.Values.nested"
+        },
+        "a": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.a"
+            }
+          ]
+        },
+        "b": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.b"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.a": {
+      "type": "string",
+      "description": "field_behavior does not make a oneof member required."
+    },
+    ".tests.Values.b": {
+      "type": "string"
+    },
+    ".tests.Values.create_time": {
+      "type": "string"
+    },
+    ".tests.Values.display_name": {
+      "type": "string"
+    },
+    ".tests.Values.etag": {
+      "type": "string",
+      "description": "The required field option takes precedence over field_behavior."
+    },
+    ".tests.Values.name": {
+      "type": "string"
+    },
+    ".tests.Values.nested": {
+      "$ref": "#/$defs/.tests.Nested",
+      "description": "Draft-07 ignores keywords beside $ref, so readOnly goes beside an allOf."
+    },
+    ".tests.Values.parent": {
+      "type": "string",
+      "description": "Two behaviors on one field."
+    },
+    ".tests.Values.password": {
+      "type": "string"
+    },
+    ".tests.Values.tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "type": "object"
+}

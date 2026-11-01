@@ -26,11 +26,7 @@
           "$ref": "#/$defs/.tests.Values.by_name"
         }
       },
-      "type": "object",
-      "required": [
-        "byNumber",
-        "byName"
-      ]
+      "type": "object"
     },
     ".tests.Values.by_name": {
       "$ref": "#/$defs/.tests.ByName"

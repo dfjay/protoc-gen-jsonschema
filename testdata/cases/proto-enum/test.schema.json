@@ -57,15 +57,7 @@
           "$ref": "#/$defs/.tests.Values.inline_enum"
         }
       },
-      "type": "object",
-      "required": [
-        "default",
-        "mapToNumber",
-        "mapToString",
-        "mapToCustom",
-        "mapToCustomIncomplete",
-        "inlineEnum"
-      ]
+      "type": "object"
     },
     ".tests.Values.InlineEnum": {
       "type": "string",

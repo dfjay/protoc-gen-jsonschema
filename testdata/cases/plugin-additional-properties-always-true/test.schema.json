@@ -13,9 +13,6 @@
       },
       "additionalProperties": {},
       "type": "object",
-      "required": [
-        "val1"
-      ],
       "title": "MyMessage"
     },
     ".tests.MandatorySetAdditionalPropertiesToFalse.val1": {
@@ -23,7 +20,8 @@
     },
     ".tests.MandatorySetAdditionalPropertiesToFalse.val2": {
       "items": {
-        "type": "integer"
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "array"
     },
@@ -40,9 +38,6 @@
       "type": "object",
       "maxProperties": 10,
       "minProperties": 0,
-      "required": [
-        "val1"
-      ],
       "title": "MyMessage"
     },
     ".tests.MandatorySetAdditionalPropertiesToTrue.val1": {
@@ -50,7 +45,8 @@
     },
     ".tests.MandatorySetAdditionalPropertiesToTrue.val2": {
       "items": {
-        "type": "integer"
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "array"
     },
@@ -64,11 +60,7 @@
         }
       },
       "additionalProperties": {},
-      "type": "object",
-      "required": [
-        "messages",
-        "messages2"
-      ]
+      "type": "object"
     },
     ".tests.Values.messages": {
       "$ref": "#/$defs/.tests.MandatorySetAdditionalPropertiesToFalse"

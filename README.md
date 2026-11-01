@@ -44,9 +44,9 @@ protoc --jsonschema_out=. --jsonschema_opt=pretty_json_output=false *.proto
 ```
 
 ### I'd like to comply with the protobuf JSON mapping standard
-By default, this plugin does not comply with the Protobuf standard because most plugins and other JSON libraries do not address integers larger than a 53-bit value. To ensure greater compatibility with other libraries, this plugin converts int64 values to integers instead of strings. However, to comply with the Protobuf standard, int64 values should be converted to strings. The below options will assist you.
+By default the schema follows [ProtoJSON](https://protobuf.dev/programming-guides/json/): it accepts what protobuf writes, including 64-bit integers as strings. If your JSON is not written by protobuf and has 64-bit integers as numbers, use the option below.
 ```
-protoc --jsonschema_out=. --jsonschema_opt=respect_protojson_int64=true --jsonschema_opt=respect_protojson_presence=true *.proto
+protoc --jsonschema_out=. --jsonschema_opt=respect_protojson_int64=false *.proto
 ```
 
 ### I'm not satisfied with the plugin's options. I want to customize every field
@@ -136,7 +136,7 @@ Depends on Javascript specification, The JS stores integer to only 53bits.
 So, if you want to use int64 field in JS, you should use string type.
 References:
 
-default: false
+default: true
 example:
     - --jsonschema_opt=int64_as_string=true
     - --jsonschema_opt=int64_as_string=false
@@ -173,11 +173,14 @@ example:
 
 ### respect_protojson_presence
 ```
-This options is used to determine if the plugin should respect the presence of fields
-in the ProtoJSON format. If set to true and fields that does have presence, plugin will
-generate the `required` keyword in the output schema for those fields.
+respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message
+with any field absent. If set to true, the plugin adds to `required` only fields that
+must be present anyway: fields with the `required` field option set to true, proto2
+`required` and editions `LEGACY_REQUIRED` fields, and fields with the REQUIRED
+`google.api.field_behavior`. If set to false, every field that is not optional, repeated,
+a map or a oneof member is required as well.
 
-default: false
+default: true
 example:
   - --jsonschema_opt=respect_protojson_presence=true
   - --jsonschema_opt=respect_protojson_presence=false
@@ -185,14 +188,28 @@ example:
 
 ### respect_protojson_int64
 ```
-This options is used to determine if the plugin should respect the int64 fields
-in the ProtoJSON format. If set to true, int64 fields will be treated as strings
-in the output schema, otherwise they will be treated as numbers.
+respect_protojson_int64 writes 64-bit integer fields (int64, uint64, sint64, fixed64,
+sfixed64 and their wrappers) as strings, as ProtoJSON does. If set to false, they are
+integers, for JSON readers that parse large numbers themselves; JavaScript numbers lose
+precision above 2^53.
 
-default: false
+default: true
 example:
   - --jsonschema_opt=respect_protojson_int64=true
   - --jsonschema_opt=respect_protojson_int64=false
+```
+
+### respect_field_behavior
+```
+respect_field_behavior applies the `google.api.field_behavior` field option
+(google/api/field_behavior.proto): a REQUIRED field is required, an OUTPUT_ONLY field is
+`readOnly` and an INPUT_ONLY field is `writeOnly`. `readOnly` and `writeOnly` need
+draft-07 or later. The `required` field option takes precedence over REQUIRED.
+
+default: true
+example:
+  - --jsonschema_opt=respect_field_behavior=true
+  - --jsonschema_opt=respect_field_behavior=false
 ```
 
 ### Protobuf Options
@@ -206,7 +223,25 @@ Check out the [Options](./options.md) file to see auto-generated options.
 | optional       | oneof {type: null, $original_schema} |
 | repeated       | type: array, items: $original_schema |
 
-| WellKnown Types                                 |
+Protobuf well-known types follow their ProtoJSON form:
+
+| Well-known type                                       | jsonschema                                       |
+|-------------------------------------------------------|--------------------------------------------------|
+| google.protobuf.Timestamp                             | type: string, format: date-time                  |
+| google.protobuf.Duration                              | type: string, pattern: seconds with suffix `s`   |
+| google.protobuf.FieldMask                             | type: string                                     |
+| google.protobuf.Any, google.protobuf.Struct           | type: object                                     |
+| google.protobuf.ListValue                             | type: array                                      |
+| google.protobuf.Value                                 | any value                                        |
+| google.protobuf.NullValue                             | type: null                                       |
+| google.protobuf wrappers (Int32Value, StringValue...) | the schema of the wrapped value                  |
+
+Map keys are strings in ProtoJSON: integer and bool keys get a `propertyNames` schema
+(draft-06 or later).
+
+The plugin also has schemas for these Kubernetes types:
+
+| Kubernetes types                                |
 |-------------------------------------------------|
 | k8s.io.apimachinery.pkg.util.intstr.IntOrString |
 | k8s.io.api.core.v1.Volume                       |
@@ -219,12 +254,8 @@ Check out the [Options](./options.md) file to see auto-generated options.
 | k8s.io.api.core.v1.SecretEnvSource              |
 | k8s.io.api.core.v1.Probe                        |
 | k8s.io.api.core.v1.EphemeralContainer           |
-| google.protobuf.Timestamp                       |
-| google.protobuf.Duration                        |
-| google.protobuf.Any                             |
-| google.protobuf.NullValue                       |
 
-If you'd like to contribute well-known types, Please check [the generator](./pkg/modules/1_middleend_generator.go) file.
+If you'd like to contribute well-known types, Please check [the generator](./pkg/modules/1_frontend_generator.go) file.
 
 # Output Examples
 You can find basic example cases in the `./examples` directory and more complex cases in `./testdata/cases.`

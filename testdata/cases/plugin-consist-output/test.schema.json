@@ -42,10 +42,7 @@
           "$ref": "#/$defs/.tests.Wrapper.bar"
         }
       },
-      "type": "object",
-      "required": [
-        "bar"
-      ]
+      "type": "object"
     },
     ".tests.Wrapper.bar": {
       "$ref": "#/$defs/.cloud.ilsa.config.InstanceConfig"

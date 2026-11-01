@@ -25,14 +25,14 @@
     ".tests.Values.int64_map": {
       "additionalProperties": {
         "type": "string",
-        "format": "int64"
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "object"
     },
     ".tests.Values.uint64_map": {
       "additionalProperties": {
         "type": "string",
-        "format": "int64"
+        "pattern": "^(0|[1-9][0-9]*)$"
       },
       "type": "object"
     }

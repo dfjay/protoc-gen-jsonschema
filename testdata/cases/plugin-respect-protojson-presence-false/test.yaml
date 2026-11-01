@@ -1,0 +1,12 @@
+name: "plugin-respect-protojson-presence-false"
+description: "respect_protojson_presence=false requires every field that can not be absent"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_protojson_presence: false
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: "Fields that are not optional, repeated, a map or in a oneof are required"

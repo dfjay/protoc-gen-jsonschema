@@ -9,9 +9,6 @@
         }
       },
       "type": "object",
-      "required": [
-        "self"
-      ],
       "description": "message CircularDependentTwoDepth {\n  CircularDependentTwoDepth0 child = 1;\n}\n\nmessage CircularDependentTwoDepth0 {\n  CircularDependentTwoDepth parent = 1;\n}"
     },
     ".tests.SelfReference.self": {
@@ -23,10 +20,7 @@
           "$ref": "#/$defs/.tests.Values.entry"
         }
       },
-      "type": "object",
-      "required": [
-        "entry"
-      ]
+      "type": "object"
     },
     ".tests.Values.entry": {
       "$ref": "#/$defs/.tests.SelfReference"

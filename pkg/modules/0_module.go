@@ -49,7 +49,7 @@ func generate(req *pluginpb.CodeGeneratorRequest, log logger) ([]*pluginpb.CodeG
 	}
 
 	// Imported files too: their types can appear in a schema.
-	visitor := NewVisitor(pluginOptions)
+	visitor := NewVisitor(pluginOptions, files)
 	for _, fdp := range req.GetProtoFile() {
 		file, err := files.FindFileByPath(fdp.GetName())
 		if err != nil {

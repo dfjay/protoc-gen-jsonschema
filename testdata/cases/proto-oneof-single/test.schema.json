@@ -103,11 +103,7 @@
           ]
         }
       },
-      "type": "object",
-      "required": [
-        "value",
-        "count"
-      ]
+      "type": "object"
     },
     ".samples.Values.bool_value": {
       "type": "boolean"
@@ -116,7 +112,19 @@
       "type": "integer"
     },
     ".samples.Values.double_value": {
-      "type": "number"
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
     },
     ".samples.Values.int_value": {
       "type": "integer"

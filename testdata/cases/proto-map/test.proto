@@ -20,6 +20,12 @@ message Values {
   map<string, Nested> nested_map = 6;
 
   map<string, Enum> enum_map = 7;
+
+  map<int32, string> int32_key_map = 8;
+
+  map<uint64, string> uint64_key_map = 9;
+
+  map<bool, string> bool_key_map = 10;
 }
 
 message Nested {
