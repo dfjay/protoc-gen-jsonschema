@@ -27,38 +27,39 @@ func getVersion() string {
 	return "develop"
 }
 
-const helpMessage = `Usage protoc-gen-jsonschema:
-protoc --jsonschema_out=. (OPTIONS) *.proto
+const helpMessage = `Usage: protoc --jsonschema_out=DIR [--jsonschema_opt=NAME=VALUE ...] FILE.proto
 
-This plugin converts 'protocol buffer' formats to 'json-schema'. Support json-schema 'draft-04, draft-06, draft-07, draft-2019-09, draft-2020-12' versions.
+protoc-gen-jsonschema writes a JSON Schema of the ProtoJSON form of one message per
+.proto file. It supports JSON Schema draft-04, draft-06, draft-07, 2019-09 and 2020-12.
 
-Every schema needs an entrypoint message: the message the schema describes. Pass it with
---jsonschema_opt=entrypoint_message=<Message> or set it in the file with
+Every file needs an entrypoint: a top-level message of that file, by its simple name.
+Pass it with --jsonschema_opt=entrypoint_message=<Message> or set it in the file with
 option (dfjay.jsonschema.file) = {entrypoint_message: "<Message>"}.
 
-EXAMPLE: Generate a schema for message Form in form.proto
-protoc --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form form.proto
+EXAMPLES:
+  # Schema of message Form in form.proto, written to form.schema.json (draft 2020-12)
+  protoc -I . --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form form.proto
 
-EXAMPLE: Generate with yaml format
-protoc --jsonschema_out=. --jsonschema_opt=output_file_suffix=.yaml *.proto
+  # YAML output
+  protoc -I . --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form \
+    --jsonschema_opt=output_file_suffix=.schema.yaml form.proto
 
-EXAMPLE: Shrink bytes for transfer over network
-protoc --jsonschema_out=. --jsonschema_opt=pretty_json_output=false
+  # Another draft, compact JSON
+  protoc -I . --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form \
+    --jsonschema_opt=draft=Draft07 --jsonschema_opt=pretty_json_output=false form.proto
 
-EXAMPLE: I'd like to comply with the protobuf JSON mapping standard
-protoc --jsonschema_out=. --jsonschema_opt=int64_as_string=true
+  # Validate JSON or YAML that a ProtoJSON parser reads, such as config files
+  protoc -I . --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form \
+    --jsonschema_opt=protojson_mode=Lenient form.proto
 
-EXAMPLE: Don't convert my proto field names to lowerCamelCase
-protoc --jsonschema_out=. --jsonschema_opt=preserve_proto_field_names=true
+  # Custom annotations: import "dfjay/jsonschema/options.proto" in your file
+  protoc -I . -I path/to/protoc-gen-jsonschema/proto --jsonschema_out=. form.proto
 
-EXAMPLE: I'm not satisfied with the plugin's options. I want to customize every fields
-protoc -I path/to/protoc-gen-jsonschema/proto -I . --jsonschema_out=. your.proto
-
-Please check https://github.com/dfjay/protoc-gen-jsonschema for more details.
+All options: https://github.com/dfjay/protoc-gen-jsonschema#plugin-options
 
 FLAGS:
-  --version  : print version
-  --help     : print help
+  --version  print version
+  --help     print help
 `
 
 func main() {
