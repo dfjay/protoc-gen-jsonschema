@@ -1,0 +1,57 @@
+# Builds the binaries of a release that release-please has just created
+# (.github/workflows/release.yml).
+version: 2
+
+builds:
+  - main: .
+    binary: protoc-gen-jsonschema
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags: [-trimpath, -buildvcs=false]
+    ldflags: ["-s -w -X main.version={{ .Version }}"]
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    builds_info: &info
+      owner: root
+      group: root
+      mtime: "{{ .CommitDate }}"
+    files:
+      - src: LICENSE
+        info: &file
+          <<: *info
+          mode: 0644
+      - src: README.md
+        info: *file
+      - src: proto/dfjay/jsonschema/options.proto
+        info: *file
+
+checksum:
+  name_template: checksums.txt
+
+# Keyless: cosign signs with the workflow's identity, recorded in Sigstore's
+# transparency log. Check with
+#   cosign verify-blob --bundle checksums.txt.sigstore.json \
+#     --certificate-identity-regexp '^https://github.com/dfjay/protoc-gen-jsonschema/' \
+#     --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args: [sign-blob, "--bundle=${signature}", "${artifact}", --yes]
+
+# An SPDX SBOM per archive, made by syft.
+sboms:
+  - artifacts: archive
+
+# release-please writes the release notes; only add the binaries.
+release:
+  mode: keep-existing
+
+changelog:
+  disable: true

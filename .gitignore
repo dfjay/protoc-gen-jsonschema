@@ -2,3 +2,4 @@
 **/request.pb.bin
 
 protoc-gen-jsonschema
+dist/
