@@ -31,8 +31,12 @@ protoc --jsonschema_out=. (OPTIONS) *.proto
 
 This plugin converts 'protocol buffer' formats to 'json-schema'. Support json-schema 'draft-04, draft-06, draft-07, draft-2019-09, draft-2020-12' versions.
 
-EXAMPLE: I'm not sure which options to use
-protoc --jsonschema_out=. *.proto
+Every schema needs an entrypoint message: the message the schema describes. Pass it with
+--jsonschema_opt=entrypoint_message=<Message> or set it in the file with
+option (dfjay.jsonschema.file) = {entrypoint_message: "<Message>"}.
+
+EXAMPLE: Generate a schema for message Form in form.proto
+protoc --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form form.proto
 
 EXAMPLE: Generate with yaml format
 protoc --jsonschema_out=. --jsonschema_opt=output_file_suffix=.yaml *.proto

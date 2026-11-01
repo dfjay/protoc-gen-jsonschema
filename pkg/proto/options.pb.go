@@ -202,9 +202,11 @@ type PluginOptions struct {
 	// Currently not work.
 	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
 	// *
-	// entrypoint_message is used which message should be entrypoint object of schema.
+	// entrypoint_message names the message the schema describes. It is required: a file whose
+	// entrypoint message is not set, or not defined in that file, produces no schema. The file
+	// option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 	//
-	// default: null or empty
+	// default: none
 	// example:
 	// - --jsonschema_opt=entrypoint_message=MyMessage
 	EntrypointMessage string `protobuf:"bytes,2,opt,name=entrypoint_message,json=entrypointMessage,proto3" json:"entrypoint_message,omitempty"`
@@ -425,8 +427,9 @@ type FileOptions struct {
 	// Currently not work.
 	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
 	// *
-	// entrypoint_message is used which message should be entrypoint object of schema.
-	// default: inherit from PluginOptions.entrypoint_message
+	// entrypoint_message names the message of this file that the schema describes.
+	// It takes precedence over the entrypoint_message plugin option.
+	// default: the entrypoint_message plugin option
 	EntrypointMessage string `protobuf:"bytes,2,opt,name=entrypoint_message,json=entrypointMessage,proto3" json:"entrypoint_message,omitempty"`
 	Title             string `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
 	Description       string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`

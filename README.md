@@ -24,11 +24,14 @@ gh attestation verify protoc-gen-jsonschema_<version>_<os>_<arch>.tar.gz --repo 
 
 Refer to the [Plugin Options](#plugin-options) section below for various options available for this plugin.
 
-### I'm not sure which options to use
-This plugin provides default options that are ready to use. For testing or generating a basic json-schema file, the following command is sufficient without extra options.
+The plugin writes one schema per `.proto` file, for the message you name as the entrypoint. The schema includes that message and every message, enum and field it uses. Name the entrypoint with `entrypoint_message`, either as a plugin option or in the file (see [below](#im-not-satisfied-with-the-plugins-options-i-want-to-customize-every-field)). Files that do not define their entrypoint message produce no schema.
+
+### Generate a schema
+For a `form.proto` with a `message Form`:
 ```
-protoc --jsonschema_out=. *.proto
+protoc --jsonschema_out=. --jsonschema_opt=entrypoint_message=Form form.proto
 ```
+This writes `form.schema.json` (draft 2020-12). The examples below assume the entrypoint is set in the file or passed the same way.
 
 ### Generate with yaml format
 ```
@@ -68,9 +71,11 @@ protoc -I path/to/protoc-gen-jsonschema/proto -I . --jsonschema_out=. your.proto
 
 ### entrypoint_message
 ```
-entrypoint_message is used which message should be entrypoint object of schema.
+entrypoint_message names the message the schema describes. It is required: a file whose
+entrypoint message is not set, or not defined in that file, produces no schema. The file
+option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 
-default: null or empty
+default: none
 example:
     - --jsonschema_opt=entrypoint_message=MyMessage
 ```

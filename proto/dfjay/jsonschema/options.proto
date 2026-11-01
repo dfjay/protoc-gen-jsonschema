@@ -16,9 +16,11 @@ message PluginOptions {
   uint32 visibility_level = 1;
 
   /**
-    entrypoint_message is used which message should be entrypoint object of schema.
+    entrypoint_message names the message the schema describes. It is required: a file whose
+    entrypoint message is not set, or not defined in that file, produces no schema. The file
+    option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 
-    default: null or empty
+    default: none
     example:
       - --jsonschema_opt=entrypoint_message=MyMessage
    */
@@ -180,8 +182,9 @@ message FileOptions {
   uint32 visibility_level = 1;
 
   /**
-    entrypoint_message is used which message should be entrypoint object of schema.
-    default: inherit from PluginOptions.entrypoint_message
+    entrypoint_message names the message of this file that the schema describes.
+    It takes precedence over the entrypoint_message plugin option.
+    default: the entrypoint_message plugin option
   */
   string entrypoint_message = 2;
 
