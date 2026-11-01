@@ -49,6 +49,18 @@ By default the schema follows [ProtoJSON](https://protobuf.dev/programming-guide
 protoc --jsonschema_out=. --jsonschema_opt=respect_protojson_int64=false *.proto
 ```
 
+`protojson_mode` chooses between what protobuf writes and what its parser accepts:
+
+| Use                                                                | protojson_mode      |
+|--------------------------------------------------------------------|---------------------|
+| Generate types, document an API, check protobuf output             | `Canonical` (default) |
+| Check JSON or YAML that people write and a protobuf parser reads, such as config files | `Lenient`           |
+
+`Lenient` accepts everything the parser does, such as `null` for any field, numbers in strings and enum numbers, at the cost of looser types (`number | string | null`) for code generators:
+```
+protoc --jsonschema_out=. --jsonschema_opt=protojson_mode=Lenient *.proto
+```
+
 ### I'm not satisfied with the plugin's options. I want to customize every field
 This plugin offers options for fields, messages, and enums. Import `dfjay/jsonschema/options.proto` (from the [`proto`](proto) directory of this repository, also shipped in every release archive) and set them in your proto:
 ```proto
@@ -197,6 +209,27 @@ default: true
 example:
   - --jsonschema_opt=respect_protojson_int64=true
   - --jsonschema_opt=respect_protojson_int64=false
+```
+
+### protojson_mode
+```
+protojson_mode chooses which JSON the schema accepts.
+Canonical accepts what protobuf's ProtoJSON serializer writes.
+Lenient also accepts what ProtoJSON parsers accept: null for any field, integers and
+floats as numbers or strings, enum values as names or numbers, URL-safe and unpadded
+base64, and integer map keys with leading zeros or a plus sign. Fields with numeric
+keywords accept only numbers. In Lenient, mandatory_nullable and respect_protojson_int64
+have no effect; respect_protojson_presence still decides which fields are required.
+Field names stay as configured: parsers also accept the proto field name, but
+the schema does not.
+
+Use Canonical to generate types, document an API or check protobuf output; use Lenient
+to check JSON or YAML that people write and a protobuf parser reads, such as config files.
+
+default: Canonical
+example:
+  - --jsonschema_opt=protojson_mode=Canonical
+  - --jsonschema_opt=protojson_mode=Lenient
 ```
 
 ### respect_field_behavior

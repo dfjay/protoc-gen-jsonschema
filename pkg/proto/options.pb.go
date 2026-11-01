@@ -86,6 +86,57 @@ func (PluginAdditionalProperties) EnumDescriptor() ([]byte, []int) {
 	return file_dfjay_jsonschema_options_proto_rawDescGZIP(), []int{0}
 }
 
+type ProtojsonMode int32
+
+const (
+	ProtojsonMode_ProtojsonModeDefault ProtojsonMode = 0
+	// Canonical: accept what protobuf writes
+	ProtojsonMode_Canonical ProtojsonMode = 1
+	// Lenient: accept what protobuf parsers accept
+	ProtojsonMode_Lenient ProtojsonMode = 2
+)
+
+// Enum value maps for ProtojsonMode.
+var (
+	ProtojsonMode_name = map[int32]string{
+		0: "ProtojsonModeDefault",
+		1: "Canonical",
+		2: "Lenient",
+	}
+	ProtojsonMode_value = map[string]int32{
+		"ProtojsonModeDefault": 0,
+		"Canonical":            1,
+		"Lenient":              2,
+	}
+)
+
+func (x ProtojsonMode) Enum() *ProtojsonMode {
+	p := new(ProtojsonMode)
+	*p = x
+	return p
+}
+
+func (x ProtojsonMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ProtojsonMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_dfjay_jsonschema_options_proto_enumTypes[1].Descriptor()
+}
+
+func (ProtojsonMode) Type() protoreflect.EnumType {
+	return &file_dfjay_jsonschema_options_proto_enumTypes[1]
+}
+
+func (x ProtojsonMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ProtojsonMode.Descriptor instead.
+func (ProtojsonMode) EnumDescriptor() ([]byte, []int) {
+	return file_dfjay_jsonschema_options_proto_rawDescGZIP(), []int{1}
+}
+
 type Draft int32
 
 const (
@@ -128,11 +179,11 @@ func (x Draft) String() string {
 }
 
 func (Draft) Descriptor() protoreflect.EnumDescriptor {
-	return file_dfjay_jsonschema_options_proto_enumTypes[1].Descriptor()
+	return file_dfjay_jsonschema_options_proto_enumTypes[2].Descriptor()
 }
 
 func (Draft) Type() protoreflect.EnumType {
-	return &file_dfjay_jsonschema_options_proto_enumTypes[1]
+	return &file_dfjay_jsonschema_options_proto_enumTypes[2]
 }
 
 func (x Draft) Number() protoreflect.EnumNumber {
@@ -141,7 +192,7 @@ func (x Draft) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Draft.Descriptor instead.
 func (Draft) EnumDescriptor() ([]byte, []int) {
-	return file_dfjay_jsonschema_options_proto_rawDescGZIP(), []int{1}
+	return file_dfjay_jsonschema_options_proto_rawDescGZIP(), []int{2}
 }
 
 type EnumOptions_MappingType int32
@@ -177,11 +228,11 @@ func (x EnumOptions_MappingType) String() string {
 }
 
 func (EnumOptions_MappingType) Descriptor() protoreflect.EnumDescriptor {
-	return file_dfjay_jsonschema_options_proto_enumTypes[2].Descriptor()
+	return file_dfjay_jsonschema_options_proto_enumTypes[3].Descriptor()
 }
 
 func (EnumOptions_MappingType) Type() protoreflect.EnumType {
-	return &file_dfjay_jsonschema_options_proto_enumTypes[2]
+	return &file_dfjay_jsonschema_options_proto_enumTypes[3]
 }
 
 func (x EnumOptions_MappingType) Number() protoreflect.EnumNumber {
@@ -322,8 +373,27 @@ type PluginOptions struct {
 	// - --jsonschema_opt=respect_field_behavior=true
 	// - --jsonschema_opt=respect_field_behavior=false
 	RespectFieldBehavior bool `protobuf:"varint,19,opt,name=respect_field_behavior,json=respectFieldBehavior,proto3" json:"respect_field_behavior,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	// *
+	// protojson_mode chooses which JSON the schema accepts.
+	// Canonical accepts what protobuf's ProtoJSON serializer writes.
+	// Lenient also accepts what ProtoJSON parsers accept: null for any field, integers and
+	// floats as numbers or strings, enum values as names or numbers, URL-safe and unpadded
+	// base64, and integer map keys with leading zeros or a plus sign. Fields with numeric
+	// keywords accept only numbers. In Lenient, mandatory_nullable and respect_protojson_int64
+	// have no effect; respect_protojson_presence still decides which fields are required.
+	// Field names stay as configured: parsers also accept the proto field name, but
+	// the schema does not.
+	//
+	// Use Canonical to generate types, document an API or check protobuf output; use Lenient
+	// to check JSON or YAML that people write and a protobuf parser reads, such as config files.
+	//
+	// default: Canonical
+	// example:
+	// - --jsonschema_opt=protojson_mode=Canonical
+	// - --jsonschema_opt=protojson_mode=Lenient
+	ProtojsonMode ProtojsonMode `protobuf:"varint,20,opt,name=protojson_mode,json=protojsonMode,proto3,enum=dfjay.jsonschema.ProtojsonMode" json:"protojson_mode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PluginOptions) Reset() {
@@ -438,6 +508,13 @@ func (x *PluginOptions) GetRespectFieldBehavior() bool {
 		return x.RespectFieldBehavior
 	}
 	return false
+}
+
+func (x *PluginOptions) GetProtojsonMode() ProtojsonMode {
+	if x != nil {
+		return x.ProtojsonMode
+	}
+	return ProtojsonMode_ProtojsonModeDefault
 }
 
 type FileOptions struct {
@@ -1210,7 +1287,7 @@ var File_dfjay_jsonschema_options_proto protoreflect.FileDescriptor
 
 const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\n" +
-	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\"\x97\x05\n" +
+	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\"\xdf\x05\n" +
 	"\rPluginOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12,\n" +
@@ -1224,7 +1301,8 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\x15additional_properties\x18\x10 \x01(\x0e2,.dfjay.jsonschema.PluginAdditionalPropertiesR\x14additionalProperties\x12<\n" +
 	"\x1arespect_protojson_presence\x18\x11 \x01(\bR\x18respectProtojsonPresence\x126\n" +
 	"\x17respect_protojson_int64\x18\x12 \x01(\bR\x15respectProtojsonInt64\x124\n" +
-	"\x16respect_field_behavior\x18\x13 \x01(\bR\x14respectFieldBehavior\"\x9f\x01\n" +
+	"\x16respect_field_behavior\x18\x13 \x01(\bR\x14respectFieldBehavior\x12F\n" +
+	"\x0eprotojson_mode\x18\x14 \x01(\x0e2\x1f.dfjay.jsonschema.ProtojsonModeR\rprotojsonMode\"\x9f\x01\n" +
 	"\vFileOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12\x14\n" +
@@ -1301,7 +1379,11 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\vAlwaysFalse\x10\x02\x12\x0f\n" +
 	"\vDefaultTrue\x10\x03\x12\x10\n" +
 	"\fDefaultFalse\x10\x04\x12\r\n" +
-	"\tDoNothing\x10\x05*q\n" +
+	"\tDoNothing\x10\x05*E\n" +
+	"\rProtojsonMode\x12\x18\n" +
+	"\x14ProtojsonModeDefault\x10\x00\x12\r\n" +
+	"\tCanonical\x10\x01\x12\v\n" +
+	"\aLenient\x10\x02*q\n" +
 	"\x05Draft\x12\x10\n" +
 	"\fDraftDefault\x10\x00\x12\v\n" +
 	"\aDraft04\x10\x01\x12\v\n" +
@@ -1328,54 +1410,56 @@ func file_dfjay_jsonschema_options_proto_rawDescGZIP() []byte {
 	return file_dfjay_jsonschema_options_proto_rawDescData
 }
 
-var file_dfjay_jsonschema_options_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_dfjay_jsonschema_options_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_dfjay_jsonschema_options_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_dfjay_jsonschema_options_proto_goTypes = []any{
 	(PluginAdditionalProperties)(0),       // 0: dfjay.jsonschema.PluginAdditionalProperties
-	(Draft)(0),                            // 1: dfjay.jsonschema.Draft
-	(EnumOptions_MappingType)(0),          // 2: dfjay.jsonschema.EnumOptions.MappingType
-	(*PluginOptions)(nil),                 // 3: dfjay.jsonschema.PluginOptions
-	(*FileOptions)(nil),                   // 4: dfjay.jsonschema.FileOptions
-	(*MessageOptions)(nil),                // 5: dfjay.jsonschema.MessageOptions
-	(*ObjectKeywords)(nil),                // 6: dfjay.jsonschema.ObjectKeywords
-	(*FieldOptions)(nil),                  // 7: dfjay.jsonschema.FieldOptions
-	(*ArrayKeywords)(nil),                 // 8: dfjay.jsonschema.ArrayKeywords
-	(*NumericKeywords)(nil),               // 9: dfjay.jsonschema.NumericKeywords
-	(*StringKeywords)(nil),                // 10: dfjay.jsonschema.StringKeywords
-	(*EnumOptions)(nil),                   // 11: dfjay.jsonschema.EnumOptions
-	(*EnumValueOptions)(nil),              // 12: dfjay.jsonschema.EnumValueOptions
-	(*anypb.Any)(nil),                     // 13: google.protobuf.Any
-	(*descriptorpb.FileOptions)(nil),      // 14: google.protobuf.FileOptions
-	(*descriptorpb.MessageOptions)(nil),   // 15: google.protobuf.MessageOptions
-	(*descriptorpb.FieldOptions)(nil),     // 16: google.protobuf.FieldOptions
-	(*descriptorpb.EnumOptions)(nil),      // 17: google.protobuf.EnumOptions
-	(*descriptorpb.EnumValueOptions)(nil), // 18: google.protobuf.EnumValueOptions
+	(ProtojsonMode)(0),                    // 1: dfjay.jsonschema.ProtojsonMode
+	(Draft)(0),                            // 2: dfjay.jsonschema.Draft
+	(EnumOptions_MappingType)(0),          // 3: dfjay.jsonschema.EnumOptions.MappingType
+	(*PluginOptions)(nil),                 // 4: dfjay.jsonschema.PluginOptions
+	(*FileOptions)(nil),                   // 5: dfjay.jsonschema.FileOptions
+	(*MessageOptions)(nil),                // 6: dfjay.jsonschema.MessageOptions
+	(*ObjectKeywords)(nil),                // 7: dfjay.jsonschema.ObjectKeywords
+	(*FieldOptions)(nil),                  // 8: dfjay.jsonschema.FieldOptions
+	(*ArrayKeywords)(nil),                 // 9: dfjay.jsonschema.ArrayKeywords
+	(*NumericKeywords)(nil),               // 10: dfjay.jsonschema.NumericKeywords
+	(*StringKeywords)(nil),                // 11: dfjay.jsonschema.StringKeywords
+	(*EnumOptions)(nil),                   // 12: dfjay.jsonschema.EnumOptions
+	(*EnumValueOptions)(nil),              // 13: dfjay.jsonschema.EnumValueOptions
+	(*anypb.Any)(nil),                     // 14: google.protobuf.Any
+	(*descriptorpb.FileOptions)(nil),      // 15: google.protobuf.FileOptions
+	(*descriptorpb.MessageOptions)(nil),   // 16: google.protobuf.MessageOptions
+	(*descriptorpb.FieldOptions)(nil),     // 17: google.protobuf.FieldOptions
+	(*descriptorpb.EnumOptions)(nil),      // 18: google.protobuf.EnumOptions
+	(*descriptorpb.EnumValueOptions)(nil), // 19: google.protobuf.EnumValueOptions
 }
 var file_dfjay_jsonschema_options_proto_depIdxs = []int32{
-	1,  // 0: dfjay.jsonschema.PluginOptions.draft:type_name -> dfjay.jsonschema.Draft
+	2,  // 0: dfjay.jsonschema.PluginOptions.draft:type_name -> dfjay.jsonschema.Draft
 	0,  // 1: dfjay.jsonschema.PluginOptions.additional_properties:type_name -> dfjay.jsonschema.PluginAdditionalProperties
-	6,  // 2: dfjay.jsonschema.MessageOptions.object:type_name -> dfjay.jsonschema.ObjectKeywords
-	13, // 3: dfjay.jsonschema.FieldOptions.default:type_name -> google.protobuf.Any
-	8,  // 4: dfjay.jsonschema.FieldOptions.array:type_name -> dfjay.jsonschema.ArrayKeywords
-	9,  // 5: dfjay.jsonschema.FieldOptions.numeric:type_name -> dfjay.jsonschema.NumericKeywords
-	10, // 6: dfjay.jsonschema.FieldOptions.string:type_name -> dfjay.jsonschema.StringKeywords
-	2,  // 7: dfjay.jsonschema.EnumOptions.mapping_type:type_name -> dfjay.jsonschema.EnumOptions.MappingType
-	13, // 8: dfjay.jsonschema.EnumValueOptions.custom_value:type_name -> google.protobuf.Any
-	14, // 9: dfjay.jsonschema.file:extendee -> google.protobuf.FileOptions
-	15, // 10: dfjay.jsonschema.message:extendee -> google.protobuf.MessageOptions
-	16, // 11: dfjay.jsonschema.field:extendee -> google.protobuf.FieldOptions
-	17, // 12: dfjay.jsonschema.enum:extendee -> google.protobuf.EnumOptions
-	18, // 13: dfjay.jsonschema.enum_value:extendee -> google.protobuf.EnumValueOptions
-	4,  // 14: dfjay.jsonschema.file:type_name -> dfjay.jsonschema.FileOptions
-	5,  // 15: dfjay.jsonschema.message:type_name -> dfjay.jsonschema.MessageOptions
-	7,  // 16: dfjay.jsonschema.field:type_name -> dfjay.jsonschema.FieldOptions
-	11, // 17: dfjay.jsonschema.enum:type_name -> dfjay.jsonschema.EnumOptions
-	12, // 18: dfjay.jsonschema.enum_value:type_name -> dfjay.jsonschema.EnumValueOptions
-	19, // [19:19] is the sub-list for method output_type
-	19, // [19:19] is the sub-list for method input_type
-	14, // [14:19] is the sub-list for extension type_name
-	9,  // [9:14] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	1,  // 2: dfjay.jsonschema.PluginOptions.protojson_mode:type_name -> dfjay.jsonschema.ProtojsonMode
+	7,  // 3: dfjay.jsonschema.MessageOptions.object:type_name -> dfjay.jsonschema.ObjectKeywords
+	14, // 4: dfjay.jsonschema.FieldOptions.default:type_name -> google.protobuf.Any
+	9,  // 5: dfjay.jsonschema.FieldOptions.array:type_name -> dfjay.jsonschema.ArrayKeywords
+	10, // 6: dfjay.jsonschema.FieldOptions.numeric:type_name -> dfjay.jsonschema.NumericKeywords
+	11, // 7: dfjay.jsonschema.FieldOptions.string:type_name -> dfjay.jsonschema.StringKeywords
+	3,  // 8: dfjay.jsonschema.EnumOptions.mapping_type:type_name -> dfjay.jsonschema.EnumOptions.MappingType
+	14, // 9: dfjay.jsonschema.EnumValueOptions.custom_value:type_name -> google.protobuf.Any
+	15, // 10: dfjay.jsonschema.file:extendee -> google.protobuf.FileOptions
+	16, // 11: dfjay.jsonschema.message:extendee -> google.protobuf.MessageOptions
+	17, // 12: dfjay.jsonschema.field:extendee -> google.protobuf.FieldOptions
+	18, // 13: dfjay.jsonschema.enum:extendee -> google.protobuf.EnumOptions
+	19, // 14: dfjay.jsonschema.enum_value:extendee -> google.protobuf.EnumValueOptions
+	5,  // 15: dfjay.jsonschema.file:type_name -> dfjay.jsonschema.FileOptions
+	6,  // 16: dfjay.jsonschema.message:type_name -> dfjay.jsonschema.MessageOptions
+	8,  // 17: dfjay.jsonschema.field:type_name -> dfjay.jsonschema.FieldOptions
+	12, // 18: dfjay.jsonschema.enum:type_name -> dfjay.jsonschema.EnumOptions
+	13, // 19: dfjay.jsonschema.enum_value:type_name -> dfjay.jsonschema.EnumValueOptions
+	20, // [20:20] is the sub-list for method output_type
+	20, // [20:20] is the sub-list for method input_type
+	15, // [15:20] is the sub-list for extension type_name
+	10, // [10:15] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_dfjay_jsonschema_options_proto_init() }
@@ -1398,7 +1482,7 @@ func file_dfjay_jsonschema_options_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_dfjay_jsonschema_options_proto_rawDesc), len(file_dfjay_jsonschema_options_proto_rawDesc)),
-			NumEnums:      3,
+			NumEnums:      4,
 			NumMessages:   10,
 			NumExtensions: 5,
 			NumServices:   0,

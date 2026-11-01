@@ -1,0 +1,478 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Enum": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "ONE"
+          ]
+        },
+        {
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        }
+      ]
+    },
+    ".tests.Nested": {
+      "properties": {
+        "value": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Nested.value"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Nested.value": {
+      "type": "string"
+    },
+    ".tests.Values": {
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "a": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              },
+              "required": [
+                "a"
+              ]
+            },
+            {
+              "properties": {
+                "b": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              },
+              "required": [
+                "b"
+              ]
+            },
+            {
+              "required": [
+                "c"
+              ]
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "a": {
+                        "not": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    "required": [
+                      "a"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "b": {
+                        "not": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    "required": [
+                      "b"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "c"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "int32": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.int32"
+            }
+          ]
+        },
+        "int64": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.int64"
+            }
+          ]
+        },
+        "uint64": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.uint64"
+            }
+          ]
+        },
+        "double": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.double"
+            }
+          ]
+        },
+        "boundedInt32": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.bounded_int32"
+            }
+          ]
+        },
+        "boundedFloat": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.bounded_float"
+            }
+          ]
+        },
+        "bytes": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.bytes"
+            }
+          ]
+        },
+        "enum": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.enum"
+            }
+          ]
+        },
+        "int64s": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.int64s"
+            }
+          ]
+        },
+        "int32KeyMap": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.int32_key_map"
+            }
+          ]
+        },
+        "uint64KeyMap": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.uint64_key_map"
+            }
+          ]
+        },
+        "int32Wrapper": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.int32_wrapper"
+            }
+          ]
+        },
+        "nested": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.nested"
+            }
+          ]
+        },
+        "optionalString": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.optional_string"
+            }
+          ]
+        },
+        "uint32": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.uint32"
+            }
+          ]
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.duration"
+            }
+          ]
+        },
+        "nullValue": {
+          "$ref": "#/$defs/.tests.Values.null_value"
+        },
+        "values": {
+          "$ref": "#/$defs/.tests.Values.values"
+        },
+        "a": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.a"
+            }
+          ]
+        },
+        "b": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.b"
+            }
+          ]
+        },
+        "c": {
+          "$ref": "#/$defs/.tests.Values.c"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.a": {
+      "type": "string"
+    },
+    ".tests.Values.b": {
+      "$ref": "#/$defs/.tests.Nested"
+    },
+    ".tests.Values.bounded_float": {
+      "type": "number",
+      "minimum": 0
+    },
+    ".tests.Values.bounded_int32": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Bounded, so only numbers are accepted."
+    },
+    ".tests.Values.bytes": {
+      "type": "string",
+      "pattern": "^(?:(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}(?:==)?|[A-Za-z0-9+/]{3}=?)?|(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}(?:==)?|[A-Za-z0-9_-]{3}=?)?)$"
+    },
+    ".tests.Values.c": {
+      "description": "Null sets a Value, so it counts as set."
+    },
+    ".tests.Values.double": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$"
+        }
+      ]
+    },
+    ".tests.Values.duration": {
+      "type": "string",
+      "pattern": "^[-+]?([0-9]+(\\.[0-9]{0,9})?|\\.[0-9]{1,9})s$"
+    },
+    ".tests.Values.enum": {
+      "$ref": "#/$defs/.tests.Enum"
+    },
+    ".tests.Values.int32": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        },
+        {
+          "type": "string",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.0+)?([eE]\\+?[0-9]+)?$"
+        }
+      ]
+    },
+    ".tests.Values.int32_key_map": {
+      "additionalProperties": {
+        "$ref": "#/$defs/.tests.Enum"
+      },
+      "propertyNames": {
+        "pattern": "^[+-]?[0-9]+$"
+      },
+      "type": "object"
+    },
+    ".tests.Values.int32_wrapper": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        },
+        {
+          "type": "string",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.0+)?([eE]\\+?[0-9]+)?$"
+        }
+      ]
+    },
+    ".tests.Values.int64": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.0+)?([eE]\\+?[0-9]+)?$"
+        }
+      ]
+    },
+    ".tests.Values.int64s": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.0+)?([eE]\\+?[0-9]+)?$"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    ".tests.Values.nested": {
+      "$ref": "#/$defs/.tests.Nested"
+    },
+    ".tests.Values.null_value": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NULL_VALUE"
+          ]
+        },
+        {
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        }
+      ]
+    },
+    ".tests.Values.optional_string": {
+      "type": "string"
+    },
+    ".tests.Values.uint32": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "maximum": 4294967295,
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "pattern": "^(-?0|[1-9][0-9]*)(\\.0+)?([eE]\\+?[0-9]+)?$"
+        }
+      ]
+    },
+    ".tests.Values.uint64": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "pattern": "^(-?0|[1-9][0-9]*)(\\.0+)?([eE]\\+?[0-9]+)?$"
+        }
+      ]
+    },
+    ".tests.Values.uint64_key_map": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^[0-9]+$"
+      },
+      "type": "object"
+    },
+    ".tests.Values.values": {
+      "items": {
+        "description": "null is read as the list, so the field is not nullable."
+      },
+      "type": "array",
+      "description": "null is read as the list, so the field is not nullable."
+    }
+  },
+  "type": "object"
+}

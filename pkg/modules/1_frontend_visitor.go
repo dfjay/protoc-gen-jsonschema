@@ -118,7 +118,7 @@ func (v *FrontendVisitor) visitField(field protoreflect.FieldDescriptor) error {
 }
 
 func (v *FrontendVisitor) visitEnum(enum protoreflect.EnumDescriptor) error {
-	schema, err := buildFromEnum(enum)
+	schema, err := buildFromEnum(v.pluginOptions, enum)
 	if err != nil {
 		return err
 	}

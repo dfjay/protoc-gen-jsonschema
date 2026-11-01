@@ -161,6 +161,27 @@ message PluginOptions {
       - --jsonschema_opt=respect_field_behavior=false
    */
   bool respect_field_behavior = 19;
+
+  /**
+    protojson_mode chooses which JSON the schema accepts.
+    Canonical accepts what protobuf's ProtoJSON serializer writes.
+    Lenient also accepts what ProtoJSON parsers accept: null for any field, integers and
+    floats as numbers or strings, enum values as names or numbers, URL-safe and unpadded
+    base64, and integer map keys with leading zeros or a plus sign. Fields with numeric
+    keywords accept only numbers. In Lenient, mandatory_nullable and respect_protojson_int64
+    have no effect; respect_protojson_presence still decides which fields are required.
+    Field names stay as configured: parsers also accept the proto field name, but
+    the schema does not.
+
+    Use Canonical to generate types, document an API or check protobuf output; use Lenient
+    to check JSON or YAML that people write and a protobuf parser reads, such as config files.
+
+    default: Canonical
+    example:
+      - --jsonschema_opt=protojson_mode=Canonical
+      - --jsonschema_opt=protojson_mode=Lenient
+   */
+  ProtojsonMode protojson_mode = 20;
 }
 
 enum PluginAdditionalProperties {
@@ -175,6 +196,14 @@ enum PluginAdditionalProperties {
   DefaultFalse = 4;
   // do_nothing: do not set additional_properties default value
   DoNothing = 5;
+}
+
+enum ProtojsonMode {
+  ProtojsonModeDefault = 0;
+  // Canonical: accept what protobuf writes
+  Canonical = 1;
+  // Lenient: accept what protobuf parsers accept
+  Lenient = 2;
 }
 
 enum Draft {

@@ -3,6 +3,7 @@ package modules
 import (
 	"encoding/json"
 	"iter"
+	"math"
 	"reflect"
 	"slices"
 
@@ -29,7 +30,11 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, behaviors fieldBehavio
 
 		propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
 		fieldSchema := &jsonschema.Schema{Ref: toRefId(field)}
-		nullable := !pluginOptions.GetMandatoryNullable() && (inRealOneof(field) || isOptionalField(field)) || proto.GetFieldOptions(field).GetNullable()
+		// Parsers accept null for any field and leave it unset, except a
+		// repeated Value or NullValue, where null is read as the list.
+		nullable := isLenient(pluginOptions) && (!field.IsList() || !isNullableKind(field)) ||
+			!pluginOptions.GetMandatoryNullable() && (inRealOneof(field) || isOptionalField(field)) ||
+			proto.GetFieldOptions(field).GetNullable()
 		if nullable && !acceptsNull(field) {
 			fieldSchema = &jsonschema.Schema{OneOf: []*jsonschema.Schema{
 				{Type: "null"},
@@ -58,7 +63,13 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, behaviors fieldBehavio
 				continue
 			}
 			propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
-			oneOfSchemas = append(oneOfSchemas, &jsonschema.Schema{Required: []string{propName}})
+			set := &jsonschema.Schema{Required: []string{propName}}
+			if isLenient(pluginOptions) && !acceptsNull(field) {
+				// A member set to null is unset, so another member may be set.
+				set.Properties = jsonschema.NewOrderedSchemaMap()
+				set.Properties.Set(propName, &jsonschema.Schema{Not: &jsonschema.Schema{Type: "null"}})
+			}
+			oneOfSchemas = append(oneOfSchemas, set)
 		}
 		if len(oneOfSchemas) < 2 {
 			continue
@@ -223,17 +234,23 @@ func buildFromMapField(pluginOptions *proto.PluginOptions, field protoreflect.Fi
 	schema.Title = proto.GetTitleOrEmpty(fo)
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
 	schema.Type = "object"
-	schema.PropertyNames = mapKeySchema(field.MapKey().Kind())
+	schema.PropertyNames = mapKeySchema(field.MapKey().Kind(), isLenient(pluginOptions))
 	schema.AdditionalProperties = buildFromValue(pluginOptions, field.MapValue(), fo)
 	return schema
 }
 
 // mapKeySchema returns the schema of the keys of a map: ProtoJSON writes
 // integer and bool keys as strings.
-func mapKeySchema(kind protoreflect.Kind) *jsonschema.Schema {
+func mapKeySchema(kind protoreflect.Kind, lenient bool) *jsonschema.Schema {
 	switch {
 	case kind == protoreflect.BoolKind:
 		return &jsonschema.Schema{Enum: []any{"true", "false"}}
+	case lenient && isUnsignedKind(kind):
+		// Parsers read keys with strconv.ParseUint and ParseInt, which
+		// allow leading zeros and, for signed keys, a plus sign.
+		return &jsonschema.Schema{Pattern: "^[0-9]+$"}
+	case lenient && isIntKind(kind):
+		return &jsonschema.Schema{Pattern: "^[+-]?[0-9]+$"}
 	case isIntKind(kind):
 		return &jsonschema.Schema{Pattern: integerPattern(kind)}
 	}
@@ -248,12 +265,40 @@ func integerPattern(kind protoreflect.Kind) string {
 	return "^-?(0|[1-9][0-9]*)$"
 }
 
+// lenientIntegerPattern matches the integer strings parsers accept: JSON
+// numbers with an integral value, like "-5", "1.0" or "1e2". Unsigned
+// integers allow only "-0" with a sign.
+func lenientIntegerPattern(kind protoreflect.Kind) string {
+	if isUnsignedKind(kind) {
+		return `^(-?0|[1-9][0-9]*)(\.0+)?([eE]\+?[0-9]+)?$`
+	}
+	return `^-?(0|[1-9][0-9]*)(\.0+)?([eE]\+?[0-9]+)?$`
+}
+
+// lenientInteger is the schema of an integer of kind written as a number,
+// within the range of 32-bit kinds and not negative for unsigned ones. The
+// limits of 64-bit kinds are not exact in a JSON number.
+func lenientInteger(kind protoreflect.Kind) *jsonschema.Schema {
+	schema := &jsonschema.Schema{Type: "integer"}
+	switch kind {
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind, protoreflect.EnumKind:
+		schema.Minimum, schema.Maximum = new(float64(math.MinInt32)), new(float64(math.MaxInt32))
+	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind:
+		schema.Minimum, schema.Maximum = new(0.0), new(float64(math.MaxUint32))
+	case protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+		schema.Minimum = new(0.0)
+	}
+	return schema
+}
+
 // acceptsNull reports whether the schema of field already accepts null:
 // ProtoJSON writes a NullValue and a null Value as null.
 func acceptsNull(field protoreflect.FieldDescriptor) bool {
-	if field.IsList() || field.IsMap() {
-		return false
-	}
+	return !field.IsList() && !field.IsMap() && isNullableKind(field)
+}
+
+// isNullableKind reports whether field holds a NullValue or a Value.
+func isNullableKind(field protoreflect.FieldDescriptor) bool {
 	switch {
 	case field.Kind() == protoreflect.EnumKind:
 		return field.Enum().FullName() == "google.protobuf.NullValue"
@@ -278,11 +323,26 @@ func buildFromValue(pluginOptions *proto.PluginOptions, field protoreflect.Field
 	case kind == protoreflect.EnumKind:
 		if field.Enum().FullName() == "google.protobuf.NullValue" {
 			schema.Type = "null"
+			if isLenient(pluginOptions) {
+				// Parsers also accept the value's name and any number.
+				return &jsonschema.Schema{AnyOf: []*jsonschema.Schema{
+					schema,
+					{Type: "string", Enum: []any{"NULL_VALUE"}},
+					lenientInteger(protoreflect.EnumKind),
+				}}
+			}
 		} else {
 			schema.Ref = toRefId(field.Enum())
 		}
 	case isIntKind(kind):
-		if pluginOptions.GetRespectProtojsonInt64() && isInt64(kind) {
+		if isLenient(pluginOptions) && fo.GetNumeric() == nil {
+			// Parsers accept integers as numbers and as strings.
+			return &jsonschema.Schema{AnyOf: []*jsonschema.Schema{
+				lenientInteger(kind),
+				{Type: "string", Pattern: lenientIntegerPattern(kind)},
+			}}
+		}
+		if pluginOptions.GetRespectProtojsonInt64() && isInt64(kind) && !isLenient(pluginOptions) {
 			// Not format "int64": no draft defines it, and validators such
 			// as Ajv refuse unknown formats.
 			schema.Type = "string"
@@ -294,16 +354,18 @@ func buildFromValue(pluginOptions *proto.PluginOptions, field protoreflect.Field
 	case isNumericKind(kind):
 		schema.Type = "number"
 		if fo.GetNumeric() != nil {
-			// Numeric keywords bound the value, which rules out NaN and
-			// the infinities.
+			// Numeric keywords bound the value, which rules out NaN, the
+			// infinities and numbers in strings.
 			fillSchemaByNumericKeywords(schema, fo.GetNumeric())
 			break
 		}
 		// ProtoJSON writes NaN and the infinities as strings.
-		return &jsonschema.Schema{AnyOf: []*jsonschema.Schema{
-			schema,
-			{Type: "string", Enum: []any{"NaN", "Infinity", "-Infinity"}},
-		}}
+		anyOf := []*jsonschema.Schema{schema, {Type: "string", Enum: []any{"NaN", "Infinity", "-Infinity"}}}
+		if isLenient(pluginOptions) {
+			// Parsers also accept numbers in strings.
+			anyOf = append(anyOf, &jsonschema.Schema{Type: "string", Pattern: numberPattern})
+		}
+		return &jsonschema.Schema{AnyOf: anyOf}
 	case kind == protoreflect.BoolKind:
 		schema.Type = "boolean"
 	case kind == protoreflect.StringKind:
@@ -311,11 +373,31 @@ func buildFromValue(pluginOptions *proto.PluginOptions, field protoreflect.Field
 		fillSchemaByStringKeywords(schema, fo.GetString_())
 	case kind == protoreflect.BytesKind:
 		schema.Type = "string"
-		// Base64 Regex Expression
-		schema.Pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+		schema.Pattern = base64Pattern
+		if isLenient(pluginOptions) {
+			schema.Pattern = lenientBase64Pattern
+		}
 		fillSchemaByStringKeywords(schema, fo.GetString_())
 	}
 	return schema
+}
+
+const (
+	// base64Pattern matches standard base64 with padding, as ProtoJSON
+	// writes bytes.
+	base64Pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+	// lenientBase64Pattern also matches the URL-safe alphabet and missing
+	// padding, which parsers accept.
+	lenientBase64Pattern = "^(?:(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}(?:==)?|[A-Za-z0-9+/]{3}=?)?" +
+		"|(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}(?:==)?|[A-Za-z0-9_-]{3}=?)?)$"
+	// numberPattern matches a JSON number.
+	numberPattern = `^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$`
+)
+
+// isLenient reports whether the schema accepts everything ProtoJSON parsers
+// accept rather than only what protobuf writes.
+func isLenient(pluginOptions *proto.PluginOptions) bool {
+	return pluginOptions.GetProtojsonMode() == proto.ProtojsonMode_Lenient
 }
 
 // buildFromWellKnownType returns the schema of a google.protobuf message
@@ -331,6 +413,11 @@ func buildFromWellKnownType(pluginOptions *proto.PluginOptions, message protoref
 		// Seconds with up to 9 fractional digits, like "1.5s"; not the
 		// ISO 8601 duration of format "duration".
 		schema := &jsonschema.Schema{Type: "string", Pattern: `^-?[0-9]+(\.[0-9]{1,9})?s$`}
+		if isLenient(pluginOptions) {
+			// Parsers also accept a plus sign and a missing integer or
+			// fraction part, like "+1s", ".5s" or "1.s".
+			schema.Pattern = `^[-+]?([0-9]+(\.[0-9]{0,9})?|\.[0-9]{1,9})s$`
+		}
 		fillSchemaByStringKeywords(schema, fo.GetString_())
 		return schema
 	case "google.protobuf.FieldMask":
@@ -356,7 +443,7 @@ func buildFromWellKnownType(pluginOptions *proto.PluginOptions, message protoref
 	return nil
 }
 
-func buildFromEnum(enum protoreflect.EnumDescriptor) (*jsonschema.Schema, error) {
+func buildFromEnum(pluginOptions *proto.PluginOptions, enum protoreflect.EnumDescriptor) (*jsonschema.Schema, error) {
 	eo := proto.GetEnumOptions(enum)
 
 	schema := &jsonschema.Schema{}
@@ -388,6 +475,20 @@ func buildFromEnum(enum protoreflect.EnumDescriptor) (*jsonschema.Schema, error)
 		if !slices.ContainsFunc(schema.Enum, func(v any) bool { return reflect.DeepEqual(v, value) }) {
 			schema.Enum = append(schema.Enum, value)
 		}
+	}
+
+	if isLenient(pluginOptions) && eo.GetMappingType() != proto.EnumOptions_MapToCustom {
+		// Parsers accept a value's name or any number.
+		var names []any
+		for enumValue := range listOf(enum.Values()) {
+			names = append(names, string(enumValue.Name()))
+		}
+		schema.Enum = nil
+		schema.AnyOf = []*jsonschema.Schema{
+			{Type: "string", Enum: names},
+			lenientInteger(protoreflect.EnumKind),
+		}
+		return schema, nil
 	}
 
 	switch eo.GetMappingType() {
