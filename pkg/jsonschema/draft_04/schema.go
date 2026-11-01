@@ -11,7 +11,7 @@ import (
 
 type Schema struct {
 	Version     string                 `json:"$schema,omitempty"`
-	ID          string                 `json:"$id,omitempty"`
+	ID          string                 `json:"id,omitempty"`
 	Ref         string                 `json:"$ref,omitempty"`
 	Definitions *orderedmap.OrderedMap `json:"definitions,omitempty"`
 
@@ -30,7 +30,6 @@ type Schema struct {
 
 	Type             string   `json:"type,omitempty"`
 	Enum             []any    `json:"enum,omitempty"`
-	Const            *any     `json:"const,omitempty"`
 	MultipleOf       *int     `json:"multipleOf,omitempty"`
 	Maximum          *float64 `json:"maximum,omitempty"`
 	ExclusiveMaximum *bool    `json:"exclusiveMaximum,omitempty"`
@@ -42,8 +41,6 @@ type Schema struct {
 	MaxItems         *int     `json:"maxItems,omitempty"`
 	MinItems         *int     `json:"minItems,omitempty"`
 	UniqueItems      *bool    `json:"uniqueItems,omitempty"`
-	MaxContains      *int     `json:"maxContains,omitempty"`
-	MinContains      *int     `json:"minContains,omitempty"`
 	MaxProperties    *int     `json:"maxProperties,omitempty"`
 	MinProperties    *int     `json:"minProperties,omitempty"`
 	Required         []string `json:"required,omitempty"`
@@ -92,7 +89,10 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 
 	dst.Type = origin.Type
 	dst.Enum = slices.Clone(origin.Enum)
-	dst.Const = utils.ClonePtr(origin.Const)
+	// Draft-04 has no const; a one-item enum says the same.
+	if origin.Const != nil && len(dst.Enum) == 0 {
+		dst.Enum = []any{*origin.Const}
+	}
 	dst.MultipleOf = utils.ClonePtr(origin.MultipleOf)
 
 	dst.Maximum = utils.ClonePtr(origin.Maximum)
@@ -112,8 +112,6 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	dst.MaxItems = utils.ClonePtr(origin.MaxItems)
 	dst.MinItems = utils.ClonePtr(origin.MinItems)
 	dst.UniqueItems = utils.ClonePtr(origin.UniqueItems)
-	dst.MaxContains = utils.ClonePtr(origin.MaxContains)
-	dst.MinContains = utils.ClonePtr(origin.MinContains)
 	dst.MaxProperties = utils.ClonePtr(origin.MaxProperties)
 	dst.MinProperties = utils.ClonePtr(origin.MinProperties)
 	dst.Required = slices.Clone(origin.Required)

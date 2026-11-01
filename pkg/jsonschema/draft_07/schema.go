@@ -12,9 +12,7 @@ import (
 type Schema struct {
 	Version     string                 `json:"$schema,omitempty"`
 	ID          string                 `json:"$id,omitempty"`
-	Anchor      string                 `json:"$anchor,omitempty"`
 	Ref         string                 `json:"$ref,omitempty"`
-	DynamicRef  string                 `json:"$dynamicRef,omitempty"`
 	Definitions *orderedmap.OrderedMap `json:"definitions,omitempty"`
 	Comments    string                 `json:"$comment,omitempty"`
 
@@ -51,8 +49,6 @@ type Schema struct {
 	MaxItems         *int     `json:"maxItems,omitempty"`
 	MinItems         *int     `json:"minItems,omitempty"`
 	UniqueItems      *bool    `json:"uniqueItems,omitempty"`
-	MaxContains      *int     `json:"maxContains,omitempty"`
-	MinContains      *int     `json:"minContains,omitempty"`
 	MaxProperties    *int     `json:"maxProperties,omitempty"`
 	MinProperties    *int     `json:"minProperties,omitempty"`
 	Required         []string `json:"required,omitempty"`
@@ -84,11 +80,9 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	dst := &Schema{}
 	dst.Version = origin.Version
 	dst.ID = origin.ID
-	dst.Anchor = origin.Anchor
 	if origin.Ref.String() != "" {
 		dst.Ref = "#/definitions/" + origin.Ref.String()
 	}
-	dst.DynamicRef = origin.DynamicRef
 	dst.Definitions = deepCopyMap(origin.Definitions)
 	dst.Comments = origin.Comments
 
@@ -128,8 +122,6 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	dst.MaxItems = utils.ClonePtr(origin.MaxItems)
 	dst.MinItems = utils.ClonePtr(origin.MinItems)
 	dst.UniqueItems = utils.ClonePtr(origin.UniqueItems)
-	dst.MaxContains = utils.ClonePtr(origin.MaxContains)
-	dst.MinContains = utils.ClonePtr(origin.MinContains)
 	dst.MaxProperties = utils.ClonePtr(origin.MaxProperties)
 	dst.MinProperties = utils.ClonePtr(origin.MinProperties)
 	dst.Required = slices.Clone(origin.Required)
