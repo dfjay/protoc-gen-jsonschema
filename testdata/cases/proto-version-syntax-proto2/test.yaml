@@ -1,5 +1,5 @@
-name: "proto-version-edition-2023"
-description: "It should generate schema for proto version edition 2023"
+name: "proto-version-syntax-proto2"
+description: "It should generate schema for a proto2 file"
 
 inputFiles: ["test.proto"]
 inputParameters: {}

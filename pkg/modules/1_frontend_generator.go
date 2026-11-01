@@ -8,7 +8,6 @@ import (
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
-	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -30,7 +29,7 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message protoreflect.M
 
 		propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
 		fieldSchema := &jsonschema.Schema{Ref: toRefId(field)}
-		if !pluginOptions.GetMandatoryNullable() && (inRealOneof(field) || hasOptionalKeyword(field)) || proto.GetFieldOptions(field).GetNullable() {
+		if !pluginOptions.GetMandatoryNullable() && (inRealOneof(field) || isOptionalField(field)) || proto.GetFieldOptions(field).GetNullable() {
 			fieldSchema = &jsonschema.Schema{OneOf: []*jsonschema.Schema{
 				{Type: "null"},
 				fieldSchema,
@@ -83,7 +82,7 @@ func isRequiredField(pluginOptions *proto.PluginOptions, field protoreflect.Fiel
 		// so no field is required. See https://protobuf.dev/programming-guides/json/
 		return false
 	} else {
-		return !inRealOneof(field) && !hasOptionalKeyword(field) && !field.IsList() && !field.IsMap()
+		return !inRealOneof(field) && !isOptionalField(field) && !field.IsList() && !field.IsMap()
 	}
 }
 
@@ -471,15 +470,41 @@ func isMessageKind(kind protoreflect.Kind) bool {
 	return kind == protoreflect.MessageKind || kind == protoreflect.GroupKind
 }
 
-// hasOptionalKeyword reports whether field is marked optional the way
-// protoc-gen-star did: in editions files every singular field counts, as
-// they all have the optional label. Edition support will replace this with
-// presence from the edition features.
-func hasOptionalKeyword(field protoreflect.FieldDescriptor) bool {
-	if field.ParentFile().Syntax() == protoreflect.Editions {
-		return protodesc.ToFieldDescriptorProto(field).GetLabel() == descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL
+// isOptionalField reports whether field is singular, outside a oneof and
+// may be absent: an optional field in proto2 or proto3, or a field with
+// explicit presence in an editions file. Message fields follow the
+// field_presence feature too, so an editions file migrated from proto2 or
+// proto3 keeps its schema.
+func isOptionalField(field protoreflect.FieldDescriptor) bool {
+	if field.ParentFile().Syntax() != protoreflect.Editions {
+		return field.HasOptionalKeyword()
 	}
-	return field.HasOptionalKeyword()
+	return field.Cardinality() == protoreflect.Optional && field.ContainingOneof() == nil &&
+		fieldPresence(field) == descriptorpb.FeatureSet_EXPLICIT
+}
+
+// fieldPresence resolves the field_presence feature of a field in an
+// editions file: the closest of the field, its messages and its file that
+// sets it, or EXPLICIT, the default of every edition.
+func fieldPresence(field protoreflect.FieldDescriptor) descriptorpb.FeatureSet_FieldPresence {
+	for d := protoreflect.Descriptor(field); d != nil; d = d.Parent() {
+		if p := featuresOf(d).GetFieldPresence(); p != descriptorpb.FeatureSet_FIELD_PRESENCE_UNKNOWN {
+			return p
+		}
+	}
+	return descriptorpb.FeatureSet_EXPLICIT
+}
+
+func featuresOf(d protoreflect.Descriptor) *descriptorpb.FeatureSet {
+	switch opts := d.Options().(type) {
+	case *descriptorpb.FieldOptions:
+		return opts.GetFeatures()
+	case *descriptorpb.MessageOptions:
+		return opts.GetFeatures()
+	case *descriptorpb.FileOptions:
+		return opts.GetFeatures()
+	}
+	return nil
 }
 
 // inRealOneof reports whether field is in a oneof written in the .proto

@@ -157,3 +157,12 @@ func loadTestcase(parentDir string, dir os.DirEntry) (*Testcase, error) {
 	}
 	return testcase, nil
 }
+
+// TestSupportedEditions checks what the plugin tells protoc it supports:
+// protoc refuses editions files otherwise.
+func TestSupportedEditions(t *testing.T) {
+	resp := modules.Generate(&pluginpb.CodeGeneratorRequest{}, nil, false)
+	require.NotZero(t, resp.GetSupportedFeatures()&uint64(pluginpb.CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS))
+	require.Equal(t, int32(descriptorpb.Edition_EDITION_PROTO2), resp.GetMinimumEdition())
+	require.Equal(t, int32(descriptorpb.Edition_EDITION_2024), resp.GetMaximumEdition())
+}

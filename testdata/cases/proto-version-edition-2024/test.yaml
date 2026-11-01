@@ -1,0 +1,11 @@
+name: "proto-version-edition-2024"
+description: "It should generate schema for an edition 2024 file"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: "The file is proto-version-syntax-proto3 in edition 2024, so the schema is the same except optional_nested_value: editions have no optional message fields"
