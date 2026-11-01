@@ -9,7 +9,6 @@ import (
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
 	pgs "github.com/lyft/protoc-gen-star/v2"
 	"github.com/lyft/protoc-gen-star/v2/testutils"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
@@ -122,7 +121,10 @@ func loadTestcase(parentDir string, dir os.DirEntry) (*Testcase, error) {
 
 func loadInput(t *testing.T, tc *Testcase, dirPath string, optionsImportPath string) pgs.AST {
 	loader := &testutils.Loader{ImportPaths: []string{dirPath, optionsImportPath}}
-	inputFiles := lo.Map[string, string](tc.InputFiles, func(item string, _ int) string { return filepath.Join(dirPath, item) })
+	inputFiles := make([]string, 0, len(tc.InputFiles))
+	for _, f := range tc.InputFiles {
+		inputFiles = append(inputFiles, filepath.Join(dirPath, f))
+	}
 	ast := loader.LoadProtos(t, inputFiles...)
 
 	protoFiles := map[string]pgs.File{}

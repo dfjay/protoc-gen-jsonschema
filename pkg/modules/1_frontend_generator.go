@@ -7,7 +7,6 @@ import (
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -45,15 +44,13 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 
 	// Convert Protobuf OneOfs to JSONSchema keywords
 	for _, oneOf := range message.OneOfs() {
-		propertyNames := lo.Map[pgs.Field, string](oneOf.Fields(), func(item pgs.Field, _ int) string {
-			return toPropertyName(item, pluginOptions.GetPreserveProtoFieldNames())
-		})
-		oneOfSchemas := lo.Map[string, *jsonschema.Schema](propertyNames, func(item string, _ int) *jsonschema.Schema {
-			return &jsonschema.Schema{Required: []string{item}}
-		})
+		var oneOfSchemas []*jsonschema.Schema
+		for _, field := range oneOf.Fields() {
+			propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
+			oneOfSchemas = append(oneOfSchemas, &jsonschema.Schema{Required: []string{propName}})
+		}
 
-		negativeSchema := &jsonschema.Schema{Not: &jsonschema.Schema{AnyOf: make([]*jsonschema.Schema, len(oneOfSchemas))}}
-		copy(negativeSchema.Not.AnyOf, oneOfSchemas)
+		negativeSchema := &jsonschema.Schema{Not: &jsonschema.Schema{AnyOf: slices.Clone(oneOfSchemas)}}
 
 		combinedSchemas := append(oneOfSchemas, negativeSchema)
 		schema.AllOf = append(schema.AllOf, &jsonschema.Schema{OneOf: combinedSchemas})

@@ -3,7 +3,6 @@ package modules
 import (
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
-	"github.com/dfjay/protoc-gen-jsonschema/pkg/utils"
 )
 
 func fillSchemaByObjectKeywords(pluginOptions *proto.PluginOptions, schema *jsonschema.Schema, keywords *proto.ObjectKeywords) {
@@ -15,10 +14,10 @@ func fillSchemaByObjectKeywords(pluginOptions *proto.PluginOptions, schema *json
 		return
 	}
 	if keywords.MinProperties != nil {
-		schema.MinProperties = utils.UInt32(keywords.GetMinProperties())
+		schema.MinProperties = new(int(keywords.GetMinProperties()))
 	}
 	if keywords.MaxProperties != nil {
-		schema.MaxProperties = utils.UInt32(keywords.GetMaxProperties())
+		schema.MaxProperties = new(int(keywords.GetMaxProperties()))
 	}
 }
 
@@ -41,7 +40,7 @@ func fillSchemaByNumericKeywords(schema *jsonschema.Schema, keywords *proto.Nume
 	}
 
 	if keywords.MultipleOf != nil {
-		schema.MultipleOf = utils.Int32(keywords.GetMultipleOf())
+		schema.MultipleOf = new(int(keywords.GetMultipleOf()))
 	}
 }
 
@@ -58,10 +57,10 @@ func fillSchemaByStringKeywords(schema *jsonschema.Schema, keywords *proto.Strin
 	}
 
 	if keywords.MaxLength != nil {
-		schema.MaxLength = utils.UInt32(keywords.GetMaxLength())
+		schema.MaxLength = new(int(keywords.GetMaxLength()))
 	}
 	if keywords.MinLength != nil {
-		schema.MinLength = utils.UInt32(keywords.GetMinLength())
+		schema.MinLength = new(int(keywords.GetMinLength()))
 	}
 }
 
@@ -71,10 +70,10 @@ func fillSchemaByArrayKeywords(schema *jsonschema.Schema, keywords *proto.ArrayK
 	}
 
 	if keywords.MaxItems != nil {
-		schema.MaxItems = utils.UInt32(keywords.GetMaxItems())
+		schema.MaxItems = new(int(keywords.GetMaxItems()))
 	}
 	if keywords.MinItems != nil {
-		schema.MinItems = utils.UInt32(keywords.GetMinItems())
+		schema.MinItems = new(int(keywords.GetMinItems()))
 	}
 	if keywords.UniqueItems != nil {
 		schema.UniqueItems = keywords.UniqueItems

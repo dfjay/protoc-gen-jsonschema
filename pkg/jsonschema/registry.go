@@ -33,10 +33,7 @@ func (r *Registry) DeleteSchema(id string) {
 }
 
 func (r *Registry) SortSchemas() {
-	sortedKeys := slices.Clone(r.GetKeys())
-	slices.Sort(sortedKeys)
-
-	for _, key := range sortedKeys {
+	for _, key := range slices.Sorted(slices.Values(r.GetKeys())) {
 		schema := r.GetSchema(key)
 		r.DeleteSchema(key)
 		r.AddSchema(key, schema)

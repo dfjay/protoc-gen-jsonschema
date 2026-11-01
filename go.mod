@@ -5,7 +5,6 @@ go 1.26.0
 require (
 	github.com/iancoleman/orderedmap v0.3.0
 	github.com/lyft/protoc-gen-star/v2 v2.0.4
-	github.com/samber/lo v1.53.0
 	google.golang.org/protobuf v1.36.12
 	sigs.k8s.io/yaml v1.6.0
 )

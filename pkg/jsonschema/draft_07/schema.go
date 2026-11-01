@@ -1,6 +1,9 @@
 package draft_07
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/utils"
 	"github.com/iancoleman/orderedmap"
@@ -107,24 +110,24 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	dst.PropertyNames = deepCopy(origin.PropertyNames)
 
 	dst.Type = origin.Type
-	dst.Enum = utils.CopyAnyArray(origin.Enum)
-	dst.Const = utils.CopyAnyP(origin.Const)
-	dst.MultipleOf = utils.CopyIntP(origin.MultipleOf)
-	dst.Maximum = utils.CopyFloat64P(origin.Maximum)
-	dst.ExclusiveMaximum = utils.CopyFloat64P(origin.ExclusiveMaximum)
-	dst.Minimum = utils.CopyFloat64P(origin.Minimum)
-	dst.ExclusiveMinimum = utils.CopyFloat64P(origin.ExclusiveMinimum)
-	dst.MaxLength = utils.CopyIntP(origin.MaxLength)
-	dst.MinLength = utils.CopyIntP(origin.MinLength)
+	dst.Enum = slices.Clone(origin.Enum)
+	dst.Const = utils.ClonePtr(origin.Const)
+	dst.MultipleOf = utils.ClonePtr(origin.MultipleOf)
+	dst.Maximum = utils.ClonePtr(origin.Maximum)
+	dst.ExclusiveMaximum = utils.ClonePtr(origin.ExclusiveMaximum)
+	dst.Minimum = utils.ClonePtr(origin.Minimum)
+	dst.ExclusiveMinimum = utils.ClonePtr(origin.ExclusiveMinimum)
+	dst.MaxLength = utils.ClonePtr(origin.MaxLength)
+	dst.MinLength = utils.ClonePtr(origin.MinLength)
 	dst.Pattern = origin.Pattern
-	dst.MaxItems = utils.CopyIntP(origin.MaxItems)
-	dst.MinItems = utils.CopyIntP(origin.MinItems)
-	dst.UniqueItems = utils.CopyBoolP(origin.UniqueItems)
-	dst.MaxContains = utils.CopyIntP(origin.MaxContains)
-	dst.MinContains = utils.CopyIntP(origin.MinContains)
-	dst.MaxProperties = utils.CopyIntP(origin.MaxProperties)
-	dst.MinProperties = utils.CopyIntP(origin.MinProperties)
-	dst.Required = utils.CopyStringArray(origin.Required)
+	dst.MaxItems = utils.ClonePtr(origin.MaxItems)
+	dst.MinItems = utils.ClonePtr(origin.MinItems)
+	dst.UniqueItems = utils.ClonePtr(origin.UniqueItems)
+	dst.MaxContains = utils.ClonePtr(origin.MaxContains)
+	dst.MinContains = utils.ClonePtr(origin.MinContains)
+	dst.MaxProperties = utils.ClonePtr(origin.MaxProperties)
+	dst.MinProperties = utils.ClonePtr(origin.MinProperties)
+	dst.Required = slices.Clone(origin.Required)
 
 	dst.Format = origin.Format
 
@@ -133,11 +136,11 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 
 	dst.Title = origin.Title
 	dst.Description = origin.Description
-	dst.Default = utils.CopyAnyP(origin.Default)
-	dst.ReadOnly = utils.CopyBoolP(origin.ReadOnly)
-	dst.WriteOnly = utils.CopyBoolP(origin.WriteOnly)
+	dst.Default = utils.ClonePtr(origin.Default)
+	dst.ReadOnly = utils.ClonePtr(origin.ReadOnly)
+	dst.WriteOnly = utils.ClonePtr(origin.WriteOnly)
 
-	dst.Extras = utils.CopyMapAny(origin.Extras)
+	dst.Extras = maps.Clone(origin.Extras)
 
 	// Do nothing if IsBooleanSchema is true. Cause empty schema means true
 	// If IsBooleanSchema is false, { not: {} } is generated

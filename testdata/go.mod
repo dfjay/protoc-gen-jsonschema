@@ -5,7 +5,6 @@ go 1.26.0
 require (
 	github.com/dfjay/protoc-gen-jsonschema v0.0.0
 	github.com/lyft/protoc-gen-star/v2 v2.0.4
-	github.com/samber/lo v1.53.0
 	github.com/stretchr/testify v1.12.1
 	k8s.io/apimachinery v0.37.2
 )
