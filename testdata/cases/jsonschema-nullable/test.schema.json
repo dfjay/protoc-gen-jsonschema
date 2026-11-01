@@ -29,7 +29,8 @@
     },
     ".tests.MyMessage.val2": {
       "items": {
-        "type": "integer"
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "array"
     },
@@ -69,19 +70,14 @@
           "$ref": "#/$defs/.tests.Values.ints"
         }
       },
-      "type": "object",
-      "required": [
-        "messages",
-        "enums",
-        "strings",
-        "ints"
-      ]
+      "type": "object"
     },
     ".tests.Values.enums": {
       "$ref": "#/$defs/.tests.MyEnum"
     },
     ".tests.Values.ints": {
-      "type": "integer"
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$"
     },
     ".tests.Values.messages": {
       "$ref": "#/$defs/.tests.MyMessage"

@@ -35,11 +35,12 @@ func GetPluginOptions(params Parameters) (*PluginOptions, error) {
 	options.PrettyJsonOutput = parseBool("pretty_json_output", true)
 	options.MandatoryNullable = parseBool("mandatory_nullable", false)
 	options.PreserveProtoFieldNames = parseBool("preserve_proto_field_names", false)
-	options.RespectProtojsonPresence = parseBool("respect_protojson_presence", false)
+	options.RespectProtojsonPresence = parseBool("respect_protojson_presence", true)
+	options.RespectFieldBehavior = parseBool("respect_field_behavior", true)
 	if _, ok := params["int64_as_string"]; ok {
-		options.RespectProtojsonInt64 = parseBool("int64_as_string", false)
+		options.RespectProtojsonInt64 = parseBool("int64_as_string", true)
 	} else {
-		options.RespectProtojsonInt64 = parseBool("respect_protojson_int64", false)
+		options.RespectProtojsonInt64 = parseBool("respect_protojson_int64", true)
 	}
 
 	options.AdditionalProperties = PluginAdditionalProperties_DoNothing

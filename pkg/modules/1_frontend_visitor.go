@@ -6,6 +6,7 @@ import (
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
 // FrontendVisitor generates the intermediate schemas of every message,
@@ -13,13 +14,19 @@ import (
 type FrontendVisitor struct {
 	registry      *jsonschema.Registry
 	pluginOptions *proto.PluginOptions
+	behaviors     fieldBehaviors
 }
 
-func NewVisitor(pluginOptions *proto.PluginOptions) *FrontendVisitor {
-	return &FrontendVisitor{
+// NewVisitor returns a visitor of the files in files.
+func NewVisitor(pluginOptions *proto.PluginOptions, files *protoregistry.Files) *FrontendVisitor {
+	v := &FrontendVisitor{
 		registry:      jsonschema.NewRegistry(),
 		pluginOptions: pluginOptions,
 	}
+	if pluginOptions.GetRespectFieldBehavior() {
+		v.behaviors = newFieldBehaviors(files)
+	}
+	return v
 }
 
 func (v *FrontendVisitor) VisitFile(file protoreflect.FileDescriptor) error {
@@ -58,9 +65,9 @@ func (v *FrontendVisitor) visitMessage(message protoreflect.MessageDescriptor) e
 
 	var schema *jsonschema.Schema
 	if isWellKnownMessage(message) {
-		schema = buildFromWellKnownMessage(v.pluginOptions, message, mo)
+		schema = buildFromWellKnownMessage(v.pluginOptions, v.behaviors, message, mo)
 	} else {
-		schema = buildFromMessage(v.pluginOptions, message, mo)
+		schema = buildFromMessage(v.pluginOptions, v.behaviors, message, mo)
 	}
 	v.registry.AddSchema(fullyQualifiedName(message), schema)
 
@@ -89,17 +96,22 @@ func (v *FrontendVisitor) visitField(field protoreflect.FieldDescriptor) error {
 	}
 
 	var schema *jsonschema.Schema
-	switch {
-	case isWellKnownField(field):
-		schema = buildFromWellKnownField(field, fo)
-	case field.IsMap():
+	if field.IsMap() {
 		schema = buildFromMapField(v.pluginOptions, field, fo)
-	case isMessageKind(field.Kind()):
-		schema = buildFromMessageField(field, fo)
-	case isScalarType(field):
-		schema = buildFromScalaField(v.pluginOptions, field, fo)
-	default:
-		return fmt.Errorf("%s: unsupported field type %s", fullyQualifiedName(field), field.Kind())
+	} else {
+		schema = buildFromField(v.pluginOptions, field, fo)
+	}
+	readOnly, writeOnly := v.behaviors.has(field, "OUTPUT_ONLY"), v.behaviors.has(field, "INPUT_ONLY")
+	if (readOnly || writeOnly) && schema.Ref != "" {
+		// Draft-07 ignores the keywords beside $ref.
+		schema.AllOf = append(schema.AllOf, &jsonschema.Schema{Ref: schema.Ref})
+		schema.Ref = ""
+	}
+	if readOnly {
+		schema.ReadOnly = new(true)
+	}
+	if writeOnly {
+		schema.WriteOnly = new(true)
 	}
 	v.registry.AddSchema(fullyQualifiedName(field), schema)
 	return nil

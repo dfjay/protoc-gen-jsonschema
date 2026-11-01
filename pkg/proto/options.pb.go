@@ -257,7 +257,7 @@ type PluginOptions struct {
 	// So, if you want to use int64 field in JS, you should use string type.
 	// References:
 	//
-	// default: false
+	// default: true
 	// example:
 	// - --jsonschema_opt=int64_as_string=true
 	// - --jsonschema_opt=int64_as_string=false
@@ -289,28 +289,41 @@ type PluginOptions struct {
 	AdditionalProperties PluginAdditionalProperties `protobuf:"varint,16,opt,name=additional_properties,json=additionalProperties,proto3,enum=dfjay.jsonschema.PluginAdditionalProperties" json:"additional_properties,omitempty"`
 	// *
 	// respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message
-	// with any field absent. If set to true, the plugin does not add fields to `required` on
-	// its own; only fields with the `required` field option set to true are required.
-	// If set to false, every field that is not optional, repeated, a map or a oneof member
-	// is required.
+	// with any field absent. If set to true, the plugin adds to `required` only fields that
+	// must be present anyway: fields with the `required` field option set to true, proto2
+	// `required` and editions `LEGACY_REQUIRED` fields, and fields with the REQUIRED
+	// `google.api.field_behavior`. If set to false, every field that is not optional, repeated,
+	// a map or a oneof member is required as well.
 	//
-	// default: false
+	// default: true
 	// example:
 	// - --jsonschema_opt=respect_protojson_presence=true
 	// - --jsonschema_opt=respect_protojson_presence=false
 	RespectProtojsonPresence bool `protobuf:"varint,17,opt,name=respect_protojson_presence,json=respectProtojsonPresence,proto3" json:"respect_protojson_presence,omitempty"`
 	// *
-	// This options is used to determine if the plugin should respect the int64 fields
-	// in the ProtoJSON format. If set to true, int64 fields will be treated as strings
-	// in the output schema, otherwise they will be treated as numbers.
+	// respect_protojson_int64 writes 64-bit integer fields (int64, uint64, sint64, fixed64,
+	// sfixed64 and their wrappers) as strings, as ProtoJSON does. If set to false, they are
+	// integers, for JSON readers that parse large numbers themselves; JavaScript numbers lose
+	// precision above 2^53.
 	//
-	// default: false
+	// default: true
 	// example:
 	// - --jsonschema_opt=respect_protojson_int64=true
 	// - --jsonschema_opt=respect_protojson_int64=false
 	RespectProtojsonInt64 bool `protobuf:"varint,18,opt,name=respect_protojson_int64,json=respectProtojsonInt64,proto3" json:"respect_protojson_int64,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// *
+	// respect_field_behavior applies the `google.api.field_behavior` field option
+	// (google/api/field_behavior.proto): a REQUIRED field is required, an OUTPUT_ONLY field is
+	// `readOnly` and an INPUT_ONLY field is `writeOnly`. `readOnly` and `writeOnly` need
+	// draft-07 or later. The `required` field option takes precedence over REQUIRED.
+	//
+	// default: true
+	// example:
+	// - --jsonschema_opt=respect_field_behavior=true
+	// - --jsonschema_opt=respect_field_behavior=false
+	RespectFieldBehavior bool `protobuf:"varint,19,opt,name=respect_field_behavior,json=respectFieldBehavior,proto3" json:"respect_field_behavior,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *PluginOptions) Reset() {
@@ -416,6 +429,13 @@ func (x *PluginOptions) GetRespectProtojsonPresence() bool {
 func (x *PluginOptions) GetRespectProtojsonInt64() bool {
 	if x != nil {
 		return x.RespectProtojsonInt64
+	}
+	return false
+}
+
+func (x *PluginOptions) GetRespectFieldBehavior() bool {
+	if x != nil {
+		return x.RespectFieldBehavior
 	}
 	return false
 }
@@ -1190,7 +1210,7 @@ var File_dfjay_jsonschema_options_proto protoreflect.FileDescriptor
 
 const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\n" +
-	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\"\xe1\x04\n" +
+	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\"\x97\x05\n" +
 	"\rPluginOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12,\n" +
@@ -1203,7 +1223,8 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\x1apreserve_proto_field_names\x18\x0f \x01(\bR\x17preserveProtoFieldNames\x12a\n" +
 	"\x15additional_properties\x18\x10 \x01(\x0e2,.dfjay.jsonschema.PluginAdditionalPropertiesR\x14additionalProperties\x12<\n" +
 	"\x1arespect_protojson_presence\x18\x11 \x01(\bR\x18respectProtojsonPresence\x126\n" +
-	"\x17respect_protojson_int64\x18\x12 \x01(\bR\x15respectProtojsonInt64\"\x9f\x01\n" +
+	"\x17respect_protojson_int64\x18\x12 \x01(\bR\x15respectProtojsonInt64\x124\n" +
+	"\x16respect_field_behavior\x18\x13 \x01(\bR\x14respectFieldBehavior\"\x9f\x01\n" +
 	"\vFileOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12\x14\n" +

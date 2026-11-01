@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Values": {
+      "properties": {
+        "int64Value": {
+          "$ref": "#/$defs/.tests.Values.int64_value"
+        },
+        "uint64Values": {
+          "$ref": "#/$defs/.tests.Values.uint64_values"
+        },
+        "sfixed64Map": {
+          "$ref": "#/$defs/.tests.Values.sfixed64_map"
+        },
+        "int64Wrapper": {
+          "$ref": "#/$defs/.tests.Values.int64_wrapper"
+        },
+        "int32Value": {
+          "$ref": "#/$defs/.tests.Values.int32_value"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.int32_value": {
+      "type": "integer"
+    },
+    ".tests.Values.int64_value": {
+      "type": "integer"
+    },
+    ".tests.Values.int64_wrapper": {
+      "type": "integer"
+    },
+    ".tests.Values.sfixed64_map": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "type": "object"
+    },
+    ".tests.Values.uint64_values": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    }
+  },
+  "type": "object"
+}

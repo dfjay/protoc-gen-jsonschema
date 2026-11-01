@@ -17,13 +17,7 @@
           "$ref": "#/$defs/.tests.Values.arbitrary_value"
         }
       },
-      "type": "object",
-      "required": [
-        "foo_bar_baz",
-        "implicit_camel_case",
-        "explicit_snake_case",
-        "arbitrary_value"
-      ]
+      "type": "object"
     },
     ".tests.Values.arbitrary_value": {
       "type": "string"

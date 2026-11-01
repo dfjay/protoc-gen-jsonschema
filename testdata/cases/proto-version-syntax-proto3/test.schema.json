@@ -17,10 +17,7 @@
           "$ref": "#/$defs/.tests.Nested.value"
         }
       },
-      "type": "object",
-      "required": [
-        "value"
-      ]
+      "type": "object"
     },
     ".tests.Nested.value": {
       "type": "string"
@@ -90,13 +87,7 @@
           ]
         }
       },
-      "type": "object",
-      "required": [
-        "stringValue2",
-        "int32Value2",
-        "nestedValue",
-        "enumValue"
-      ]
+      "type": "object"
     },
     ".tests.Values.enum_value": {
       "$ref": "#/$defs/.tests.Enum"
@@ -108,7 +99,8 @@
       "type": "integer"
     },
     ".tests.Values.int64_value": {
-      "type": "integer"
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$"
     },
     ".tests.Values.nested_value": {
       "$ref": "#/$defs/.tests.Nested"

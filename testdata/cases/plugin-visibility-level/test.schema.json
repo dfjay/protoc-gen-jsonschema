@@ -18,10 +18,7 @@
           ]
         }
       },
-      "type": "object",
-      "required": [
-        "visible"
-      ]
+      "type": "object"
     },
     ".tests.Root.visible": {
       "type": "string"

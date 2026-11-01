@@ -29,17 +29,7 @@
           "$ref": "#/$defs/.tests.Values.int328"
         }
       },
-      "type": "object",
-      "required": [
-        "int321",
-        "int322",
-        "int323",
-        "int324",
-        "int325",
-        "int326",
-        "int327",
-        "int328"
-      ]
+      "type": "object"
     },
     ".tests.Values.int321": {
       "type": "integer",

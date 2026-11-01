@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+import "google/api/field_behavior.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+
+  string display_name = 2 [(google.api.field_behavior) = REQUIRED];
+
+  string create_time = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  string password = 4 [(google.api.field_behavior) = INPUT_ONLY];
+
+  // Two behaviors on one field.
+  string parent = 5 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // The required field option takes precedence over field_behavior.
+  string etag = 6 [
+    (google.api.field_behavior) = REQUIRED,
+    (dfjay.jsonschema.field) = {required: false}
+  ];
+
+  repeated string tags = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Draft-07 ignores keywords beside $ref, so readOnly goes beside an allOf.
+  Nested nested = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  oneof kind {
+    // field_behavior does not make a oneof member required.
+    string a = 8 [(google.api.field_behavior) = REQUIRED];
+    string b = 9;
+  }
+}
+
+message Nested {
+  string value = 1;
+}

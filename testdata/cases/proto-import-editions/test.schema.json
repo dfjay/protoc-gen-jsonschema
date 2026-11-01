@@ -8,10 +8,7 @@
           "$ref": "#/$defs/.tests.Values.outer"
         }
       },
-      "type": "object",
-      "required": [
-        "outer"
-      ]
+      "type": "object"
     },
     ".tests.Values.outer": {
       "$ref": "#/$defs/.tests.editions.Outer"

@@ -85,7 +85,7 @@ message PluginOptions {
     So, if you want to use int64 field in JS, you should use string type.
     References:
 
-    default: false
+    default: true
     example:
       - --jsonschema_opt=int64_as_string=true
       - --jsonschema_opt=int64_as_string=false
@@ -123,12 +123,13 @@ message PluginOptions {
 
   /**
     respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message
-    with any field absent. If set to true, the plugin does not add fields to `required` on
-    its own; only fields with the `required` field option set to true are required.
-    If set to false, every field that is not optional, repeated, a map or a oneof member
-    is required.
+    with any field absent. If set to true, the plugin adds to `required` only fields that
+    must be present anyway: fields with the `required` field option set to true, proto2
+    `required` and editions `LEGACY_REQUIRED` fields, and fields with the REQUIRED
+    `google.api.field_behavior`. If set to false, every field that is not optional, repeated,
+    a map or a oneof member is required as well.
 
-    default: false
+    default: true
     example:
       - --jsonschema_opt=respect_protojson_presence=true
       - --jsonschema_opt=respect_protojson_presence=false
@@ -136,16 +137,30 @@ message PluginOptions {
   bool respect_protojson_presence = 17;
 
   /**
-    This options is used to determine if the plugin should respect the int64 fields
-    in the ProtoJSON format. If set to true, int64 fields will be treated as strings
-    in the output schema, otherwise they will be treated as numbers.
+    respect_protojson_int64 writes 64-bit integer fields (int64, uint64, sint64, fixed64,
+    sfixed64 and their wrappers) as strings, as ProtoJSON does. If set to false, they are
+    integers, for JSON readers that parse large numbers themselves; JavaScript numbers lose
+    precision above 2^53.
 
-    default: false
+    default: true
     example:
       - --jsonschema_opt=respect_protojson_int64=true
       - --jsonschema_opt=respect_protojson_int64=false
    */
   bool respect_protojson_int64 = 18;
+
+  /**
+    respect_field_behavior applies the `google.api.field_behavior` field option
+    (google/api/field_behavior.proto): a REQUIRED field is required, an OUTPUT_ONLY field is
+    `readOnly` and an INPUT_ONLY field is `writeOnly`. `readOnly` and `writeOnly` need
+    draft-07 or later. The `required` field option takes precedence over REQUIRED.
+
+    default: true
+    example:
+      - --jsonschema_opt=respect_field_behavior=true
+      - --jsonschema_opt=respect_field_behavior=false
+   */
+  bool respect_field_behavior = 19;
 }
 
 enum PluginAdditionalProperties {

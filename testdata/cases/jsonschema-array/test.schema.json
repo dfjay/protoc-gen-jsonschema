@@ -29,7 +29,8 @@
     },
     ".tests.MyMessage.val2": {
       "items": {
-        "type": "integer"
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$"
       },
       "type": "array"
     },
@@ -80,7 +81,19 @@
     },
     ".tests.Values.optioned1": {
       "items": {
-        "type": "number"
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ]
       },
       "type": "array",
       "maxItems": 3,
@@ -88,7 +101,19 @@
     },
     ".tests.Values.optioned2": {
       "items": {
-        "type": "number"
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ]
       },
       "type": "array",
       "maxItems": 3,
@@ -97,7 +122,19 @@
     },
     ".tests.Values.optioned3": {
       "items": {
-        "type": "number"
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ]
       },
       "type": "array",
       "maxItems": 3,
@@ -112,7 +149,8 @@
     },
     ".tests.Values.val2": {
       "items": {
-        "type": "integer",
+        "type": "string",
+        "pattern": "^-?(0|[1-9][0-9]*)$",
         "title": "My Title",
         "description": "My Description"
       },

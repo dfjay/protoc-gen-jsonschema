@@ -26,15 +26,7 @@
           "$ref": "#/$defs/.schema.FirstForm.v3"
         }
       },
-      "type": "object",
-      "required": [
-        "name",
-        "secondMessage",
-        "myEnum",
-        "v1",
-        "v2",
-        "v3"
-      ]
+      "type": "object"
     },
     ".schema.FirstForm.my_enum": {
       "$ref": "#/$defs/.schema.MyEnum"
@@ -58,7 +50,19 @@
       "type": "integer"
     },
     ".schema.FirstForm.v3": {
-      "type": "number"
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
     },
     ".schema.MyEnum": {
       "type": "string",
@@ -78,11 +82,7 @@
           "$ref": "#/$defs/.schema.SecondMessage.b"
         }
       },
-      "type": "object",
-      "required": [
-        "a",
-        "b"
-      ]
+      "type": "object"
     },
     ".schema.SecondMessage.a": {
       "type": "string"

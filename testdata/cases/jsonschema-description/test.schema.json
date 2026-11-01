@@ -23,11 +23,6 @@
         }
       },
       "type": "object",
-      "required": [
-        "default",
-        "inlineEnum",
-        "str"
-      ],
       "description": "1. Leading Comment of Values\n 2. Trailing Comment of Values"
     },
     ".tests.Values.InlineEnum": {

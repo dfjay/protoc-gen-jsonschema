@@ -1,0 +1,11 @@
+name: "jsonschema-field-behavior"
+description: "google.api.field_behavior sets required, readOnly and writeOnly"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: "REQUIRED fields outside a oneof are required unless the required field option says otherwise; OUTPUT_ONLY fields are readOnly; INPUT_ONLY fields are writeOnly"

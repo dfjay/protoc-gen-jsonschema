@@ -20,17 +20,11 @@
           "$ref": "#/definitions/.tests.Values.tags"
         }
       },
-      "type": "object",
-      "required": [
-        "string1",
-        "string2",
-        "string3",
-        "int64"
-      ]
+      "type": "object"
     },
     ".tests.Values.int64": {
-      "type": "integer",
-      "exclusiveMaximum": 10
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$"
     },
     ".tests.Values.string1": {
       "type": "string",

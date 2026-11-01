@@ -20,18 +20,11 @@
           "$ref": "#/definitions/.tests.Values.tags"
         }
       },
-      "type": "object",
-      "required": [
-        "string1",
-        "string2",
-        "string3",
-        "int64"
-      ]
+      "type": "object"
     },
     ".tests.Values.int64": {
-      "type": "integer",
-      "maximum": 10,
-      "exclusiveMaximum": true,
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$",
       "description": "Exclusive maximum should convert to maximum: 10 and exclusive_maximum: true"
     },
     ".tests.Values.string1": {

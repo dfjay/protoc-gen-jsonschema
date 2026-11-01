@@ -18,7 +18,8 @@ $defs:
     type: array
   .tests.MyMessage.val2:
     items:
-      type: integer
+      pattern: ^-?(0|[1-9][0-9]*)$
+      type: string
     type: array
   .tests.Values:
     properties:
@@ -49,20 +50,38 @@ $defs:
     type: array
   .tests.Values.optioned1:
     items:
-      type: number
+      anyOf:
+      - type: number
+      - enum:
+        - NaN
+        - Infinity
+        - -Infinity
+        type: string
     maxItems: 3
     minItems: 1
     type: array
   .tests.Values.optioned2:
     items:
-      type: number
+      anyOf:
+      - type: number
+      - enum:
+        - NaN
+        - Infinity
+        - -Infinity
+        type: string
     maxItems: 3
     minItems: 1
     type: array
     uniqueItems: true
   .tests.Values.optioned3:
     items:
-      type: number
+      anyOf:
+      - type: number
+      - enum:
+        - NaN
+        - Infinity
+        - -Infinity
+        type: string
     maxItems: 3
     minItems: 1
     type: array
@@ -75,8 +94,9 @@ $defs:
     description: My Description
     items:
       description: My Description
+      pattern: ^-?(0|[1-9][0-9]*)$
       title: My Title
-      type: integer
+      type: string
     title: My Title
     type: array
 $ref: '#/$defs/.tests.Values'

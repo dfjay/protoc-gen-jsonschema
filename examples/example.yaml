@@ -15,13 +15,6 @@ $defs:
         $ref: '#/$defs/.schema.FirstForm.v2'
       v3:
         $ref: '#/$defs/.schema.FirstForm.v3'
-    required:
-    - name
-    - secondMessage
-    - myEnum
-    - v1
-    - v2
-    - v3
     type: object
   .schema.FirstForm.my_enum:
     $ref: '#/$defs/.schema.MyEnum'
@@ -38,7 +31,13 @@ $defs:
   .schema.FirstForm.v2:
     type: integer
   .schema.FirstForm.v3:
-    type: number
+    anyOf:
+    - type: number
+    - enum:
+      - NaN
+      - Infinity
+      - -Infinity
+      type: string
   .schema.MyEnum:
     enum:
     - ME_FOO
@@ -52,9 +51,6 @@ $defs:
         $ref: '#/$defs/.schema.SecondMessage.a'
       b:
         $ref: '#/$defs/.schema.SecondMessage.b'
-    required:
-    - a
-    - b
     type: object
   .schema.SecondMessage.a:
     type: string
