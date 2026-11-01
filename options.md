@@ -94,7 +94,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| visibility_level | [uint32](#uint32) |  | WIP: visibility_level is used to determine which message should be generated. Currently not work. |
+| visibility_level | [uint32](#uint32) |  | Field visibility level. The field is omitted when this value is below the visibility_level plugin option. default: 0 |
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 | nullable | [bool](#bool) |  |  |
@@ -119,8 +119,8 @@ default: not set |
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| visibility_level | [uint32](#uint32) |  | WIP: visibility_level is used to determine which message should be generated. Currently not work. |
-| entrypoint_message | [string](#string) |  | entrypoint_message names the message of this file that the schema describes. It takes precedence over the entrypoint_message plugin option. default: the entrypoint_message plugin option |
+| visibility_level | [uint32](#uint32) |  | Reserved for file-level visibility configuration; currently unused. |
+| entrypoint_message | [string](#string) |  | Simple name of the top-level message in this file that the schema describes. It takes precedence over the entrypoint_message plugin option. default: the entrypoint_message plugin option |
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 
@@ -137,7 +137,7 @@ default: not set |
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| visibility_level | [uint32](#uint32) |  | WIP: visibility_level is used to determine which message should be generated. Currently not work. |
+| visibility_level | [uint32](#uint32) |  | Message visibility level. The message is omitted when this value is below the visibility_level plugin option. default: 0 |
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 | object | [ObjectKeywords](#dfjay-jsonschema-ObjectKeywords) |  |  |
@@ -186,49 +186,46 @@ default: not set |
 <a name="dfjay-jsonschema-PluginOptions"></a>
 
 ### PluginOptions
-Not extendable, just define structure
-Plugin wide options
+Command-line plugin options. Defaults are applied by GetPluginOptions.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| visibility_level | [uint32](#uint32) |  | WIP: visibility_level is used to determine which message should be generated. Currently not work. |
-| entrypoint_message | [string](#string) |  | entrypoint_message names the message the schema describes. It is required: a file whose entrypoint message is not set, or not defined in that file, produces no schema. The file option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
+| visibility_level | [uint32](#uint32) |  | Minimum visibility level for messages and fields. Descriptors with a lower annotated level are omitted. A visible reference to a hidden type is an error. default: 0 |
+| entrypoint_message | [string](#string) |  | entrypoint_message is the simple name of a top-level message in the input file. It is required: a file whose entrypoint message is not set, or not defined in that file, produces no schema. The file option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 
 default: none example: - --jsonschema_opt=entrypoint_message=MyMessage |
-| output_file_suffix | [string](#string) |  | output_file_suffix is used to determine output file name suffix. Values should end with &#39;.json&#39; or &#39;.yaml&#39; or &#39;.yml&#39;.
+| output_file_suffix | [string](#string) |  | Output filename suffix. Must end with &#39;.json&#39; or &#39;.yaml&#39; or &#39;.yml&#39;.
 
 default: .schema.json example: - --jsonschema_opt=output_file_suffix=.schema.json - --jsonschema_opt=output_file_suffix=.schema.yaml |
-| pretty_json_output | [bool](#bool) |  | pretty_json_output is used to determine output json should be pretty printed. This option is only used when output_file_suffix is &#39;.json&#39;.
+| pretty_json_output | [bool](#bool) |  | Pretty-print JSON output. Applies to any suffix ending in &#39;.json&#39;; ignored for YAML output.
 
 default: true example: - --jsonschema_opt=pretty_json_output=true - --jsonschema_opt=pretty_json_output=false |
 | draft | [Draft](#dfjay-jsonschema-Draft) |  | draft is used to determine which draft version should be used. The value should be one of Draft04, Draft06, Draft07, Draft201909, Draft202012.
 
 default: Draft202012 example: - --jsonschema_opt=draft=Draft202012 |
-| mandatory_nullable | [bool](#bool) |  | mandatory_nullable determines whether this plugin should treat optional field as nullable. Many programming languages do not differentiate between undefined and null. However, scripting languages like JavaScript and TypeScript can distinguish between them. By default, optional field is treated as nullable and undefined.
+| mandatory_nullable | [bool](#bool) |  | Disable automatic nullability for optional fields and oneof members when true. By default, those fields accept null as well as their value type. This does not control whether a field may be absent. Explicit nullable annotations still apply. Ignored in Lenient mode.
 
 default: false example: - --jsonschema_opt=mandatory_nullable=true - --jsonschema_opt=mandatory_nullable=false |
-| int64_as_string | [bool](#bool) |  | Deprecated: use `respect_protojson_int64` instead. It&#39;s has same functionality. Just change the name to be more clear.
-
-Old Description: int64_as_string determines whether int64 field treat as string. Depends on Javascript specification, The JS stores integer to only 53bits. So, if you want to use int64 field in JS, you should use string type. References:
+| int64_as_string | [bool](#bool) |  | Deprecated alias for respect_protojson_int64. If both options are supplied, int64_as_string takes precedence. Ignored in Lenient mode.
 
 default: true example: - --jsonschema_opt=int64_as_string=true - --jsonschema_opt=int64_as_string=false |
 | preserve_proto_field_names | [bool](#bool) |  | preserve_proto_field_names is used to determine if output json field names should be identical to the proto field names. Otherwise field names either use the value of the `json_name` field option or they are automatically converted to lowerCamelCase. This default behaviour mirrors the behaviour of Protobuf&#39;s canonical JSON format (ProtoJSON).
 
 default: false example: - --jsonschema_opt=preserve_proto_field_names=true - --jsonschema_opt=preserve_proto_field_names=false |
-| additional_properties | [PluginAdditionalProperties](#dfjay-jsonschema-PluginAdditionalProperties) |  | additional_properties option can control all message&#39;s additional_properties property. If you want set additional properties for all messages, use always_true or always_false. If you want to set additional properties for not defined messages, use default_true or default_false.
+| additional_properties | [PluginAdditionalProperties](#dfjay-jsonschema-PluginAdditionalProperties) |  | Control additionalProperties on message schemas. AlwaysTrue and AlwaysFalse override message annotations; DefaultTrue and DefaultFalse apply only where no annotation is set. DoNothing preserves annotations without adding a default.
 
-default: &#39;DoNothing&#39; example: - --jsonschema_opt=additional_properties=AlwaysTrue - --jsonschema_opt=additional_properties=AlwaysFalse - --jsonschema_opt=additional_properties=DefaultTrue - --jsonschema_opt=additional_properties=DefaultFalse - --jsonschema_opt=additional_properties=DoNothing |
+default: DoNothing example: - --jsonschema_opt=additional_properties=AlwaysTrue - --jsonschema_opt=additional_properties=AlwaysFalse - --jsonschema_opt=additional_properties=DefaultTrue - --jsonschema_opt=additional_properties=DefaultFalse - --jsonschema_opt=additional_properties=DoNothing |
 | respect_protojson_presence | [bool](#bool) |  | respect_protojson_presence follows the ProtoJSON rule that a parser accepts a message with any field absent. If set to true, the plugin adds to `required` only fields that must be present anyway: fields with the `required` field option set to true, proto2 `required` and editions `LEGACY_REQUIRED` fields, and fields with the REQUIRED `google.api.field_behavior`. If set to false, every field that is not optional, repeated, a map or a oneof member is required as well.
 
 default: true example: - --jsonschema_opt=respect_protojson_presence=true - --jsonschema_opt=respect_protojson_presence=false |
 | respect_protojson_int64 | [bool](#bool) |  | respect_protojson_int64 writes 64-bit integer fields (int64, uint64, sint64, fixed64, sfixed64 and their wrappers) as strings, as ProtoJSON does. If set to false, they are integers, for JSON readers that parse large numbers themselves; JavaScript numbers lose precision above 2^53.
 
 default: true example: - --jsonschema_opt=respect_protojson_int64=true - --jsonschema_opt=respect_protojson_int64=false |
-| respect_field_behavior | [bool](#bool) |  | respect_field_behavior applies the `google.api.field_behavior` field option (google/api/field_behavior.proto): a REQUIRED field is required, an OUTPUT_ONLY field is `readOnly` and an INPUT_ONLY field is `writeOnly`. `readOnly` and `writeOnly` need draft-07 or later. The `required` field option takes precedence over REQUIRED.
+| respect_field_behavior | [bool](#bool) |  | respect_field_behavior applies the `google.api.field_behavior` field option (google/api/field_behavior.proto): a REQUIRED field outside a oneof is required, an OUTPUT_ONLY field is `readOnly` and an INPUT_ONLY field is `writeOnly`. `readOnly` and `writeOnly` need draft-07 or later. The `required` field option takes precedence over REQUIRED.
 
 default: true example: - --jsonschema_opt=respect_field_behavior=true - --jsonschema_opt=respect_field_behavior=false |
-| protojson_mode | [ProtojsonMode](#dfjay-jsonschema-ProtojsonMode) |  | protojson_mode chooses which JSON the schema accepts. Canonical accepts what protobuf&#39;s ProtoJSON serializer writes. Lenient also accepts what ProtoJSON parsers accept: null for any field, integers and floats as numbers or strings, enum values as names or numbers, URL-safe and unpadded base64, and integer map keys with leading zeros or a plus sign. Fields with numeric keywords accept only numbers. In Lenient, mandatory_nullable and respect_protojson_int64 have no effect; respect_protojson_presence still decides which fields are required. Field names stay as configured: parsers also accept the proto field name, but the schema does not.
+| protojson_mode | [ProtojsonMode](#dfjay-jsonschema-ProtojsonMode) |  | protojson_mode chooses which JSON the schema accepts. Canonical accepts what protobuf&#39;s ProtoJSON serializer writes. Lenient broadens the schema to accept parser-compatible representations: null for any field, integers and floats as numbers or strings, enum values as names or numbers, URL-safe and unpadded base64, and integer map keys with leading zeros or a plus sign. Fields with numeric keywords accept only numbers. In Lenient, mandatory_nullable and respect_protojson_int64 have no effect; respect_protojson_presence still decides which fields are required. Field names stay as configured: parsers also accept the proto field name, but the schema does not.
 
 Use Canonical to generate types, document an API or check protobuf output; use Lenient to check JSON or YAML that people write and a protobuf parser reads, such as config files.
 

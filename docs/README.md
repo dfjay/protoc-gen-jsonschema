@@ -1,14 +1,22 @@
-# Specification of json-schema
+# JSON Schema reference files
 
-https://json-schema.org/specification-links.html#draft-4
+This directory stores JSON Schema meta-schemas: schemas that describe the
+structure of other schemas. These files are reference material, not generated
+output from the plugin.
 
-# Files
-| File | Description |
-|------|-------------|
-| schema-draft*.json | The meta schema of each draft: the JSON Schema specification described in its own syntax. |
+| File | Draft |
+| --- | --- |
+| [schema-draft04.json](schema-draft04.json) | draft-04 |
+| [schema-draft06.json](schema-draft06.json) | draft-06 |
+| [schema-draft07.json](schema-draft07.json) | draft-07 |
+| [schema-draft201909.json](schema-draft201909.json) | 2019-09 |
+| [schema-draft202012.json](schema-draft202012.json) | 2020-12 |
+| [validation-schema-201909.json](validation-schema-201909.json) | 2019-09 validation vocabulary |
 
-# properties
-1. id: the ID of this schema, a URL; any object may have one
-2. $schema: the JSON Schema version of this document; only the root has it
-3. title: the title of this schema; any schema may have one
-4. description: the description of this schema; any schema may have one
+Later drafts split their meta-schemas into multiple referenced documents. These
+local files are not a complete offline bundle of those references.
+
+For plugin usage, see the [project README](../README.md). For generated output,
+see [examples](../examples). The `$schema` URI in an output document identifies
+its draft; `$id` identifies a schema, while `title` and `description` provide
+human-readable annotations. Draft-04 uses `id` instead of `$id`.
