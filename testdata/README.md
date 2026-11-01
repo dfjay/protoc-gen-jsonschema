@@ -95,6 +95,7 @@ directory, so keep its inputs consistent with `inputFiles`.
 | `plugin-draft-201909` | draft-2019-09 output |
 | `plugin-draft-202012` | draft-2020-12 output |
 | `plugin-entrypoint` | the `entrypoint_message` plugin option |
+| `plugin-entrypoint-file-name-collision` | two entrypoints with the same schema file name are an error (fails) |
 | `plugin-entrypoint-message-option` | each message with `entrypoint: true`, nested ones too, gets its own schema file |
 | `plugin-entrypoint-message-option-hidden` | a message with `entrypoint: true` hidden by `visibility_level` gets no schema |
 | `plugin-entrypoint-message-option-mixed` | `entrypoint_message` and `entrypoint: true` together, with YAML output |

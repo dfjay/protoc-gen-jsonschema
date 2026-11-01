@@ -1,0 +1,9 @@
+name: "plugin-entrypoint-file-name-collision"
+description: "Two entrypoints with the same schema file name are an error"
+
+inputFiles: ["test.proto", "test.Bar.proto"]
+inputParameters: {}
+
+expectResultFiles: []
+expectResultIsNull: false
+expectFail: true

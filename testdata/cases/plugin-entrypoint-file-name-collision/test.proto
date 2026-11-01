@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+// test.Bar.schema.json, like the entrypoint of test.Bar.proto.
+message Bar {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+
+  string value = 1;
+}

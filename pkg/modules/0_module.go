@@ -69,17 +69,25 @@ func generate(req *pluginpb.CodeGeneratorRequest, log logger) ([]*pluginpb.CodeG
 		generator:  NewMultiDraftGenerator(pluginOptions),
 		serializer: NewSerializerImpl(pluginOptions),
 	}
-	var out []*pluginpb.CodeGeneratorResponse_File
+	var eps []entrypoint
 	for _, name := range req.GetFileToGenerate() {
 		file, err := files.FindFileByPath(name)
 		if err != nil {
 			return nil, err
 		}
-		generated, err := backend.generate(file, visitor.registry)
+		eps = append(eps, backend.entrypoints(file, visitor.registry)...)
+	}
+	if err := checkFileNames(eps); err != nil {
+		return nil, err
+	}
+	var out []*pluginpb.CodeGeneratorResponse_File
+	for _, ep := range eps {
+		generated, err := backend.generateEntrypoint(ep, visitor.registry)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", name, err)
+			return nil, fmt.Errorf("%s: %w", ep.message.ParentFile().Path(), err)
 		}
-		out = append(out, generated...)
+		backend.log.with(ep.message.ParentFile().Path()).Debugf("GeneratedFileName: %s", ep.fileName)
+		out = append(out, generated)
 	}
 
 	if len(req.GetFileToGenerate()) > 0 && len(out) == 0 {
@@ -101,28 +109,16 @@ type backend struct {
 type entrypoint struct {
 	message  protoreflect.MessageDescriptor
 	fileName string
+	source   string // for errors: what chose the entrypoint
 	// Set only for entrypoint_message, which stands for the whole file.
 	fileOptions *proto.FileOptions
-}
-
-func (b *backend) generate(file protoreflect.FileDescriptor, registry *jsonschema.Registry) ([]*pluginpb.CodeGeneratorResponse_File, error) {
-	log := b.log.with(file.Path())
-	var out []*pluginpb.CodeGeneratorResponse_File
-	for _, ep := range b.entrypoints(file, registry, log) {
-		generated, err := b.generateEntrypoint(ep, registry)
-		if err != nil {
-			return nil, err
-		}
-		log.Debugf("GeneratedFileName: %s", ep.fileName)
-		out = append(out, generated)
-	}
-	return out, nil
 }
 
 // entrypoints returns the entrypoint_message of file and its messages marked
 // entrypoint. Names don't depend on how many there are, so adding one
 // renames no file.
-func (b *backend) entrypoints(file protoreflect.FileDescriptor, registry *jsonschema.Registry, log logger) []entrypoint {
+func (b *backend) entrypoints(file protoreflect.FileDescriptor, registry *jsonschema.Registry) []entrypoint {
+	log := b.log.with(file.Path())
 	var eps []entrypoint
 	fileOptions := proto.GetFileOptions(file)
 	log.Debugf("FileOptions: %v", protojson.MarshalOptions{EmitUnpopulated: true}.Format(fileOptions))
@@ -131,6 +127,7 @@ func (b *backend) entrypoints(file protoreflect.FileDescriptor, registry *jsonsc
 			eps = append(eps, entrypoint{
 				message:     message,
 				fileName:    outputFileName(file.Path(), b.options.GetOutputFileSuffix()),
+				source:      "entrypoint_message of " + file.Path(),
 				fileOptions: fileOptions,
 			})
 		} else {
@@ -148,6 +145,7 @@ func (b *backend) entrypoints(file protoreflect.FileDescriptor, registry *jsonsc
 					eps = append(eps, entrypoint{
 						message:  message,
 						fileName: outputFileName(file.Path(), "."+relative+b.options.GetOutputFileSuffix()),
+						source:   fmt.Sprintf("message %s in %s", message.FullName(), file.Path()),
 					})
 				} else {
 					log.Debugf("Entrypoint %s is hidden by visibility_level; skipping", fullyQualifiedName(message))
@@ -176,6 +174,20 @@ func (b *backend) generateEntrypoint(ep entrypoint, registry *jsonschema.Registr
 		return nil, fmt.Errorf("failed to serialize %s: %w", ep.fileName, err)
 	}
 	return &pluginpb.CodeGeneratorResponse_File{Name: new(ep.fileName), Content: new(string(content))}, nil
+}
+
+// checkFileNames fails when two entrypoints get the same file name, e.g.
+// message Bar of foo.proto and the entrypoint_message of foo.Bar.proto;
+// protoc would only say that a file was written twice.
+func checkFileNames(eps []entrypoint) error {
+	seen := map[string]string{}
+	for _, ep := range eps {
+		if other, ok := seen[ep.fileName]; ok {
+			return fmt.Errorf("%s is the schema file of both %s and %s; rename one of them", ep.fileName, other, ep.source)
+		}
+		seen[ep.fileName] = ep.source
+	}
+	return nil
 }
 
 func outputFileName(protoPath, suffix string) string {

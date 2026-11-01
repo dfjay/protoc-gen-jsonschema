@@ -132,6 +132,8 @@ nested `Outer.Inner` gives `api/form.Outer.Inner.schema.json`. Names do not
 depend on how many messages are marked, so marking another message renames no
 file. Types shared by several entrypoints appear in each schema. A marked
 message hidden by `visibility_level` is skipped. Both ways can be combined.
+Two entrypoints that get the same file name, such as message `Bar` of
+`foo.proto` and the entrypoint of `foo.Bar.proto`, are an error.
 
 Output paths preserve the input path relative to the `protoc` include directory,
 under `--jsonschema_out`. Create the output directory before running `protoc`.
