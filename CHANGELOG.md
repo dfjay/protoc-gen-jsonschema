@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.10.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.9.1...v0.10.0) (2026-11-01)
+
+Generated schemas now follow ProtoJSON by default. This release also adds protobuf editions, `google.api.field_behavior` support and a `Lenient` mode for JSON or YAML that a protobuf parser reads.
+
+### ⚠ BREAKING CHANGES
+
+* **Presence:** `respect_protojson_presence` now defaults to `true`, so ordinary singular fields are no longer automatically added to `required`. Set `respect_protojson_presence=false` to restore automatic requirements for non-optional singular fields outside oneofs. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **Required fields:** Proto2 `required` and editions `LEGACY_REQUIRED` fields are now required even with `respect_protojson_presence=true`. The per-field `(dfjay.jsonschema.field).required` option still takes precedence: set `required: false` to make such a field optional. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **64-bit integers:** `respect_protojson_int64` and its deprecated alias `int64_as_string` now default to `true`. All 64-bit integer kinds, including repeated elements, map values and wrappers, use decimal strings with signed or unsigned patterns. The undefined `format: int64` is no longer emitted. Set `respect_protojson_int64=false` to use integers in `Canonical` mode. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **Field behavior:** Existing `google.api.field_behavior` annotations now affect schemas by default. Set `respect_field_behavior=false` to ignore them as in 0.9.x. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+
+### Upgrading from 0.9.x
+
+Install this version and regenerate your schemas:
+
+```sh
+go install github.com/dfjay/protoc-gen-jsonschema@v0.10.0
+```
+
+To restore the previous option defaults when generating a schema for `Form` in `form.proto`:
+
+```sh
+protoc --jsonschema_out=. \
+  --jsonschema_opt=entrypoint_message=Form \
+  --jsonschema_opt=respect_protojson_presence=false \
+  --jsonschema_opt=respect_protojson_int64=false \
+  --jsonschema_opt=respect_field_behavior=false \
+  form.proto
+```
+
+The well-known type, map-key and floating-point fixes below still apply. Proto2 `required` and editions `LEGACY_REQUIRED` fields still require the per-field override to become optional.
+
+### Features
+
+* **Editions:** Generate schemas for `edition = "2023"` and `edition = "2024"` files, including `DELIMITED` message fields. Resolved `field_presence` settings on fields, enclosing messages and files are honored: `EXPLICIT` fields follow optional-field behavior, while `IMPLICIT` fields are no longer made nullable, including in imported editions files. ([#8](https://github.com/dfjay/protoc-gen-jsonschema/issues/8)) ([2d23a5f](https://github.com/dfjay/protoc-gen-jsonschema/commit/2d23a5f278030a6aa61385c17ac27f8beb0bfcc6))
+* **Field behavior:** `google.api.field_behavior = REQUIRED` adds fields outside oneofs to `required`, unless overridden by the per-field `required` option. `OUTPUT_ONLY` adds `readOnly` and `INPUT_ONLY` adds `writeOnly` in draft-07 and later. References on annotated fields move into `allOf` so these keywords work beside them in draft-07. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **ProtoJSON modes:** New option `protojson_mode=Canonical` (default) describes serializer output; `protojson_mode=Lenient` also accepts parser input forms, for uses such as handwritten configuration. Unknown mode values fail generation. ([#11](https://github.com/dfjay/protoc-gen-jsonschema/issues/11)) ([5cf5261](https://github.com/dfjay/protoc-gen-jsonschema/commit/5cf5261d3dfbef91d0cb108aac124cc728c41f37))
+* **Lenient numbers and enums:** Integers accept numbers or integral numeric strings such as `"-5"`, `"1.0"` and `"1e2"`. Numeric branches enforce 32-bit ranges and reject negative unsigned values. Floats also accept numeric strings such as `"1e3"`. Enums accept value names or any int32 number; `NullValue` additionally accepts `"NULL_VALUE"` or any int32 number alongside `null`. ([#11](https://github.com/dfjay/protoc-gen-jsonschema/issues/11)) ([5cf5261](https://github.com/dfjay/protoc-gen-jsonschema/commit/5cf5261d3dfbef91d0cb108aac124cc728c41f37))
+* **Lenient strings and map keys:** Bytes accept URL-safe base64 and missing padding. `Duration` also accepts spellings such as `"+1s"`, `".5s"` and `"1.s"`. Integer map keys accept leading zeros and, for signed keys, a leading plus sign. ([#11](https://github.com/dfjay/protoc-gen-jsonschema/issues/11)) ([5cf5261](https://github.com/dfjay/protoc-gen-jsonschema/commit/5cf5261d3dfbef91d0cb108aac124cc728c41f37))
+* **Lenient nulls and oneofs:** Fields accept `null`, except whole repeated `Value` or `NullValue` lists. A oneof member set to `null` counts as unset, allowing another member to be set; `Value` and `NullValue` members still count as set because `null` is a value for those types. ([#11](https://github.com/dfjay/protoc-gen-jsonschema/issues/11)) ([5cf5261](https://github.com/dfjay/protoc-gen-jsonschema/commit/5cf5261d3dfbef91d0cb108aac124cc728c41f37))
+* **Lenient limits:** Numeric keywords keep numeric schemas number-only. Field names stay as configured, and `MapToCustom` enum mappings are unchanged. `mandatory_nullable` and `respect_protojson_int64` have no effect in this mode; `respect_protojson_presence` still controls automatic requirements. ([#11](https://github.com/dfjay/protoc-gen-jsonschema/issues/11)) ([5cf5261](https://github.com/dfjay/protoc-gen-jsonschema/commit/5cf5261d3dfbef91d0cb108aac124cc728c41f37))
+
+### Bug Fixes
+
+* **Well-known messages:** Apply ProtoJSON forms consistently to singular fields, repeated elements and map values: `Timestamp` is a string with `format: date-time`; `FieldMask` is a string; `Any` and `Struct` are objects; `ListValue` is an array; `Value` accepts any JSON value; wrappers use the wrapped value's schema. `Duration` uses a pattern for seconds with an `s` suffix, such as `"1.5s"`, replacing the ISO 8601 `format: duration`. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **Null values:** `NullValue` uses `type: null` instead of the enum string `"NULL_VALUE"`. Optional `Value` and `NullValue` fields no longer receive a nullable `oneOf` whose branches both match `null`. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **Floating-point values:** `float` and `double` also accept `"NaN"`, `"Infinity"` and `"-Infinity"`. Fields with numeric keywords such as `minimum` remain plain numbers. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **Map keys:** Integer keys get signed or unsigned decimal patterns, and boolean keys are restricted to `"true"` or `"false"`, through `propertyNames` in draft-06 and later. Draft-04 cannot validate map keys. ([#10](https://github.com/dfjay/protoc-gen-jsonschema/issues/10)) ([f928bf4](https://github.com/dfjay/protoc-gen-jsonschema/commit/f928bf44d72637d7d2b854bf2d94481fa6b247cb))
+* **Plugin execution:** Errors are returned to protoc for reporting on one line. Notes and `DEBUG` output go to stderr with a `protoc-gen-jsonschema:` prefix and file context where applicable. Output files follow protoc's input order. ([#7](https://github.com/dfjay/protoc-gen-jsonschema/issues/7)) ([1615555](https://github.com/dfjay/protoc-gen-jsonschema/commit/16155550b8619d40fe1db169757d28b5983c8e18))
+
 ## [0.9.1](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.9.0...v0.9.1) (2026-11-01)
 
 
