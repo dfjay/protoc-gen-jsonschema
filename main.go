@@ -3,13 +3,28 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
+	"strings"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
 	pgs "github.com/lyft/protoc-gen-star/v2"
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
-var version string = "develop"
+// version is set by -ldflags in release builds (see .goreleaser.yaml).
+var version string
+
+// getVersion returns the release version, or else the module version that
+// `go install ...@vX.Y.Z` records in the binary, or "develop" for local builds.
+func getVersion() string {
+	if version != "" {
+		return version
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return strings.TrimPrefix(info.Main.Version, "v")
+	}
+	return "develop"
+}
 
 const helpMessage = `Usage protoc-gen-jsonschema:
 protoc --jsonschema_out=. (OPTIONS) *.proto
@@ -45,7 +60,7 @@ func main() {
 	if len(os.Args) == 2 {
 		switch os.Args[1] {
 		case "--version":
-			fmt.Println(version)
+			fmt.Println(getVersion())
 		case "--help":
 			fmt.Print(helpMessage)
 		}
