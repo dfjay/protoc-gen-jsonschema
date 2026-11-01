@@ -2,16 +2,19 @@ package modules
 
 import (
 	"encoding/json"
+	"iter"
 	"reflect"
 	"slices"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
-	pgs "github.com/lyft/protoc-gen-star/v2"
+	"google.golang.org/protobuf/reflect/protodesc"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, mo *proto.MessageOptions) *jsonschema.Schema {
+func buildFromMessage(pluginOptions *proto.PluginOptions, message protoreflect.MessageDescriptor, mo *proto.MessageOptions) *jsonschema.Schema {
 	schema := &jsonschema.Schema{}
 	schema.Type = "object"
 	schema.Title = proto.GetTitleOrEmpty(mo)
@@ -20,14 +23,14 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 
 	fillSchemaByObjectKeywords(pluginOptions, schema, mo.GetObject())
 
-	for _, field := range message.Fields() {
+	for field := range listOf(message.Fields()) {
 		if isHiddenField(pluginOptions, field) {
 			continue
 		}
 
 		propName := toPropertyName(field, pluginOptions.GetPreserveProtoFieldNames())
 		fieldSchema := &jsonschema.Schema{Ref: toRefId(field)}
-		if !pluginOptions.GetMandatoryNullable() && (field.InRealOneOf() || field.HasOptionalKeyword()) || proto.GetFieldOptions(field).GetNullable() {
+		if !pluginOptions.GetMandatoryNullable() && (inRealOneof(field) || hasOptionalKeyword(field)) || proto.GetFieldOptions(field).GetNullable() {
 			fieldSchema = &jsonschema.Schema{OneOf: []*jsonschema.Schema{
 				{Type: "null"},
 				fieldSchema,
@@ -45,9 +48,12 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 	// Convert Protobuf OneOfs to JSONSchema keywords. A oneof with a single
 	// member (the synthetic oneof of a proto3 optional field, or one left with
 	// a single visible field) would constrain nothing.
-	for _, oneOf := range message.RealOneOfs() {
+	for oneOf := range listOf(message.Oneofs()) {
+		if oneOf.IsSynthetic() {
+			continue
+		}
 		var oneOfSchemas []*jsonschema.Schema
-		for _, field := range oneOf.Fields() {
+		for field := range listOf(oneOf.Fields()) {
 			if isHiddenField(pluginOptions, field) {
 				continue
 			}
@@ -66,7 +72,7 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, message pgs.Message, m
 	return schema
 }
 
-func isRequiredField(pluginOptions *proto.PluginOptions, field pgs.Field) bool {
+func isRequiredField(pluginOptions *proto.PluginOptions, field protoreflect.FieldDescriptor) bool {
 	// Explicit per-field required option always takes precedence
 	if fo := proto.GetFieldOptions(field); fo != nil && fo.Required != nil {
 		return fo.GetRequired()
@@ -77,11 +83,11 @@ func isRequiredField(pluginOptions *proto.PluginOptions, field pgs.Field) bool {
 		// so no field is required. See https://protobuf.dev/programming-guides/json/
 		return false
 	} else {
-		return !field.InRealOneOf() && !field.HasOptionalKeyword() && !field.Type().IsRepeated() && !field.Type().IsMap()
+		return !inRealOneof(field) && !hasOptionalKeyword(field) && !field.IsList() && !field.IsMap()
 	}
 }
 
-func buildFromWellKnownMessage(pluginOptions *proto.PluginOptions, message pgs.Message, mo *proto.MessageOptions) *jsonschema.Schema {
+func buildFromWellKnownMessage(pluginOptions *proto.PluginOptions, message protoreflect.MessageDescriptor, mo *proto.MessageOptions) *jsonschema.Schema {
 	baseSchema := buildFromMessage(pluginOptions, message, mo)
 
 	wellKnownType := getWellKnownMessageType(message)
@@ -159,12 +165,12 @@ const (
 	WellKnownMessageTypeK8sEphemeralContainer
 )
 
-func isWellKnownMessage(message pgs.Message) bool {
+func isWellKnownMessage(message protoreflect.MessageDescriptor) bool {
 	return getWellKnownMessageType(message) != WellKnownMessageTypeNone
 }
 
-func getWellKnownMessageType(message pgs.Message) WellKnownMessageType {
-	switch message.FullyQualifiedName() {
+func getWellKnownMessageType(message protoreflect.MessageDescriptor) WellKnownMessageType {
+	switch fullyQualifiedName(message) {
 	case ".k8s.io.apimachinery.pkg.util.intstr.IntOrString":
 		return WellKnownMessageTypeK8sIntOrString
 	case ".k8s.io.api.core.v1.Volume":
@@ -192,53 +198,49 @@ func getWellKnownMessageType(message pgs.Message) WellKnownMessageType {
 	return WellKnownMessageTypeNone
 }
 
-func buildFromMessageField(field pgs.Field, fo *proto.FieldOptions) *jsonschema.Schema {
+func buildFromMessageField(field protoreflect.FieldDescriptor, fo *proto.FieldOptions) *jsonschema.Schema {
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(fo)
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
 
-	if field.Type().IsRepeated() {
-		schema.Ref = toRefId(field.Type().Element().Embed())
-	} else {
-		schema.Ref = toRefId(field.Type().Embed())
-	}
+	schema.Ref = toRefId(field.Message())
 
-	if field.Type().IsRepeated() {
+	if field.IsList() {
 		return wrapSchemaInArray(schema, field, fo)
 	} else {
 		return schema
 	}
 }
 
-func buildFromMapField(pluginOptions *proto.PluginOptions, field pgs.Field, fo *proto.FieldOptions) *jsonschema.Schema {
+func buildFromMapField(pluginOptions *proto.PluginOptions, field protoreflect.FieldDescriptor, fo *proto.FieldOptions) *jsonschema.Schema {
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(fo)
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
 	schema.Type = "object"
 
 	valueSchema := &jsonschema.Schema{}
-	value := field.Type().Element()
-	protoType := value.ProtoType()
-	if protoType.IsInt() {
-		if pluginOptions.GetRespectProtojsonInt64() && isInt64(protoType) {
+	value := field.MapValue()
+	kind := value.Kind()
+	if isIntKind(kind) {
+		if pluginOptions.GetRespectProtojsonInt64() && isInt64(kind) {
 			valueSchema.Type = "string"
 			valueSchema.Format = "int64"
 		} else {
 			valueSchema.Type = "integer"
 			fillSchemaByNumericKeywords(valueSchema, fo.GetNumeric())
 		}
-	} else if protoType.IsNumeric() {
+	} else if isNumericKind(kind) {
 		valueSchema.Type = "number"
 		fillSchemaByNumericKeywords(valueSchema, fo.GetNumeric())
-	} else if protoType == pgs.MessageT {
-		valueSchema.Ref = toRefId(value.Embed())
-	} else if protoType == pgs.BoolT {
+	} else if isMessageKind(kind) {
+		valueSchema.Ref = toRefId(value.Message())
+	} else if kind == protoreflect.BoolKind {
 		valueSchema.Type = "boolean"
-	} else if protoType == pgs.EnumT {
+	} else if kind == protoreflect.EnumKind {
 		valueSchema.Ref = toRefId(value.Enum())
-	} else if protoType == pgs.StringT {
+	} else if kind == protoreflect.StringKind {
 		valueSchema.Type = "string"
-	} else if protoType == pgs.BytesT {
+	} else if kind == protoreflect.BytesKind {
 		valueSchema.Type = "string"
 		// Base64 Regex Expression
 		valueSchema.Pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
@@ -247,62 +249,58 @@ func buildFromMapField(pluginOptions *proto.PluginOptions, field pgs.Field, fo *
 	return schema
 }
 
-func buildFromScalaField(pluginOptions *proto.PluginOptions, field pgs.Field, fo *proto.FieldOptions) *jsonschema.Schema {
+func buildFromScalaField(pluginOptions *proto.PluginOptions, field protoreflect.FieldDescriptor, fo *proto.FieldOptions) *jsonschema.Schema {
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(fo)
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
 
-	protoType := field.Type().ProtoType()
-	if protoType.IsInt() {
-		if pluginOptions.GetRespectProtojsonInt64() && isInt64(protoType) {
+	kind := field.Kind()
+	if isIntKind(kind) {
+		if pluginOptions.GetRespectProtojsonInt64() && isInt64(kind) {
 			schema.Type = "string"
 			schema.Format = "int64"
 		} else {
 			schema.Type = "integer"
 			fillSchemaByNumericKeywords(schema, fo.GetNumeric())
 		}
-	} else if protoType == pgs.DoubleT || protoType == pgs.FloatT {
+	} else if kind == protoreflect.DoubleKind || kind == protoreflect.FloatKind {
 		schema.Type = "number"
 		fillSchemaByNumericKeywords(schema, fo.GetNumeric())
-	} else if protoType == pgs.BoolT {
+	} else if kind == protoreflect.BoolKind {
 		schema.Type = "boolean"
-	} else if protoType == pgs.EnumT {
-		if field.Type().IsRepeated() {
-			schema.Ref = toRefId(field.Type().Element().Enum())
-		} else {
-			schema.Ref = toRefId(field.Type().Enum())
-		}
-	} else if protoType == pgs.StringT {
+	} else if kind == protoreflect.EnumKind {
+		schema.Ref = toRefId(field.Enum())
+	} else if kind == protoreflect.StringKind {
 		schema.Type = "string"
 		fillSchemaByStringKeywords(schema, fo.GetString_())
-	} else if protoType == pgs.BytesT {
+	} else if kind == protoreflect.BytesKind {
 		schema.Type = "string"
 		// Base64 Regex Expression
 		schema.Pattern = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
 		fillSchemaByStringKeywords(schema, fo.GetString_())
 	}
 
-	if field.Type().IsRepeated() {
+	if field.IsList() {
 		return wrapSchemaInArray(schema, field, fo)
 	} else {
 		return schema
 	}
 }
 
-func buildFromEnum(enum pgs.Enum) (*jsonschema.Schema, error) {
+func buildFromEnum(enum protoreflect.EnumDescriptor) (*jsonschema.Schema, error) {
 	eo := proto.GetEnumOptions(enum)
 
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(eo)
 	schema.Description = proto.GetDescriptionOrComment(enum, eo)
 
-	for _, enumValue := range enum.Values() {
+	for enumValue := range listOf(enum.Values()) {
 		var value any
 		switch eo.GetMappingType() {
 		case proto.EnumOptions_MapToString:
-			value = enumValue.Name().String()
+			value = string(enumValue.Name())
 		case proto.EnumOptions_MapToNumber:
-			value = enumValue.Value()
+			value = int32(enumValue.Number())
 		case proto.EnumOptions_MapToCustom:
 			evo := proto.GetEnumValueOptions(enumValue)
 
@@ -312,7 +310,7 @@ func buildFromEnum(enum pgs.Enum) (*jsonschema.Schema, error) {
 			}
 			value = customValue
 			if value == nil {
-				value = enumValue.Name().String()
+				value = string(enumValue.Name())
 			}
 		}
 
@@ -337,15 +335,15 @@ func buildFromEnum(enum pgs.Enum) (*jsonschema.Schema, error) {
 	return schema, nil
 }
 
-func isHiddenMessage(pluginOptions *proto.PluginOptions, message pgs.Message) bool {
+func isHiddenMessage(pluginOptions *proto.PluginOptions, message protoreflect.MessageDescriptor) bool {
 	return proto.GetMessageOptions(message).GetVisibilityLevel() < pluginOptions.GetVisibilityLevel()
 }
 
-func isHiddenField(pluginOptions *proto.PluginOptions, field pgs.Field) bool {
+func isHiddenField(pluginOptions *proto.PluginOptions, field protoreflect.FieldDescriptor) bool {
 	return proto.GetFieldOptions(field).GetVisibilityLevel() < pluginOptions.GetVisibilityLevel()
 }
 
-func wrapSchemaInArray(schema *jsonschema.Schema, field pgs.Field, fo *proto.FieldOptions) *jsonschema.Schema {
+func wrapSchemaInArray(schema *jsonschema.Schema, field protoreflect.FieldDescriptor, fo *proto.FieldOptions) *jsonschema.Schema {
 	repeatedSchema := &jsonschema.Schema{}
 	repeatedSchema.Title = schema.Title
 	repeatedSchema.Description = schema.Description
@@ -356,7 +354,7 @@ func wrapSchemaInArray(schema *jsonschema.Schema, field pgs.Field, fo *proto.Fie
 	return repeatedSchema
 }
 
-func buildFromWellKnownField(field pgs.Field, fo *proto.FieldOptions) *jsonschema.Schema {
+func buildFromWellKnownField(field protoreflect.FieldDescriptor, fo *proto.FieldOptions) *jsonschema.Schema {
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(fo)
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
@@ -381,13 +379,13 @@ func buildFromWellKnownField(field pgs.Field, fo *proto.FieldOptions) *jsonschem
 		schema.Type = "null"
 	}
 
-	if field.Type().IsRepeated() {
+	if field.IsList() {
 		return wrapSchemaInArray(schema, field, fo)
 	}
 	return schema
 }
 
-func isWellKnownField(field pgs.Field) bool {
+func isWellKnownField(field protoreflect.FieldDescriptor) bool {
 	return getWellKnownFieldType(field) != WellKnownTypeNone
 }
 
@@ -401,18 +399,12 @@ const (
 	WellKnownTypeNullValue
 )
 
-func getWellKnownFieldType(field pgs.Field) WellKnownFieldType {
-	if field.Type().IsMap() || field.Type().ProtoType() != pgs.MessageT {
+func getWellKnownFieldType(field protoreflect.FieldDescriptor) WellKnownFieldType {
+	if field.IsMap() || !isMessageKind(field.Kind()) {
 		return WellKnownTypeNone
 	}
-	var message pgs.Message
-	if field.Type().IsRepeated() {
-		message = field.Type().Element().Embed()
-	} else {
-		message = field.Type().Embed()
-	}
 
-	switch message.FullyQualifiedName() {
+	switch fullyQualifiedName(field.Message()) {
 	case ".google.protobuf.Timestamp":
 		return WellKnownTypeTimestamp
 	case ".google.protobuf.Duration":
@@ -438,44 +430,99 @@ func parseScalaValueFromAny(anyValue *anypb.Any) (any, error) {
 	return value, nil
 }
 
-func isScalarType(field pgs.Field) bool {
-	protoType := field.Type().ProtoType()
-	if protoType.IsNumeric() {
+func isScalarType(field protoreflect.FieldDescriptor) bool {
+	kind := field.Kind()
+	if isNumericKind(kind) {
 		return true
 	}
-	if protoType == pgs.BoolT {
+	if kind == protoreflect.BoolKind {
 		return true
 	}
-	if protoType == pgs.EnumT {
+	if kind == protoreflect.EnumKind {
 		return true
 	}
-	if protoType == pgs.StringT || protoType == pgs.BytesT {
+	if kind == protoreflect.StringKind || kind == protoreflect.BytesKind {
+		return true
+	}
+	return false
+}
+
+func toPropertyName(field protoreflect.FieldDescriptor, preserveProto bool) string {
+	if !preserveProto && field.HasJSONName() {
+		return field.JSONName()
+	}
+	return string(field.Name())
+}
+
+// fullyQualifiedName returns the name of desc with a leading dot, as in
+// ".pkg.Message.field"; it is the key of the schema of desc.
+func fullyQualifiedName(desc protoreflect.Descriptor) string {
+	return "." + string(desc.FullName())
+}
+
+func toRefId(desc protoreflect.Descriptor) jsonschema.RefId {
+	return jsonschema.RefId(fullyQualifiedName(desc))
+}
+
+// isMessageKind reports whether kind is a message. Groups count: in
+// editions a message field with DELIMITED encoding is a group, and a proto2
+// group is a message in JSON too.
+func isMessageKind(kind protoreflect.Kind) bool {
+	return kind == protoreflect.MessageKind || kind == protoreflect.GroupKind
+}
+
+// hasOptionalKeyword reports whether field is marked optional the way
+// protoc-gen-star did: in editions files every singular field counts, as
+// they all have the optional label. Edition support will replace this with
+// presence from the edition features.
+func hasOptionalKeyword(field protoreflect.FieldDescriptor) bool {
+	if field.ParentFile().Syntax() == protoreflect.Editions {
+		return protodesc.ToFieldDescriptorProto(field).GetLabel() == descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL
+	}
+	return field.HasOptionalKeyword()
+}
+
+// inRealOneof reports whether field is in a oneof written in the .proto
+// file, not the synthetic oneof of a proto3 optional field.
+func inRealOneof(field protoreflect.FieldDescriptor) bool {
+	oneof := field.ContainingOneof()
+	return oneof != nil && !oneof.IsSynthetic()
+}
+
+func isIntKind(kind protoreflect.Kind) bool {
+	switch kind {
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
+		protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
+		protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind,
+		protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
 		return true
 	}
 	return false
 }
 
-func toPropertyName(field pgs.Field, preserveProto bool) string {
-	if !preserveProto && field.Descriptor().JsonName != nil {
-		return field.Descriptor().GetJsonName()
-	}
-	return field.Name().String()
+func isNumericKind(kind protoreflect.Kind) bool {
+	return isIntKind(kind) || kind == protoreflect.DoubleKind || kind == protoreflect.FloatKind
 }
 
-type FqdnResolver interface {
-	FullyQualifiedName() string
-}
-
-func toRefId(resolver FqdnResolver) jsonschema.RefId {
-	return jsonschema.RefId(resolver.FullyQualifiedName())
-}
-
-func isInt64(protoType pgs.ProtoType) bool {
-	switch protoType {
-	case pgs.Int64T, pgs.UInt64T, pgs.SFixed64, pgs.SInt64, pgs.Fixed64T:
+func isInt64(kind protoreflect.Kind) bool {
+	switch kind {
+	case protoreflect.Int64Kind, protoreflect.Uint64Kind, protoreflect.Sfixed64Kind, protoreflect.Sint64Kind, protoreflect.Fixed64Kind:
 		return true
 	}
 	return false
+}
+
+func listOf[T any](list interface {
+	Len() int
+	Get(int) T
+}) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for i := range list.Len() {
+			if !yield(list.Get(i)) {
+				return
+			}
+		}
+	}
 }
 
 func deletePropertyInRequired(required []string, item string) []string {

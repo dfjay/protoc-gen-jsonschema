@@ -47,19 +47,20 @@ examples: _plugin
 golden case="":
     {{ if case == "" { "testdata/hack/generate_all_test_result.sh" } else { "testdata/hack/generate_test_result.sh " + case } }}
 
-# Dump protoc's CodeGeneratorRequest for a testdata case into .bin/, for debugging
-dump-request case="plugin-consist-output": _tools
-    PATH="{{bin}}:$PATH" protoc --debug_out="{{bin}}/requests/{{case}}:." \
-        -I proto -I testdata/cases/{{case}} testdata/cases/{{case}}/test.proto
-    @echo {{bin}}/requests/{{case}}/code_generator_request.pb.bin
+# Dump the descriptors protoc sends the plugin for a testdata case into .bin/, for debugging
+dump-descriptors case="plugin-consist-output":
+    mkdir -p "{{bin}}/descriptors"
+    protoc -I proto -I testdata/cases/{{case}} --include_imports --include_source_info \
+        --descriptor_set_out="{{bin}}/descriptors/{{case}}.pb" testdata/cases/{{case}}/test.proto
+    @echo "{{bin}}/descriptors/{{case}}.pb (read with: protoc --decode=google.protobuf.FileDescriptorSet google/protobuf/descriptor.proto < FILE)"
 
 # Release dry run into dist/
 snapshot:
     goreleaser release --snapshot --clean --skip=publish,sign
 
-# protoc plugins at the versions go.mod pins, and protoc-gen-doc
+# protoc-gen-go at the version go.mod pins, and protoc-gen-doc
 _tools:
-    go build -o {{bin}}/ google.golang.org/protobuf/cmd/protoc-gen-go github.com/lyft/protoc-gen-star/v2/protoc-gen-debug
+    go build -o {{bin}}/ google.golang.org/protobuf/cmd/protoc-gen-go
     GOBIN={{bin}} go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.5.1
 
 _plugin:

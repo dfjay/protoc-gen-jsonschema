@@ -1,0 +1,11 @@
+name: "proto-message-set"
+description: "A MessageSet elsewhere in the file does not stop generation"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Values": {
+      "properties": {
+        "name": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.name"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.name": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

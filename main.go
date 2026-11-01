@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"runtime/debug"
 	"strings"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
-	pgs "github.com/lyft/protoc-gen-star/v2"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
@@ -71,10 +72,29 @@ func main() {
 		return
 	}
 
-	feature := uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
-	pgs.Init(
-		pgs.DebugEnv("DEBUG"),
-		pgs.SupportedFeatures(&feature)).
-		RegisterModule(modules.NewModule()).
-		Render()
+	if err := run(os.Stdin, os.Stdout); err != nil {
+		fmt.Fprintf(os.Stderr, "protoc-gen-jsonschema: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+// run fails only when it cannot talk to protoc; other errors go into the
+// response.
+func run(in io.Reader, out io.Writer) error {
+	input, err := io.ReadAll(in)
+	if err != nil {
+		return fmt.Errorf("read request: %w", err)
+	}
+	req := &pluginpb.CodeGeneratorRequest{}
+	if err := proto.Unmarshal(input, req); err != nil {
+		return fmt.Errorf("parse request (run this plugin through protoc): %w", err)
+	}
+
+	resp := modules.Generate(req, os.Stderr, os.Getenv("DEBUG") != "")
+	output, err := proto.Marshal(resp)
+	if err != nil {
+		return fmt.Errorf("encode response: %w", err)
+	}
+	_, err = out.Write(output)
+	return err
 }

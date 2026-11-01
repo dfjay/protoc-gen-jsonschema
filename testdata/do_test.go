@@ -1,15 +1,21 @@
 package testdata
 
 import (
+	"bytes"
 	"fmt"
+	"maps"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
-	pgs "github.com/lyft/protoc-gen-star/v2"
-	"github.com/lyft/protoc-gen-star/v2/testutils"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -34,12 +40,17 @@ type Testcase struct {
 const testdataDir = "./cases"
 const optionsDir = "../proto"
 
+// TestPlugin compares the output of each case byte for byte with the files
+// `just golden` writes through the real protoc.
 func TestPlugin(t *testing.T) {
 	dirs, err := os.ReadDir(testdataDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	optionsImportPath, _ := filepath.Abs(optionsDir)
+	optionsImportPath, err := filepath.Abs(optionsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	for _, dir := range dirs {
 		tc, err := loadTestcase(testdataDir, dir)
@@ -48,62 +59,84 @@ func TestPlugin(t *testing.T) {
 		}
 
 		t.Run(dir.Name(), func(t *testing.T) {
-			// Load testcase
 			dirPath := filepath.Join(testdataDir, dir.Name())
-			module, debugger := newModule(tc, dirPath)
-			ast := loadInput(t, tc, dirPath, optionsImportPath)
+			req := buildRequest(t, tc, dirPath, optionsImportPath)
 
-			// Execute testcase
-			artifacts := module.Execute(ast.Targets(), ast.Packages())
+			resp := modules.Generate(req, nil, false)
 
-			// Check testcase result
-			// The plugin fails through Fail/Failf or CheckErr; the mock
-			// debugger records them as Failed and Err.
-			failed := debugger.Failed() || debugger.Err() != nil
 			if tc.ExpectFail {
-				if !failed {
+				if resp.Error == nil {
 					t.Errorf("Expect failed, but got success")
 				}
 				return
 			}
-			if failed {
-				t.Fatalf("Expect success, but the plugin failed: %v", debugger.Err())
+			if resp.Error != nil {
+				t.Fatalf("Expect success, but the plugin failed: %s", resp.GetError())
 			}
 
 			if tc.ExpectResultIsNull {
-				if len(artifacts) != 0 {
-					t.Errorf("Expect result is null, but got %d of results", len(artifacts))
+				if len(resp.File) != 0 {
+					t.Errorf("Expect result is null, but got %d of results", len(resp.File))
 				}
 				return
 			}
 
-			expectedResult, err := loadExpectedResult(dirPath, tc.ExpectResultFiles)
-			if err != nil {
-				t.Errorf("failed to load expected result: %s", err.Error())
-				return
+			if len(resp.File) != len(tc.ExpectResultFiles) {
+				t.Fatalf("Expect %d of results, but got %d of results", len(tc.ExpectResultFiles), len(resp.File))
 			}
-			if len(artifacts) != len(tc.ExpectResultFiles) {
-				t.Errorf("Expect %d of results, but got %d of results", len(tc.ExpectResultFiles), len(artifacts))
-				return
-			}
-			for _, artifact := range artifacts {
-				fArtifact, ok := artifact.(pgs.GeneratorFile)
-				if !ok {
-					t.Errorf("artifact is not GeneratorFile, but %T", artifact)
-					return
+			for _, file := range resp.File {
+				if !slices.Contains(tc.ExpectResultFiles, file.GetName()) {
+					t.Fatalf("unexpected output file %s, want one of %v", file.GetName(), tc.ExpectResultFiles)
 				}
-
-				var actual any
-				err := yaml.Unmarshal([]byte(fArtifact.Contents), &actual)
+				expected, err := os.ReadFile(filepath.Join(dirPath, file.GetName()))
 				if err != nil {
-					t.Errorf("failed to convert to comparable component: %s", err.Error())
-					return
+					t.Fatalf("unexpected output file %s: %v", file.GetName(), err)
 				}
-				expected := expectedResult.results[fArtifact.Name]
-
-				require.Equal(t, expected, actual, "not equals at index %s: %s", tc.Name, tc.Description)
+				require.Equal(t, string(expected), file.GetContent(), "%s: %s differs from the expected file", tc.Name, file.GetName())
 			}
 		})
+	}
+}
+
+// buildRequest builds the request protoc would send, from a descriptor set
+// with imports and comments.
+func buildRequest(t *testing.T, tc *Testcase, dirPath, optionsImportPath string) *pluginpb.CodeGeneratorRequest {
+	t.Helper()
+	descriptorSet := filepath.Join(t.TempDir(), "descriptor_set.pb")
+	args := []string{
+		"-I", dirPath,
+		"-I", optionsImportPath,
+		"--include_imports",
+		"--include_source_info",
+		"--descriptor_set_out=" + descriptorSet,
+	}
+	for _, f := range tc.InputFiles {
+		args = append(args, filepath.Join(dirPath, f))
+	}
+	var stderr bytes.Buffer
+	cmd := exec.Command("protoc", args...)
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("protoc %s: %v\n%s", strings.Join(args, " "), err, stderr.String())
+	}
+
+	buf, err := os.ReadFile(descriptorSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	set := &descriptorpb.FileDescriptorSet{}
+	if err := proto.Unmarshal(buf, set); err != nil {
+		t.Fatal(err)
+	}
+
+	var params []string
+	for _, name := range slices.Sorted(maps.Keys(tc.InputParameters)) {
+		params = append(params, name+"="+tc.InputParameters[name])
+	}
+	return &pluginpb.CodeGeneratorRequest{
+		FileToGenerate: tc.InputFiles,
+		Parameter:      new(strings.Join(params, ",")),
+		ProtoFile:      set.GetFile(),
 	}
 }
 
@@ -123,54 +156,4 @@ func loadTestcase(parentDir string, dir os.DirEntry) (*Testcase, error) {
 		return nil, err
 	}
 	return testcase, nil
-}
-
-func loadInput(t *testing.T, tc *Testcase, dirPath string, optionsImportPath string) pgs.AST {
-	loader := &testutils.Loader{ImportPaths: []string{dirPath, optionsImportPath}}
-	inputFiles := make([]string, 0, len(tc.InputFiles))
-	for _, f := range tc.InputFiles {
-		inputFiles = append(inputFiles, filepath.Join(dirPath, f))
-	}
-	ast := loader.LoadProtos(t, inputFiles...)
-
-	protoFiles := map[string]pgs.File{}
-	for _, pkg := range ast.Packages() {
-		for _, file := range pkg.Files() {
-			protoFiles[file.InputPath().String()] = file
-		}
-	}
-	for _, inputFile := range tc.InputFiles {
-		ast.Targets()[inputFile] = protoFiles[inputFile]
-	}
-	return ast
-}
-
-func newModule(tc *Testcase, dirPath string) (*modules.Module, pgs.MockDebugger) {
-	debugger := pgs.InitMockDebugger()
-	module := modules.NewModule()
-	module.InitContext(pgs.Context(debugger, tc.InputParameters, dirPath))
-	return module, debugger
-}
-
-type ExpectedResult struct {
-	results map[string]any
-}
-
-func loadExpectedResult(dirPath string, files []string) (*ExpectedResult, error) {
-	result := &ExpectedResult{results: map[string]any{}}
-	for _, file := range files {
-		buf, err := os.ReadFile(filepath.Join(dirPath, file))
-		if err != nil {
-			return nil, err
-		}
-
-		var a any
-		err = yaml.Unmarshal(buf, &a)
-		if err != nil {
-			return nil, err
-		}
-
-		result.results[file] = a
-	}
-	return result, nil
 }

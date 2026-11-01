@@ -1,0 +1,11 @@
+name: "proto-import-editions"
+description: "A proto3 file can use messages from an edition 2023 file"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

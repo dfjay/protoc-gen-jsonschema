@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	pgs "github.com/lyft/protoc-gen-star/v2"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // GetPluginOptions parses the --jsonschema_opt parameters. Omitted
 // parameters take their defaults; malformed values are errors.
-func GetPluginOptions(params pgs.Parameters) (*PluginOptions, error) {
+func GetPluginOptions(params Parameters) (*PluginOptions, error) {
 	options := &PluginOptions{}
 	var errs []error
 	check := func(err error) {
@@ -66,44 +67,32 @@ func GetPluginOptions(params pgs.Parameters) (*PluginOptions, error) {
 	return options, errors.Join(errs...)
 }
 
-func GetFileOptions(file pgs.File) *FileOptions {
-	options := &FileOptions{}
-	if ok, _ := file.Extension(E_File, options); ok {
-		return options
+func extension[T proto.Message](opts proto.Message, xt protoreflect.ExtensionType) T {
+	var zero T
+	if opts == nil || !proto.HasExtension(opts, xt) {
+		return zero
 	}
-	return nil
+	return proto.GetExtension(opts, xt).(T)
 }
 
-func GetMessageOptions(message pgs.Message) *MessageOptions {
-	options := &MessageOptions{}
-	if ok, _ := message.Extension(E_Message, options); ok {
-		return options
-	}
-	return nil
+func GetFileOptions(file protoreflect.FileDescriptor) *FileOptions {
+	return extension[*FileOptions](file.Options(), E_File)
 }
 
-func GetFieldOptions(field pgs.Field) *FieldOptions {
-	options := &FieldOptions{}
-	if ok, _ := field.Extension(E_Field, options); ok {
-		return options
-	}
-	return nil
+func GetMessageOptions(message protoreflect.MessageDescriptor) *MessageOptions {
+	return extension[*MessageOptions](message.Options(), E_Message)
 }
 
-func GetEnumOptions(enum pgs.Enum) *EnumOptions {
-	options := &EnumOptions{}
-	if ok, _ := enum.Extension(E_Enum, options); ok {
-		return options
-	}
-	return nil
+func GetFieldOptions(field protoreflect.FieldDescriptor) *FieldOptions {
+	return extension[*FieldOptions](field.Options(), E_Field)
 }
 
-func GetEnumValueOptions(enumValue pgs.EnumValue) *EnumValueOptions {
-	options := &EnumValueOptions{}
-	if ok, _ := enumValue.Extension(E_EnumValue, options); ok {
-		return options
-	}
-	return nil
+func GetEnumOptions(enum protoreflect.EnumDescriptor) *EnumOptions {
+	return extension[*EnumOptions](enum.Options(), E_Enum)
+}
+
+func GetEnumValueOptions(enumValue protoreflect.EnumValueDescriptor) *EnumValueOptions {
+	return extension[*EnumValueOptions](enumValue.Options(), E_EnumValue)
 }
 
 type TitleResolver interface {
@@ -121,11 +110,6 @@ type DescriptionResolver interface {
 	GetDescription() string
 }
 
-type NameWithSourceResolver interface {
-	SourceCodeInfo() pgs.SourceCodeInfo
-	Name() pgs.Name
-}
-
 func GetDescriptionOrEmpty(description DescriptionResolver) string {
 	if description != nil && description.GetDescription() != "" {
 		return description.GetDescription()
@@ -133,22 +117,20 @@ func GetDescriptionOrEmpty(description DescriptionResolver) string {
 	return ""
 }
 
-func GetDescriptionOrComment(name NameWithSourceResolver, description DescriptionResolver) string {
+// GetDescriptionOrComment returns the description option, or else the
+// comments around desc in its .proto file.
+func GetDescriptionOrComment(desc protoreflect.Descriptor, description DescriptionResolver) string {
 	if description != nil && description.GetDescription() != "" {
 		return description.GetDescription()
 	}
 
-	srcInfo := name.SourceCodeInfo()
-	if srcInfo == nil {
-		return ""
-	}
-
+	loc := desc.ParentFile().SourceLocations().ByDescriptor(desc)
 	builder := &strings.Builder{}
-	for _, comment := range srcInfo.LeadingDetachedComments() {
+	for _, comment := range loc.LeadingDetachedComments {
 		builder.WriteString(comment)
 	}
-	builder.WriteString(srcInfo.LeadingComments())
-	builder.WriteString(srcInfo.TrailingComments())
+	builder.WriteString(loc.LeadingComments)
+	builder.WriteString(loc.TrailingComments)
 	return strings.TrimSpace(strings.Trim(builder.String(), "\n"))
 }
 

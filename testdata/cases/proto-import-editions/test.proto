@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+import "imports/editions.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  tests.editions.Outer outer = 1;
+}

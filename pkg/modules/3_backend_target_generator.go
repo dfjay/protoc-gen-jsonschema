@@ -8,22 +8,21 @@ import (
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_201909"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema/draft_202012"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
-	pgs "github.com/lyft/protoc-gen-star/v2"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 type BackendTargetGenerator interface {
-	Generate(registry *jsonschema.Registry, entrypointMessage pgs.Message, fileOptions *proto.FileOptions) any
+	Generate(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor, fileOptions *proto.FileOptions) any
 }
 
 var _ BackendTargetGenerator = (*MultiDraftGenerator)(nil)
 
 type MultiDraftGenerator struct {
-	module        *pgs.ModuleBase
 	pluginOptions *proto.PluginOptions
 }
 
-func NewMultiDraftGenerator(module *pgs.ModuleBase, pluginOptions *proto.PluginOptions) *MultiDraftGenerator {
-	return &MultiDraftGenerator{module: module, pluginOptions: pluginOptions}
+func NewMultiDraftGenerator(pluginOptions *proto.PluginOptions) *MultiDraftGenerator {
+	return &MultiDraftGenerator{pluginOptions: pluginOptions}
 }
 
 const draft04Version = "http://json-schema.org/draft-04/schema#"
@@ -32,7 +31,7 @@ const draft07Version = "http://json-schema.org/draft-07/schema#"
 const draft201909Version = "https://json-schema.org/draft/2019-09/schema"
 const draft202012Version = "https://json-schema.org/draft/2020-12/schema"
 
-func (g *MultiDraftGenerator) Generate(registry *jsonschema.Registry, entrypointMessage pgs.Message, fileOptions *proto.FileOptions) any {
+func (g *MultiDraftGenerator) Generate(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor, fileOptions *proto.FileOptions) any {
 	rootSchema := &jsonschema.Schema{}
 	rootSchema.Title = proto.GetTitleOrEmpty(fileOptions)
 	rootSchema.Description = proto.GetDescriptionOrEmpty(fileOptions)
