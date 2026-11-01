@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Request"};
+
+// The file entrypoint keeps the file's name; marking it too adds a second file.
+message Request {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+
+  string id = 1;
+}
+
+message Response {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+
+  string result = 1;
+}

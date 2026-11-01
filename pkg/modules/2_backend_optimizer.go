@@ -10,7 +10,7 @@ import (
 )
 
 type BackendOptimizer interface {
-	Optimize(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor) error
+	Optimize(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor) (*jsonschema.Registry, error)
 }
 
 var _ BackendOptimizer = (*OptimizerImpl)(nil)
@@ -21,97 +21,90 @@ func NewOptimizerImpl() *OptimizerImpl {
 	return &OptimizerImpl{}
 }
 
-const linkedFromEntrypoint = "linkedFromEntrypoint"
-
-// Optimize keeps only the schemas reachable from the entrypoint. It fails
-// when a reachable $ref has no schema, e.g. a message hidden by
-// visibility_level but used by a visible field.
-func (o *OptimizerImpl) Optimize(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor) error {
-	var missing []string
-	o.visitRef(registry, toRefId(entrypointMessage).String(), &missing)
-	if len(missing) > 0 {
-		return fmt.Errorf("schemas not found (hidden by visibility_level?): %s", strings.Join(missing, ", "))
+// Optimize returns copies of the schemas reachable from the entrypoint and
+// leaves registry unchanged. It fails when a reachable $ref has no schema,
+// e.g. a message hidden by visibility_level but used by a visible field.
+func (o *OptimizerImpl) Optimize(registry *jsonschema.Registry, entrypointMessage protoreflect.MessageDescriptor) (*jsonschema.Registry, error) {
+	r := reachability{registry: registry, reached: map[string]bool{}}
+	r.visitRef(toRefId(entrypointMessage).String())
+	if len(r.missing) > 0 {
+		return nil, fmt.Errorf("schemas not found (hidden by visibility_level?): %s", strings.Join(r.missing, ", "))
 	}
 
-	o.optimizeDefinitions(registry)
-	return nil
-}
-
-func (o *OptimizerImpl) optimizeDefinitions(registry *jsonschema.Registry) {
-	var deleteKeys []string
+	optimized := jsonschema.NewRegistry()
 	for _, key := range registry.GetKeys() {
-		schema := registry.GetSchema(key)
-		if linked, _ := schema.GetExtrasItem(linkedFromEntrypoint).(bool); !linked {
-			deleteKeys = append(deleteKeys, key)
+		if r.reached[key] {
+			optimized.AddSchema(key, jsonschema.DeepCopy(registry.GetSchema(key)))
 		}
 	}
-
-	for _, key := range deleteKeys {
-		registry.DeleteSchema(key)
-	}
+	return optimized, nil
 }
 
-// visitRef marks the schema behind ref as linked and visits it on its first
-// visit; a ref without a schema is recorded in missing.
-func (o *OptimizerImpl) visitRef(registry *jsonschema.Registry, ref string, missing *[]string) {
-	schema := registry.GetSchema(ref)
+type reachability struct {
+	registry *jsonschema.Registry
+	reached  map[string]bool
+	missing  []string
+}
+
+func (r *reachability) visitRef(ref string) {
+	if r.reached[ref] {
+		return
+	}
+	schema := r.registry.GetSchema(ref)
 	if schema == nil {
-		if !slices.Contains(*missing, ref) {
-			*missing = append(*missing, ref)
+		if !slices.Contains(r.missing, ref) {
+			r.missing = append(r.missing, ref)
 		}
 		return
 	}
-	if schema.GetExtrasItem(linkedFromEntrypoint) != nil {
-		return
-	}
-	schema.SetExtrasItem(linkedFromEntrypoint, true)
-	o.visitSchema(registry, schema, missing)
+	r.reached[ref] = true
+	r.visitSchema(schema)
 }
 
-func (o *OptimizerImpl) visitSchema(registry *jsonschema.Registry, schema *jsonschema.Schema, missing *[]string) {
+func (r *reachability) visitSchema(schema *jsonschema.Schema) {
 	if schema == nil {
 		return
 	}
 
 	if !schema.Ref.IsEmpty() {
-		o.visitRef(registry, schema.Ref.String(), missing)
+		r.visitRef(schema.Ref.String())
 	}
-	o.visitSchemaMap(registry, schema.Definitions, missing)
+	r.visitSchemaMap(schema.Definitions)
 
-	o.visitSchemaArray(registry, schema.AllOf, missing)
-	o.visitSchemaArray(registry, schema.AnyOf, missing)
-	o.visitSchemaArray(registry, schema.OneOf, missing)
-	o.visitSchema(registry, schema.Not, missing)
+	r.visitSchemaArray(schema.AllOf)
+	r.visitSchemaArray(schema.AnyOf)
+	r.visitSchemaArray(schema.OneOf)
+	r.visitSchema(schema.Not)
 
-	o.visitSchema(registry, schema.If, missing)
-	o.visitSchema(registry, schema.Then, missing)
-	o.visitSchema(registry, schema.Else, missing)
-	o.visitSchemaMap(registry, schema.DependentSchemas, missing)
+	r.visitSchema(schema.If)
+	r.visitSchema(schema.Then)
+	r.visitSchema(schema.Else)
+	r.visitSchemaMap(schema.DependentSchemas)
 
-	o.visitSchemaArray(registry, schema.PrefixItems, missing)
-	o.visitSchema(registry, schema.Items, missing)
-	o.visitSchema(registry, schema.Contains, missing)
+	r.visitSchemaArray(schema.PrefixItems)
+	r.visitSchema(schema.Items)
+	r.visitSchema(schema.Contains)
 
-	o.visitSchemaMap(registry, schema.Properties, missing)
-	o.visitSchemaMap(registry, schema.PatternProperties, missing)
-	o.visitSchema(registry, schema.AdditionalProperties, missing)
-	o.visitSchema(registry, schema.PropertyNames, missing)
+	r.visitSchemaMap(schema.Properties)
+	r.visitSchemaMap(schema.PatternProperties)
+	r.visitSchema(schema.AdditionalProperties)
+	r.visitSchema(schema.PropertyNames)
 
-	o.visitSchema(registry, schema.ContentSchema, missing)
+	r.visitSchema(schema.ContentSchema)
 }
 
-func (o *OptimizerImpl) visitSchemaArray(registry *jsonschema.Registry, schemas []*jsonschema.Schema, missing *[]string) {
+func (r *reachability) visitSchemaArray(schemas []*jsonschema.Schema) {
 	for _, schema := range schemas {
-		o.visitSchema(registry, schema, missing)
+		r.visitSchema(schema)
 	}
 }
 
-func (o *OptimizerImpl) visitSchemaMap(registry *jsonschema.Registry, schemaMap jsonschema.SchemaMap, missing *[]string) {
+func (r *reachability) visitSchemaMap(schemaMap jsonschema.SchemaMap) {
 	if schemaMap == nil {
 		return
 	}
 	for _, key := range schemaMap.Keys() {
 		schema, _ := schemaMap.Get(key)
-		o.visitSchema(registry, schema, missing)
+		r.visitSchema(schema)
 	}
 }

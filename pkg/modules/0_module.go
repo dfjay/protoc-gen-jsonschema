@@ -79,14 +79,13 @@ func generate(req *pluginpb.CodeGeneratorRequest, log logger) ([]*pluginpb.CodeG
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", name, err)
 		}
-		if generated != nil {
-			out = append(out, generated)
-		}
+		out = append(out, generated...)
 	}
 
 	if len(req.GetFileToGenerate()) > 0 && len(out) == 0 {
-		log.Logf("No schema generated: a schema is written for each input file that defines its entrypoint message. " +
-			"Pass --jsonschema_opt=entrypoint_message=<Message> or set option (dfjay.jsonschema.file) = {entrypoint_message: \"<Message>\"} in the file.")
+		log.Logf("No schema generated: a schema is written for each entrypoint message. " +
+			"Pass --jsonschema_opt=entrypoint_message=<Message>, set option (dfjay.jsonschema.file) = {entrypoint_message: \"<Message>\"} in the file, " +
+			"or set option (dfjay.jsonschema.message) = {entrypoint: true} in the messages.")
 	}
 	return out, nil
 }
@@ -99,42 +98,84 @@ type backend struct {
 	serializer BackendSerializer
 }
 
-// generate returns the schema file of file, or nil when file has no
-// entrypoint message.
-func (b *backend) generate(file protoreflect.FileDescriptor, registry *jsonschema.Registry) (*pluginpb.CodeGeneratorResponse_File, error) {
+type entrypoint struct {
+	message  protoreflect.MessageDescriptor
+	fileName string
+	// Set only for entrypoint_message, which stands for the whole file.
+	fileOptions *proto.FileOptions
+}
+
+func (b *backend) generate(file protoreflect.FileDescriptor, registry *jsonschema.Registry) ([]*pluginpb.CodeGeneratorResponse_File, error) {
 	log := b.log.with(file.Path())
+	var out []*pluginpb.CodeGeneratorResponse_File
+	for _, ep := range b.entrypoints(file, registry, log) {
+		generated, err := b.generateEntrypoint(ep, registry)
+		if err != nil {
+			return nil, err
+		}
+		log.Debugf("GeneratedFileName: %s", ep.fileName)
+		out = append(out, generated)
+	}
+	return out, nil
+}
+
+// entrypoints returns the entrypoint_message of file and its messages marked
+// entrypoint. Names don't depend on how many there are, so adding one
+// renames no file.
+func (b *backend) entrypoints(file protoreflect.FileDescriptor, registry *jsonschema.Registry, log logger) []entrypoint {
+	var eps []entrypoint
 	fileOptions := proto.GetFileOptions(file)
 	log.Debugf("FileOptions: %v", protojson.MarshalOptions{EmitUnpopulated: true}.Format(fileOptions))
-
-	entrypointName := proto.GetEntrypointMessage(b.options, fileOptions)
-	if entrypointName == "" {
-		log.Debugf("No entrypoint message set; skipping")
-		return nil, nil
+	if name := proto.GetEntrypointMessage(b.options, fileOptions); name != "" {
+		if message := file.Messages().ByName(protoreflect.Name(name)); message != nil {
+			eps = append(eps, entrypoint{
+				message:     message,
+				fileName:    outputFileName(file.Path(), b.options.GetOutputFileSuffix()),
+				fileOptions: fileOptions,
+			})
+		} else {
+			log.Logf("Entrypoint message %q is not defined in this file; skipping", name)
+		}
 	}
-	entrypointMessage := file.Messages().ByName(protoreflect.Name(entrypointName))
-	if entrypointMessage == nil {
-		log.Logf("Entrypoint message %q is not defined in this file; skipping", entrypointName)
-		return nil, nil
+
+	var walk func(messages protoreflect.MessageDescriptors)
+	walk = func(messages protoreflect.MessageDescriptors) {
+		for message := range listOf(messages) {
+			if proto.GetMessageOptions(message).GetEntrypoint() {
+				// Hidden by visibility_level.
+				if registry.HasSchema(fullyQualifiedName(message)) {
+					relative := strings.TrimPrefix(string(message.FullName()), string(file.Package())+".")
+					eps = append(eps, entrypoint{
+						message:  message,
+						fileName: outputFileName(file.Path(), "."+relative+b.options.GetOutputFileSuffix()),
+					})
+				} else {
+					log.Debugf("Entrypoint %s is hidden by visibility_level; skipping", fullyQualifiedName(message))
+				}
+			}
+			walk(message.Messages())
+		}
+	}
+	walk(file.Messages())
+	return eps
+}
+
+func (b *backend) generateEntrypoint(ep entrypoint, registry *jsonschema.Registry) (*pluginpb.CodeGeneratorResponse_File, error) {
+	optimized, err := b.optimizer.Optimize(registry, ep.message)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate schema for entrypoint %s: %w", fullyQualifiedName(ep.message), err)
 	}
 
-	copiedRegistry := jsonschema.DeepCopyRegistry(registry)
-	if err := b.optimizer.Optimize(copiedRegistry, entrypointMessage); err != nil {
-		return nil, fmt.Errorf("failed to generate schema for entrypoint %s: %w", fullyQualifiedName(entrypointMessage), err)
-	}
-	log.Debugf("# of Schemas After Optimized : %d", len(copiedRegistry.GetKeys()))
-
-	rootSchema := b.generator.Generate(copiedRegistry, entrypointMessage, fileOptions)
+	rootSchema := b.generator.Generate(optimized, ep.message, ep.fileOptions)
 	if rootSchema == nil {
 		return nil, fmt.Errorf("unsupported draft %s", b.options.GetDraft())
 	}
 
-	fileName := b.serializer.ToFileName(file)
-	content, err := b.serializer.Serialize(rootSchema, file)
+	content, err := b.serializer.Serialize(rootSchema, ep.fileName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to serialize %s: %w", fileName, err)
+		return nil, fmt.Errorf("failed to serialize %s: %w", ep.fileName, err)
 	}
-	log.Debugf("GeneratedFileName: %s", fileName)
-	return &pluginpb.CodeGeneratorResponse_File{Name: new(fileName), Content: new(string(content))}, nil
+	return &pluginpb.CodeGeneratorResponse_File{Name: new(ep.fileName), Content: new(string(content))}, nil
 }
 
 func outputFileName(protoPath, suffix string) string {

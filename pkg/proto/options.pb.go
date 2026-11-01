@@ -253,9 +253,10 @@ type PluginOptions struct {
 	// default: 0
 	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
 	// *
-	// entrypoint_message is the simple name of a top-level message in the input file. It is required: a file whose
-	// entrypoint message is not set, or not defined in that file, produces no schema. The file
-	// option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
+	// entrypoint_message is the simple name of a top-level message of the input file, whose
+	// schema is written to <file>.schema.json. Messages can also be marked with
+	// (dfjay.jsonschema.message).entrypoint, instead or as well. The file option
+	// (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 	//
 	// default: none
 	// example:
@@ -591,12 +592,19 @@ type MessageOptions struct {
 	// Message visibility level. The message is omitted when this value is below
 	// the visibility_level plugin option.
 	// default: 0
-	VisibilityLevel uint32          `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
-	Title           string          `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description     string          `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Object          *ObjectKeywords `protobuf:"bytes,10,opt,name=object,proto3" json:"object,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	VisibilityLevel uint32 `protobuf:"varint,1,opt,name=visibility_level,json=visibilityLevel,proto3" json:"visibility_level,omitempty"`
+	Title           string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Description     string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	// *
+	// Write a schema of this message to its own file: Form in form.proto gives
+	// form.Form.schema.json, a nested Outer.Inner gives form.Outer.Inner.schema.json.
+	// Any number of messages can set it, alongside entrypoint_message. Skipped when
+	// hidden by visibility_level.
+	// default: false
+	Entrypoint    bool            `protobuf:"varint,4,opt,name=entrypoint,proto3" json:"entrypoint,omitempty"`
+	Object        *ObjectKeywords `protobuf:"bytes,10,opt,name=object,proto3" json:"object,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MessageOptions) Reset() {
@@ -648,6 +656,13 @@ func (x *MessageOptions) GetDescription() string {
 		return x.Description
 	}
 	return ""
+}
+
+func (x *MessageOptions) GetEntrypoint() bool {
+	if x != nil {
+		return x.Entrypoint
+	}
+	return false
 }
 
 func (x *MessageOptions) GetObject() *ObjectKeywords {
@@ -1302,11 +1317,14 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12\x14\n" +
 	"\x05title\x18\x05 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\"\xad\x01\n" +
+	"\vdescription\x18\x06 \x01(\tR\vdescription\"\xcd\x01\n" +
 	"\x0eMessageOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x128\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1e\n" +
+	"\n" +
+	"entrypoint\x18\x04 \x01(\bR\n" +
+	"entrypoint\x128\n" +
 	"\x06object\x18\n" +
 	" \x01(\v2 .dfjay.jsonschema.ObjectKeywordsR\x06object\"\xe2\x01\n" +
 	"\x0eObjectKeywords\x128\n" +

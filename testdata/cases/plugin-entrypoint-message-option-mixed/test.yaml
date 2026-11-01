@@ -1,0 +1,10 @@
+name: "plugin-entrypoint-message-option-mixed"
+description: "entrypoint_message and entrypoint: true together; YAML output"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  output_file_suffix: ".schema.yaml"
+
+expectResultFiles: ["test.schema.yaml", "test.Request.schema.yaml", "test.Response.schema.yaml"]
+expectResultIsNull: false
+expectFail: false

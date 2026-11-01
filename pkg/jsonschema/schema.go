@@ -77,24 +77,6 @@ type Schema struct {
 	IsBooleanSchema *bool
 }
 
-func (s *Schema) SetExtrasItem(key string, value any) {
-	if s.Extras == nil {
-		s.Extras = map[string]any{}
-	}
-	s.Extras[key] = value
-}
-
-func (s *Schema) ClearExtras() {
-	s.Extras = nil
-}
-
-func (s *Schema) GetExtrasItem(key string) any {
-	if s.Extras == nil {
-		return nil
-	}
-	return s.Extras[key]
-}
-
 func DeepCopy(origin *Schema) *Schema {
 	if origin == nil {
 		return nil

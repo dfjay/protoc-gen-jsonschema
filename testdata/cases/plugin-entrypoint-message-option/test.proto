@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+// Shared by both entrypoints: each schema has its own copy.
+message Address {
+  string city = 1;
+}
+
+message Customer {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+
+  string name = 1;
+  Address address = 2;
+}
+
+message Supplier {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+
+  string company = 1;
+  Address address = 2;
+}
+
+message Outer {
+  message Inner {
+    option (dfjay.jsonschema.message) = {entrypoint: true};
+
+    int32 value = 1;
+  }
+
+  Inner inner = 1;
+}
+
+// Not an entrypoint: no schema of its own.
+message Unused {
+  string value = 1;
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+message Public {
+  option (dfjay.jsonschema.message) = {entrypoint: true, visibility_level: 1};
+
+  string name = 1 [(dfjay.jsonschema.field) = {visibility_level: 1}];
+}
+
+// Hidden by visibility_level=1: skipped, not an error.
+message Internal {
+  option (dfjay.jsonschema.message) = {entrypoint: true};
+
+  string secret = 1;
+}

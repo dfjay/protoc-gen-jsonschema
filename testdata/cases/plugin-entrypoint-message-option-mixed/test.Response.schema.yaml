@@ -1,0 +1,11 @@
+$defs:
+  .tests.Response:
+    properties:
+      result:
+        $ref: '#/$defs/.tests.Response.result'
+    type: object
+  .tests.Response.result:
+    type: string
+$ref: '#/$defs/.tests.Response'
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object

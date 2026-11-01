@@ -39,9 +39,3 @@ func (r *Registry) SortSchemas() {
 		r.AddSchema(key, schema)
 	}
 }
-
-func DeepCopyRegistry(registry *Registry) *Registry {
-	newRegistry := NewRegistry()
-	newRegistry.schemasByName = DeepCopyMap(registry.schemasByName)
-	return newRegistry
-}

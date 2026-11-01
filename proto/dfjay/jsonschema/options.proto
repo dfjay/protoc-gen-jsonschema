@@ -16,9 +16,10 @@ message PluginOptions {
   uint32 visibility_level = 1;
 
   /**
-    entrypoint_message is the simple name of a top-level message in the input file. It is required: a file whose
-    entrypoint message is not set, or not defined in that file, produces no schema. The file
-    option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
+    entrypoint_message is the simple name of a top-level message of the input file, whose
+    schema is written to <file>.schema.json. Messages can also be marked with
+    (dfjay.jsonschema.message).entrypoint, instead or as well. The file option
+    (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 
     default: none
     example:
@@ -239,6 +240,15 @@ message MessageOptions {
 
   string title = 2;
   string description = 3;
+
+  /**
+    Write a schema of this message to its own file: Form in form.proto gives
+    form.Form.schema.json, a nested Outer.Inner gives form.Outer.Inner.schema.json.
+    Any number of messages can set it, alongside entrypoint_message. Skipped when
+    hidden by visibility_level.
+    default: false
+  */
+  bool entrypoint = 4;
 
   ObjectKeywords object = 10;
 }

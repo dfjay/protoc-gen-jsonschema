@@ -140,6 +140,7 @@ default: not set |
 | visibility_level | [uint32](#uint32) |  | Message visibility level. The message is omitted when this value is below the visibility_level plugin option. default: 0 |
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
+| entrypoint | [bool](#bool) |  | Write a schema of this message to its own file: Form in form.proto gives form.Form.schema.json, a nested Outer.Inner gives form.Outer.Inner.schema.json. Any number of messages can set it, alongside entrypoint_message. Skipped when hidden by visibility_level. default: false |
 | object | [ObjectKeywords](#dfjay-jsonschema-ObjectKeywords) |  |  |
 
 
@@ -192,7 +193,7 @@ Command-line plugin options. Defaults are applied by GetPluginOptions.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | visibility_level | [uint32](#uint32) |  | Minimum visibility level for messages and fields. Descriptors with a lower annotated level are omitted. A visible reference to a hidden type is an error. default: 0 |
-| entrypoint_message | [string](#string) |  | entrypoint_message is the simple name of a top-level message in the input file. It is required: a file whose entrypoint message is not set, or not defined in that file, produces no schema. The file option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
+| entrypoint_message | [string](#string) |  | entrypoint_message is the simple name of a top-level message of the input file, whose schema is written to &lt;file&gt;.schema.json. Messages can also be marked with (dfjay.jsonschema.message).entrypoint, instead or as well. The file option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 
 default: none example: - --jsonschema_opt=entrypoint_message=MyMessage |
 | output_file_suffix | [string](#string) |  | Output filename suffix. Must end with &#39;.json&#39; or &#39;.yaml&#39; or &#39;.yml&#39;.

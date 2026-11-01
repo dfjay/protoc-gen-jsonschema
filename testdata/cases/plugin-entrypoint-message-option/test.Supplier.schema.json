@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Supplier",
+  "$defs": {
+    ".tests.Address": {
+      "properties": {
+        "city": {
+          "$ref": "#/$defs/.tests.Address.city"
+        }
+      },
+      "type": "object",
+      "description": "Shared by both entrypoints: each schema has its own copy."
+    },
+    ".tests.Address.city": {
+      "type": "string"
+    },
+    ".tests.Supplier": {
+      "properties": {
+        "company": {
+          "$ref": "#/$defs/.tests.Supplier.company"
+        },
+        "address": {
+          "$ref": "#/$defs/.tests.Supplier.address"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Supplier.address": {
+      "$ref": "#/$defs/.tests.Address"
+    },
+    ".tests.Supplier.company": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
