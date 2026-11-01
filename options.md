@@ -119,7 +119,7 @@ default: not set |
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | visibility_level | [uint32](#uint32) |  | WIP: visibility_level is used to determine which message should be generated. Currently not work. |
-| entrypoint_message | [string](#string) |  | entrypoint_message is used which message should be entrypoint object of schema. default: inherit from PluginOptions.entrypoint_message |
+| entrypoint_message | [string](#string) |  | entrypoint_message names the message of this file that the schema describes. It takes precedence over the entrypoint_message plugin option. default: the entrypoint_message plugin option |
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 
@@ -192,9 +192,9 @@ Plugin wide options
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | visibility_level | [uint32](#uint32) |  | WIP: visibility_level is used to determine which message should be generated. Currently not work. |
-| entrypoint_message | [string](#string) |  | entrypoint_message is used which message should be entrypoint object of schema.
+| entrypoint_message | [string](#string) |  | entrypoint_message names the message the schema describes. It is required: a file whose entrypoint message is not set, or not defined in that file, produces no schema. The file option (dfjay.jsonschema.file).entrypoint_message takes precedence over this one.
 
-default: null or empty example: - --jsonschema_opt=entrypoint_message=MyMessage |
+default: none example: - --jsonschema_opt=entrypoint_message=MyMessage |
 | output_file_suffix | [string](#string) |  | output_file_suffix is used to determine output file name suffix. Values should end with &#39;.json&#39; or &#39;.yaml&#39; or &#39;.yml&#39;.
 
 default: .schema.json example: - --jsonschema_opt=output_file_suffix=.schema.json - --jsonschema_opt=output_file_suffix=.schema.yaml |

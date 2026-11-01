@@ -46,13 +46,20 @@ func (m *Module) Execute(targets map[string]pgs.File, packages map[string]pgs.Pa
 	m.Push("BackendPhase")
 	visitor.registry.SortSchemas()
 
+	generated := 0
 	for _, file := range targets {
 		artifact := m.BackendPhase(file, visitor.registry, optimizer, generator, serializer)
 		if artifact != nil {
 			m.AddArtifact(artifact)
+			generated++
 		}
 	}
 
+	// Not len(m.Artifacts()): that call drains the artifacts.
+	if len(targets) > 0 && generated == 0 {
+		m.Logf("No schema generated: a schema is written for each input file that defines its entrypoint message. " +
+			"Pass --jsonschema_opt=entrypoint_message=<Message> or set option (dfjay.jsonschema.file) = {entrypoint_message: \"<Message>\"} in the file.")
+	}
 	return m.Artifacts()
 }
 
@@ -60,9 +67,14 @@ func (m *Module) BackendPhase(file pgs.File, registry *jsonschema.Registry, opti
 	defer m.Push(file.Name().String()).Pop()
 	m.Debugf("FileOptions: %v", protojson.MarshalOptions{EmitUnpopulated: true}.Format(proto.GetFileOptions(file)))
 
-	entrypointMessage := getEntrypointFromFile(file, m.pluginOptions)
+	entrypointName := proto.GetEntrypointMessage(m.pluginOptions, proto.GetFileOptions(file))
+	if entrypointName == "" {
+		m.Debugf("No entrypoint message set; skipping")
+		return nil
+	}
+	entrypointMessage := findMessage(file, entrypointName)
 	if entrypointMessage == nil {
-		m.Logf("Cannot find matched entrypointMessage, Please check FileOptions")
+		m.Logf("Entrypoint message %q is not defined in this file; skipping", entrypointName)
 		return nil
 	}
 
@@ -88,14 +100,10 @@ func (m *Module) BackendPhase(file pgs.File, registry *jsonschema.Registry, opti
 	return pgs.GeneratorFile{Name: fileName, Contents: string(content)}
 }
 
-func getEntrypointFromFile(file pgs.File, pluginOptions *proto.PluginOptions) pgs.Message {
-	entryPointMessage := proto.GetEntrypointMessage(pluginOptions, proto.GetFileOptions(file))
-	if entryPointMessage == "" {
-		return nil
-	}
-
+// findMessage returns the top-level message of file with the given name, or nil.
+func findMessage(file pgs.File, name string) pgs.Message {
 	for _, message := range file.Messages() {
-		if message.Name().String() == entryPointMessage {
+		if message.Name().String() == name {
 			return message
 		}
 	}
