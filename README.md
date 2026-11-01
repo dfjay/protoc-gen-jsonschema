@@ -51,6 +51,9 @@ This plugin offers options for fields, messages, and enums. Import `dfjay/jsonsc
 ```proto
 import "dfjay/jsonschema/options.proto";
 
+// The message the schema describes; or pass --jsonschema_opt=entrypoint_message=Form.
+option (dfjay.jsonschema.file) = {entrypoint_message: "Form"};
+
 message Form {
   string name = 1 [(dfjay.jsonschema.field) = {title: "Name", nullable: true}];
 }
