@@ -39,7 +39,7 @@ func (g *MultiDraftGenerator) Generate(registry *jsonschema.Registry, entrypoint
 
 	rootSchema.Ref = toRefId(entrypointMessage)
 
-	rootSchema.Definitions = jsonschema.NewOrderedSchemaMap()
+	rootSchema.Definitions = jsonschema.NewOrderedMap[*jsonschema.Schema]()
 	for _, key := range registry.GetKeys() {
 		rootSchema.Definitions.Set(key, registry.GetSchema(key))
 	}

@@ -99,7 +99,7 @@ func (r *reachability) visitSchemaArray(schemas []*jsonschema.Schema) {
 	}
 }
 
-func (r *reachability) visitSchemaMap(schemaMap jsonschema.SchemaMap) {
+func (r *reachability) visitSchemaMap(schemaMap *jsonschema.SchemaMap) {
 	if schemaMap == nil {
 		return
 	}

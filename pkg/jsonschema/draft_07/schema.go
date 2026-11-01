@@ -6,15 +6,14 @@ import (
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/utils"
-	"github.com/iancoleman/orderedmap"
 )
 
 type Schema struct {
-	Version     string                 `json:"$schema,omitempty"`
-	ID          string                 `json:"$id,omitempty"`
-	Ref         string                 `json:"$ref,omitempty"`
-	Definitions *orderedmap.OrderedMap `json:"definitions,omitempty"`
-	Comments    string                 `json:"$comment,omitempty"`
+	Version     string                          `json:"$schema,omitempty"`
+	ID          string                          `json:"$id,omitempty"`
+	Ref         string                          `json:"$ref,omitempty"`
+	Definitions *jsonschema.OrderedMap[*Schema] `json:"definitions,omitempty"`
+	Comments    string                          `json:"$comment,omitempty"`
 
 	AllOf []*Schema `json:"allOf,omitempty"`
 	AnyOf []*Schema `json:"anyOf,omitempty"`
@@ -30,10 +29,10 @@ type Schema struct {
 	AdditionalItems *Schema `json:"additionalItems,omitempty"`
 	Contains        *Schema `json:"contains,omitempty"`
 
-	Properties           *orderedmap.OrderedMap `json:"properties,omitempty"`
-	PatternProperties    *orderedmap.OrderedMap `json:"patternProperties,omitempty"`
-	AdditionalProperties *Schema                `json:"additionalProperties,omitempty"`
-	PropertyNames        *Schema                `json:"propertyNames,omitempty"`
+	Properties           *jsonschema.OrderedMap[*Schema] `json:"properties,omitempty"`
+	PatternProperties    *jsonschema.OrderedMap[*Schema] `json:"patternProperties,omitempty"`
+	AdditionalProperties *Schema                         `json:"additionalProperties,omitempty"`
+	PropertyNames        *Schema                         `json:"propertyNames,omitempty"`
 
 	Type             string   `json:"type,omitempty"`
 	Enum             []any    `json:"enum,omitempty"`
@@ -83,7 +82,7 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	if origin.Ref.String() != "" {
 		dst.Ref = "#/definitions/" + origin.Ref.String()
 	}
-	dst.Definitions = deepCopyMap(origin.Definitions)
+	dst.Definitions = jsonschema.MapValues(origin.Definitions, deepCopy)
 	dst.Comments = origin.Comments
 
 	dst.AllOf = deepCopyArray(origin.AllOf)
@@ -103,8 +102,8 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	}
 	dst.Contains = deepCopy(origin.Contains)
 
-	dst.Properties = deepCopyMap(origin.Properties)
-	dst.PatternProperties = deepCopyMap(origin.PatternProperties)
+	dst.Properties = jsonschema.MapValues(origin.Properties, deepCopy)
+	dst.PatternProperties = jsonschema.MapValues(origin.PatternProperties, deepCopy)
 	dst.AdditionalProperties = deepCopy(origin.AdditionalProperties)
 	dst.PropertyNames = deepCopy(origin.PropertyNames)
 
@@ -151,18 +150,6 @@ func deepCopyArray(arr []*jsonschema.Schema) []*Schema {
 	dst := make([]*Schema, len(arr))
 	for i, schema := range arr {
 		dst[i] = deepCopy(schema)
-	}
-	return dst
-}
-
-func deepCopyMap(schemaMap jsonschema.SchemaMap) *orderedmap.OrderedMap {
-	if schemaMap == nil {
-		return nil
-	}
-	dst := orderedmap.New()
-	for _, key := range schemaMap.Keys() {
-		schema, _ := schemaMap.Get(key)
-		dst.Set(key, deepCopy(schema))
 	}
 	return dst
 }

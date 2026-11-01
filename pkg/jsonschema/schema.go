@@ -14,7 +14,7 @@ type Schema struct {
 	DynamicAnchor string
 	Ref           RefId
 	DynamicRef    string
-	Definitions   SchemaMap
+	Definitions   *SchemaMap
 	Comments      string
 
 	AllOf []*Schema
@@ -25,14 +25,14 @@ type Schema struct {
 	If               *Schema
 	Then             *Schema
 	Else             *Schema
-	DependentSchemas SchemaMap
+	DependentSchemas *SchemaMap
 
 	PrefixItems []*Schema
 	Items       *Schema
 	Contains    *Schema
 
-	Properties           SchemaMap
-	PatternProperties    SchemaMap
+	Properties           *SchemaMap
+	PatternProperties    *SchemaMap
 	AdditionalProperties *Schema
 	PropertyNames        *Schema
 
@@ -89,7 +89,7 @@ func DeepCopy(origin *Schema) *Schema {
 	dst.DynamicAnchor = origin.DynamicAnchor
 	dst.Ref = origin.Ref
 	dst.DynamicRef = origin.DynamicRef
-	dst.Definitions = DeepCopyMap(origin.Definitions)
+	dst.Definitions = MapValues(origin.Definitions, DeepCopy)
 	dst.Comments = origin.Comments
 
 	dst.AllOf = DeepCopyArray(origin.AllOf)
@@ -100,14 +100,14 @@ func DeepCopy(origin *Schema) *Schema {
 	dst.If = DeepCopy(origin.If)
 	dst.Then = DeepCopy(origin.Then)
 	dst.Else = DeepCopy(origin.Else)
-	dst.DependentSchemas = DeepCopyMap(origin.DependentSchemas)
+	dst.DependentSchemas = MapValues(origin.DependentSchemas, DeepCopy)
 
 	dst.PrefixItems = DeepCopyArray(origin.PrefixItems)
 	dst.Items = DeepCopy(origin.Items)
 	dst.Contains = DeepCopy(origin.Contains)
 
-	dst.Properties = DeepCopyMap(origin.Properties)
-	dst.PatternProperties = DeepCopyMap(origin.PatternProperties)
+	dst.Properties = MapValues(origin.Properties, DeepCopy)
+	dst.PatternProperties = MapValues(origin.PatternProperties, DeepCopy)
 	dst.AdditionalProperties = DeepCopy(origin.AdditionalProperties)
 	dst.PropertyNames = DeepCopy(origin.PropertyNames)
 
@@ -159,19 +159,6 @@ func DeepCopyArray(schemas []*Schema) []*Schema {
 	newSchemas := make([]*Schema, len(schemas))
 	for i, schema := range schemas {
 		newSchemas[i] = DeepCopy(schema)
-	}
-	return newSchemas
-}
-
-func DeepCopyMap(schemas SchemaMap) SchemaMap {
-	if schemas == nil {
-		return nil
-	}
-
-	newSchemas := NewOrderedSchemaMap()
-	for _, key := range schemas.Keys() {
-		schema, _ := schemas.Get(key)
-		newSchemas.Set(key, DeepCopy(schema))
 	}
 	return newSchemas
 }

@@ -55,8 +55,8 @@ Tests and `just golden` shell out to `protoc` (CI pins its version in
   files. Output names must not depend on how many entrypoints a file has
   (`form.schema.json` for `entrypoint_message`, `form.<Message>.schema.json` for
   `entrypoint: true`), so adding an entrypoint renames no file.
-- Output must be deterministic: same input, byte-identical schema. Use the ordered maps
-  (`jsonschema.NewOrderedSchemaMap`, `orderedmap`); never range over a Go map into output.
+- Output must be deterministic: same input, byte-identical schema. Use
+  `jsonschema.OrderedMap`; never range over a Go map into output.
 - Output must be valid for the selected draft. Don't emit keywords a draft lacks
   (`readOnly`/`writeOnly` need draft-07+, `propertyNames` draft-06+). Draft-07 and
   earlier ignore siblings of `$ref`: put the ref in `allOf` before adding keywords.
