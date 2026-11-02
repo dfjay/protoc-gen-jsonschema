@@ -9,3 +9,5 @@ expectResultIsNull: false
 expectFail: false
 
 expectedBehaviorDescription: ""
+
+skipRoundTrip: "protodesc rejects MessageSet descriptors"

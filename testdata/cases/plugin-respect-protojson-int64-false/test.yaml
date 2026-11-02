@@ -10,3 +10,5 @@ expectResultIsNull: false
 expectFail: false
 
 expectedBehaviorDescription: "64-bit integer fields, repeated elements, map values and wrappers are integers"
+
+skipRoundTrip: "respect_protojson_int64=false describes 64-bit integers as JSON numbers; protojson writes strings"
