@@ -50,6 +50,5 @@
       "type": "array",
       "description": "repeated: the element schema goes under items"
     }
-  },
-  "type": "object"
+  }
 }

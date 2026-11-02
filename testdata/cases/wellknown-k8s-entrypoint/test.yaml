@@ -1,0 +1,13 @@
+name: "wellknown-k8s-entrypoint"
+description: "a non-object entrypoint: the root has no type of its own"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+skipRoundTrip: "IntOrString follows the Kubernetes JSON form, not protojson"

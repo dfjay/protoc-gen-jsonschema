@@ -149,6 +149,7 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 
 	dst.Title = origin.Title
 	dst.Description = origin.Description
+	dst.Examples = slices.Clone(origin.Examples)
 	dst.Default = utils.ClonePtr(origin.Default)
 	dst.Deprecated = utils.ClonePtr(origin.Deprecated)
 	dst.ReadOnly = utils.ClonePtr(origin.ReadOnly)

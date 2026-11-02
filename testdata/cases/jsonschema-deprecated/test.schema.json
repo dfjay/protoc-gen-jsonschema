@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Legacy": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/.tests.Legacy.name"
+        }
+      },
+      "type": "object",
+      "deprecated": true
+    },
+    ".tests.Legacy.name": {
+      "type": "string"
+    },
+    ".tests.Status": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_OLD"
+      ],
+      "deprecated": true
+    },
+    ".tests.Values": {
+      "properties": {
+        "current": {
+          "$ref": "#/$defs/.tests.Values.current"
+        },
+        "oldString": {
+          "$ref": "#/$defs/.tests.Values.old_string"
+        },
+        "oldList": {
+          "$ref": "#/$defs/.tests.Values.old_list"
+        },
+        "oldMap": {
+          "$ref": "#/$defs/.tests.Values.old_map"
+        },
+        "legacy": {
+          "$ref": "#/$defs/.tests.Values.legacy"
+        },
+        "status": {
+          "$ref": "#/$defs/.tests.Values.status"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.current": {
+      "type": "string"
+    },
+    ".tests.Values.legacy": {
+      "$ref": "#/$defs/.tests.Legacy",
+      "deprecated": true
+    },
+    ".tests.Values.old_list": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "deprecated": true
+    },
+    ".tests.Values.old_map": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object",
+      "deprecated": true
+    },
+    ".tests.Values.old_string": {
+      "type": "string",
+      "deprecated": true
+    },
+    ".tests.Values.status": {
+      "$ref": "#/$defs/.tests.Status"
+    }
+  }
+}

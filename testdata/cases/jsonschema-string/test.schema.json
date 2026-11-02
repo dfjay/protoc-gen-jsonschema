@@ -48,6 +48,5 @@
       "format": "date-time",
       "description": "format\n TODO: discuss) warn when format is not a predefined one?"
     }
-  },
-  "type": "object"
+  }
 }

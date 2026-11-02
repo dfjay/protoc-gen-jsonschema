@@ -20,6 +20,5 @@
     ".tests.Values.name": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

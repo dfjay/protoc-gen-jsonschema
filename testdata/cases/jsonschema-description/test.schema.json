@@ -45,6 +45,5 @@
       "type": "string",
       "description": "This description "
     }
-  },
-  "type": "object"
+  }
 }

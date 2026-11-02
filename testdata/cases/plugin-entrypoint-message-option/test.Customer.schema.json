@@ -31,6 +31,5 @@
     ".tests.Customer.name": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

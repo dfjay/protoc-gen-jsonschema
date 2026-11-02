@@ -101,4 +101,3 @@ $defs:
     type: array
 $ref: '#/$defs/.tests.Values'
 $schema: https://json-schema.org/draft/2020-12/schema
-type: object

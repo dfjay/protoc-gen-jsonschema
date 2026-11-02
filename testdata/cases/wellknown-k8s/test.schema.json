@@ -25,6 +25,5 @@
     ".tests.Values.int_or_string": {
       "$ref": "#/$defs/.k8s.io.apimachinery.pkg.util.intstr.IntOrString"
     }
-  },
-  "type": "object"
+  }
 }

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func buildFromMessage(pluginOptions *proto.PluginOptions, behaviors fieldBehaviors, message protoreflect.MessageDescriptor, mo *proto.MessageOptions) *jsonschema.Schema {
@@ -19,6 +20,8 @@ func buildFromMessage(pluginOptions *proto.PluginOptions, behaviors fieldBehavio
 	schema.Type = "object"
 	schema.Title = proto.GetTitleOrEmpty(mo)
 	schema.Description = proto.GetDescriptionOrComment(message, mo)
+	schema.Deprecated = deprecated(message)
+	schema.Examples = examples(mo.GetExamples())
 	schema.Properties = jsonschema.NewOrderedMap[*jsonschema.Schema]()
 
 	fillSchemaByObjectKeywords(pluginOptions, schema, mo.GetObject())
@@ -118,6 +121,8 @@ func buildFromWellKnownMessage(pluginOptions *proto.PluginOptions, behaviors fie
 		schema := &jsonschema.Schema{}
 		schema.Title = baseSchema.Title
 		schema.Description = baseSchema.Description
+		schema.Deprecated = baseSchema.Deprecated
+		schema.Examples = baseSchema.Examples
 		schema.OneOf = []*jsonschema.Schema{
 			{Type: "string"},
 			{Type: "integer"},
@@ -224,8 +229,10 @@ func buildFromField(pluginOptions *proto.PluginOptions, field protoreflect.Field
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
 
 	if field.IsList() {
-		return wrapSchemaInArray(schema, field, fo)
+		schema = wrapSchemaInArray(schema, field, fo)
 	}
+	schema.Deprecated = deprecated(field)
+	schema.Examples = examples(fo.GetExamples())
 	return schema
 }
 
@@ -233,6 +240,8 @@ func buildFromMapField(pluginOptions *proto.PluginOptions, field protoreflect.Fi
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(fo)
 	schema.Description = proto.GetDescriptionOrComment(field, fo)
+	schema.Deprecated = deprecated(field)
+	schema.Examples = examples(fo.GetExamples())
 	schema.Type = "object"
 	schema.PropertyNames = mapKeySchema(field.MapKey().Kind(), isLenient(pluginOptions))
 	schema.AdditionalProperties = buildFromValue(pluginOptions, field.MapValue(), fo)
@@ -449,15 +458,20 @@ func buildFromEnum(pluginOptions *proto.PluginOptions, enum protoreflect.EnumDes
 	schema := &jsonschema.Schema{}
 	schema.Title = proto.GetTitleOrEmpty(eo)
 	schema.Description = proto.GetDescriptionOrComment(enum, eo)
+	schema.Deprecated = deprecated(enum)
 
+	lenient := isLenient(pluginOptions) && eo.GetMappingType() != proto.EnumOptions_MapToCustom
+	var enumValues []any
+	var consts []*jsonschema.Schema
 	for enumValue := range listOf(enum.Values()) {
 		var value any
-		switch eo.GetMappingType() {
-		case proto.EnumOptions_MapToString:
+		switch {
+		case lenient || eo.GetMappingType() == proto.EnumOptions_MapToString:
+			// Parsers accept a value's name or any number.
 			value = string(enumValue.Name())
-		case proto.EnumOptions_MapToNumber:
+		case eo.GetMappingType() == proto.EnumOptions_MapToNumber:
 			value = int32(enumValue.Number())
-		case proto.EnumOptions_MapToCustom:
+		case eo.GetMappingType() == proto.EnumOptions_MapToCustom:
 			evo := proto.GetEnumValueOptions(enumValue)
 
 			customValue, err := parseScalaValueFromAny(evo.GetCustomValue())
@@ -472,23 +486,32 @@ func buildFromEnum(pluginOptions *proto.PluginOptions, enum protoreflect.EnumDes
 
 		// Aliases (allow_alias) share a number, and custom values may repeat;
 		// draft-04/06/07 require unique enum items.
-		if !slices.ContainsFunc(schema.Enum, func(v any) bool { return reflect.DeepEqual(v, value) }) {
-			schema.Enum = append(schema.Enum, value)
+		if slices.ContainsFunc(enumValues, func(v any) bool { return reflect.DeepEqual(v, value) }) {
+			continue
+		}
+		enumValues = append(enumValues, value)
+		if pluginOptions.GetEnumValueDescriptions() {
+			consts = append(consts, &jsonschema.Schema{
+				Const:       &value,
+				Description: proto.GetDescriptionOrComment(enumValue, nil),
+				Deprecated:  deprecated(enumValue),
+			})
 		}
 	}
 
-	if isLenient(pluginOptions) && eo.GetMappingType() != proto.EnumOptions_MapToCustom {
-		// Parsers accept a value's name or any number.
-		var names []any
-		for enumValue := range listOf(enum.Values()) {
-			names = append(names, string(enumValue.Name()))
-		}
-		schema.Enum = nil
-		schema.AnyOf = []*jsonschema.Schema{
-			{Type: "string", Enum: names},
-			lenientInteger(protoreflect.EnumKind),
+	if lenient {
+		names := &jsonschema.Schema{Type: "string", Enum: enumValues}
+		if pluginOptions.GetEnumValueDescriptions() {
+			schema.AnyOf = append(consts, lenientInteger(protoreflect.EnumKind))
+		} else {
+			schema.AnyOf = []*jsonschema.Schema{names, lenientInteger(protoreflect.EnumKind)}
 		}
 		return schema, nil
+	}
+	if pluginOptions.GetEnumValueDescriptions() {
+		schema.AnyOf = consts
+	} else {
+		schema.Enum = enumValues
 	}
 
 	switch eo.GetMappingType() {
@@ -498,11 +521,27 @@ func buildFromEnum(pluginOptions *proto.PluginOptions, enum protoreflect.EnumDes
 		schema.Type = "integer"
 	case proto.EnumOptions_MapToCustom:
 		// Custom values may be of any JSON type; only narrow when all agree.
-		if !slices.ContainsFunc(schema.Enum, func(v any) bool { _, ok := v.(string); return !ok }) {
+		if !slices.ContainsFunc(enumValues, func(v any) bool { _, ok := v.(string); return !ok }) {
 			schema.Type = "string"
 		}
 	}
 	return schema, nil
+}
+
+// deprecated returns nil, which writes nothing, unless desc is deprecated.
+func deprecated(desc protoreflect.Descriptor) *bool {
+	if opts, ok := desc.Options().(interface{ GetDeprecated() bool }); ok && opts.GetDeprecated() {
+		return new(true)
+	}
+	return nil
+}
+
+func examples(values []*structpb.Value) []any {
+	var out []any
+	for _, v := range values {
+		out = append(out, v.AsInterface())
+	}
+	return out
 }
 
 func isHiddenMessage(pluginOptions *proto.PluginOptions, message protoreflect.MessageDescriptor) bool {

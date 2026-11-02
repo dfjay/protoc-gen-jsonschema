@@ -50,6 +50,5 @@
       "$ref": "#/$defs/.tests.editions.Inner",
       "description": "DELIMITED encoding makes this a group in protoreflect."
     }
-  },
-  "type": "object"
+  }
 }

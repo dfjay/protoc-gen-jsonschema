@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  string name = 1 [(dfjay.jsonschema.field) = {
+    examples: [{string_value: "Ada"}, {string_value: "Grace"}]
+  }];
+
+  int32 count = 2 [(dfjay.jsonschema.field) = {examples: {number_value: 3}}];
+
+  repeated string tags = 3 [(dfjay.jsonschema.field) = {
+    examples: {list_value: {values: [{string_value: "a"}, {string_value: "b"}]}}
+  }];
+
+  map<string, int32> limits = 4 [(dfjay.jsonschema.field) = {
+    examples: {struct_value: {fields: {key: "cpu", value: {number_value: 2}}}}
+  }];
+
+  Point point = 5 [(dfjay.jsonschema.field) = {
+    examples: {struct_value: {fields: {key: "x", value: {number_value: 1}}}}
+  }];
+}
+
+message Point {
+  option (dfjay.jsonschema.message) = {
+    examples: {struct_value: {fields: [{key: "x", value: {number_value: 0}}, {key: "y", value: {number_value: 0}}]}}
+  };
+
+  int32 x = 1;
+  int32 y = 2;
+}

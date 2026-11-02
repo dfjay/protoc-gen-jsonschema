@@ -26,6 +26,5 @@
     ".tests.Root.visible_choice": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

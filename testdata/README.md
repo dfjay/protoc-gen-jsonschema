@@ -85,7 +85,11 @@ directory, so keep its inputs consistent with `inputFiles`.
 | Case | Checks |
 |------|--------|
 | `jsonschema-array` | array validation keywords |
+| `jsonschema-deprecated` | the `deprecated` option on messages, fields and enums becomes `deprecated: true` |
+| `jsonschema-deprecated-draft-07` | draft-07 has no `deprecated` keyword, so it is left out |
 | `jsonschema-description` | leading, trailing and detached comments become `description` |
+| `jsonschema-examples` | `examples` on fields, repeated fields, maps and messages |
+| `jsonschema-examples-draft-07` | draft-07 moves a `$ref` with sibling keywords into `allOf` |
 | `jsonschema-field-behavior` | `google.api.field_behavior` sets `required`, `readOnly` and `writeOnly` |
 | `jsonschema-field-behavior-disabled` | `respect_field_behavior=false` ignores `google.api.field_behavior` |
 | `jsonschema-field-required` | the per-field `required` option with `respect_protojson_presence` |
@@ -107,6 +111,8 @@ directory, so keep its inputs consistent with `inputFiles`.
 | `plugin-draft-07` | draft-07 output |
 | `plugin-draft-201909` | draft-2019-09 output |
 | `plugin-draft-202012` | draft-2020-12 output |
+| `plugin-enum-value-descriptions` | `enum_value_descriptions` writes one `const` per value with its comment and `deprecated` |
+| `plugin-enum-value-descriptions-lenient` | `enum_value_descriptions` in Lenient mode also accepts any integer |
 | `plugin-entrypoint` | the `entrypoint_message` plugin option |
 | `plugin-entrypoint-file-name-collision` | two entrypoints with the same schema file name are an error (fails) |
 | `plugin-entrypoint-message-option` | each message with `entrypoint: true`, nested ones too, gets its own schema file |
@@ -138,4 +144,5 @@ directory, so keep its inputs consistent with `inputFiles`.
 | `proto-version-syntax-proto2` | `syntax = "proto2"`, with `optional` and `required` labels |
 | `proto-version-syntax-proto3` | `syntax = "proto3"` |
 | `wellknown-k8s` | Kubernetes `IntOrString` |
+| `wellknown-k8s-entrypoint` | a non-object entrypoint (`IntOrString`) gets no `type: object` at the root |
 | `wellknown-proto` | `google.protobuf` well-known types in their ProtoJSON form: `Any`, `Struct`, `Value`, `ListValue`, `NullValue`, `Duration`, `Timestamp`, `FieldMask`, `Empty` and the wrappers |

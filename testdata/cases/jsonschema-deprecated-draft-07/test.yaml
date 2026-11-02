@@ -1,0 +1,12 @@
+name: "jsonschema-deprecated-draft-07"
+description: "draft-07 has no deprecated keyword"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  draft: Draft07
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

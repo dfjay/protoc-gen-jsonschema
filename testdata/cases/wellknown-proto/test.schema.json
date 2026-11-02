@@ -228,6 +228,5 @@
       "pattern": "^(0|[1-9][0-9]*)$"
     },
     ".tests.Values.value": {}
-  },
-  "type": "object"
+  }
 }

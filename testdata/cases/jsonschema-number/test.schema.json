@@ -76,6 +76,5 @@
       "multipleOf": 2,
       "description": "multiple of"
     }
-  },
-  "type": "object"
+  }
 }

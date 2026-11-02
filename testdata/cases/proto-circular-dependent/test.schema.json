@@ -25,6 +25,5 @@
     ".tests.Values.entry": {
       "$ref": "#/$defs/.tests.SelfReference"
     }
-  },
-  "type": "object"
+  }
 }

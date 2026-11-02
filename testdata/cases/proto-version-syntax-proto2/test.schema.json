@@ -126,6 +126,5 @@
     ".tests.Values.string_value2": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

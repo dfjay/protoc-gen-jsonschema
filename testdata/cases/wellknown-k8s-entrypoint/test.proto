@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+// Declares IntOrString itself, so it can be the entrypoint.
+package k8s.io.apimachinery.pkg.util.intstr;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "IntOrString"};
+
+// A number or a name.
+message IntOrString {
+  option deprecated = true;
+  option (dfjay.jsonschema.message) = {
+    examples: [{number_value: 8080}, {string_value: "http"}]
+  };
+
+  optional int64 type = 1;
+
+  optional int32 intVal = 2;
+
+  optional string strVal = 3;
+}

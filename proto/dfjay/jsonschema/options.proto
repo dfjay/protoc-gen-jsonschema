@@ -5,6 +5,7 @@ option go_package = "github.com/dfjay/protoc-gen-jsonschema/pkg/proto";
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
 
 // Command-line plugin options. Defaults are applied by GetPluginOptions.
 message PluginOptions {
@@ -177,6 +178,18 @@ message PluginOptions {
       - --jsonschema_opt=protojson_mode=Lenient
    */
   ProtojsonMode protojson_mode = 20;
+
+  /**
+    enum_value_descriptions writes an enum as an `anyOf` of one `const` per value
+    instead of `enum`, so each value carries its comment as `description` and,
+    in draft 2019-09 and later, `deprecated` when the value is deprecated. Editors
+    show them when completing the value. Some code generators handle `enum` better.
+
+    default: false
+    example:
+      - --jsonschema_opt=enum_value_descriptions=true
+   */
+  bool enum_value_descriptions = 21;
 }
 
 enum PluginAdditionalProperties {
@@ -250,6 +263,12 @@ message MessageOptions {
   */
   bool entrypoint = 4;
 
+  /**
+    Example values of the message in its JSON form, written as `examples`.
+    Needs draft-06 or later.
+  */
+  repeated google.protobuf.Value examples = 5;
+
   ObjectKeywords object = 10;
 }
 
@@ -281,6 +300,12 @@ message FieldOptions {
     default: not set
    */
   optional bool required = 6;
+
+  /**
+    Example values of the field in its JSON form, written as `examples`: an array
+    for a repeated field, an object for a map. Needs draft-06 or later.
+  */
+  repeated google.protobuf.Value examples = 7;
 
   google.protobuf.Any default = 10;
   ArrayKeywords array = 11;

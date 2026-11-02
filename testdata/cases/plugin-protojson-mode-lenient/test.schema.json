@@ -473,6 +473,5 @@
       "type": "array",
       "description": "null is read as the list, so the field is not nullable."
     }
-  },
-  "type": "object"
+  }
 }

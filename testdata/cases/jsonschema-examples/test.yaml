@@ -1,0 +1,11 @@
+name: "jsonschema-examples"
+description: "examples on messages and fields"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
