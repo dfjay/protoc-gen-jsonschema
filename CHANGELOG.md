@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.11.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.10.0...v0.11.0) (2026-11-02)
+
+This release adds multiple entrypoints per proto file, examples, deprecation annotations and optional descriptions for individual enum values. It also fixes validation of non-object entrypoints and preserves keywords alongside references in older JSON Schema drafts.
+
+### Features
+
+* **Entrypoints:** Mark any number of messages, including nested messages, with `(dfjay.jsonschema.message) = {entrypoint: true}`. Each gets a self-contained schema: `form.Customer.schema.json` or `form.Outer.Inner.schema.json`. Adding an entrypoint renames no existing file. These annotations work alongside `entrypoint_message`, which keeps its `form.schema.json` output name; marked messages hidden by `visibility_level` are skipped. Two entrypoints that would write the same file fail generation. ([#14](https://github.com/dfjay/protoc-gen-jsonschema/issues/14)) ([7bb105b](https://github.com/dfjay/protoc-gen-jsonschema/commit/7bb105ba20c3f2215254109ec7df51a0538eed8d))
+* **Deprecation:** Protobuf `deprecated = true` on messages, fields and enums emits `deprecated: true` in draft 2019-09 and later, including on repeated and map fields. Earlier drafts omit the keyword. ([#17](https://github.com/dfjay/protoc-gen-jsonschema/issues/17)) ([a5c193e](https://github.com/dfjay/protoc-gen-jsonschema/commit/a5c193edf47d6cdbead0e77c8bed72b25ea2392b))
+* **Examples:** Field and message annotations now accept `examples` as `google.protobuf.Value` values and emit them in draft-06 and later. Supply examples in ProtoJSON form: an array for a repeated field and an object for a map. ([#17](https://github.com/dfjay/protoc-gen-jsonschema/issues/17)) ([a5c193e](https://github.com/dfjay/protoc-gen-jsonschema/commit/a5c193edf47d6cdbead0e77c8bed72b25ea2392b))
+* **Enum value descriptions:** New option `enum_value_descriptions=true` (default `false`) replaces `enum` with an `anyOf` of per-value `const` schemas, carrying comments as `description` and `deprecated: true` in draft 2019-09 and later. It supports `MapToNumber`, `MapToCustom` and `protojson_mode=Lenient`; draft-04, which has no `const`, gets a one-item `enum` per value. ([#17](https://github.com/dfjay/protoc-gen-jsonschema/issues/17)) ([a5c193e](https://github.com/dfjay/protoc-gen-jsonschema/commit/a5c193edf47d6cdbead0e77c8bed72b25ea2392b))
+
+### Bug Fixes
+
+* **Reference siblings:** Draft-04, draft-06 and draft-07 now move `$ref` into `allOf` when sibling keywords would otherwise be ignored. This preserves field annotations such as `title`, `description` and `examples` on referenced message and enum types. ([#17](https://github.com/dfjay/protoc-gen-jsonschema/issues/17)) ([a5c193e](https://github.com/dfjay/protoc-gen-jsonschema/commit/a5c193edf47d6cdbead0e77c8bed72b25ea2392b))
+* **Schema roots:** Remove the unconditional root `type: object`, leaving the referenced entrypoint to define its type. This fixes validation of non-object entrypoints such as Kubernetes `IntOrString` in draft 2019-09 and later. ([#17](https://github.com/dfjay/protoc-gen-jsonschema/issues/17)) ([a5c193e](https://github.com/dfjay/protoc-gen-jsonschema/commit/a5c193edf47d6cdbead0e77c8bed72b25ea2392b))
+
+### Upgrading from 0.10.x
+
+* **Regeneration:** Regenerate schemas to apply the root-type and reference fixes. Every generated schema loses the root `type: object`; draft-04, draft-06 and draft-07 output may also gain `allOf` wrappers around references with sibling keywords. Messages, fields and enums marked `deprecated` gain `deprecated: true` in draft 2019-09 and later. ([#17](https://github.com/dfjay/protoc-gen-jsonschema/issues/17)) ([a5c193e](https://github.com/dfjay/protoc-gen-jsonschema/commit/a5c193edf47d6cdbead0e77c8bed72b25ea2392b))
+
 ## [0.10.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.9.1...v0.10.0) (2026-11-01)
 
 Generated schemas now follow ProtoJSON by default. This release also adds protobuf editions, `google.api.field_behavior` support and a `Lenient` mode for JSON or YAML that a protobuf parser reads.
