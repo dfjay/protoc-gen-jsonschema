@@ -3,3 +3,5 @@
 
 protoc-gen-jsonschema
 dist/
+# rapid failure files from TestRoundTrip
+testdata/testdata/

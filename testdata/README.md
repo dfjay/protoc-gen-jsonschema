@@ -5,6 +5,18 @@ plugin. Each case compiles input protos with `protoc`, passes the resulting
 descriptors to the generator, and compares output byte for byte with committed
 expected schemas. Error cases check that generation fails.
 
+Two more checks run on every generated schema:
+
+- `TestPlugin` compiles it, which validates it against the meta-schema of its
+  draft and resolves every `$ref`.
+- `TestRoundTrip` fills the entrypoint message with random values, writes it
+  with `protojson`, sometimes with `EmitDefaultValues`, and validates the JSON
+  against the schema. Fields whose annotations narrow the schema (numeric,
+  string and array keywords, non-string enum mappings, object property counts)
+  are left unset, and such messages are written without defaults. On failure,
+  [rapid](https://pkg.go.dev/pgregory.net/rapid) prints a minimized message and
+  how to rerun it.
+
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for prerequisites. Run the following
 commands from the repository root:
 
@@ -62,6 +74,7 @@ expectFail: false
 | `expectResultIsNull` | Expect zero output files; defaults to `false`. |
 | `expectFail` | Expect a plugin generation error; defaults to `false`. |
 | `expectedBehaviorDescription` | Optional descriptive metadata; not asserted by the runner. |
+| `skipRoundTrip` | Why `TestRoundTrip` skips the case, when its schema deliberately differs from what `protojson` writes. |
 
 The runner adds the case directory and the repository's `proto` directory to
 the include path. Golden regeneration compiles every `.proto` in the case

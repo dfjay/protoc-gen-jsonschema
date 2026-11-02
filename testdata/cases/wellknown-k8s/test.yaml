@@ -9,3 +9,5 @@ expectResultIsNull: false
 expectFail: false
 
 expectedBehaviorDescription: ""
+
+skipRoundTrip: "IntOrString follows the Kubernetes JSON form, not protojson"

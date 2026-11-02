@@ -35,6 +35,9 @@ type Testcase struct {
 	ExpectResultFiles  []string `json:"expectResultFiles"`
 	ExpectResultIsNull bool     `json:"expectResultIsNull"`
 	ExpectFail         bool     `json:"expectFail"`
+
+	// Why TestRoundTrip skips the case.
+	SkipRoundTrip string `json:"skipRoundTrip"`
 }
 
 const testdataDir = "./cases"
@@ -43,58 +46,64 @@ const optionsDir = "../proto"
 // TestPlugin compares the output of each case byte for byte with the files
 // `just golden` writes through the real protoc.
 func TestPlugin(t *testing.T) {
-	dirs, err := os.ReadDir(testdataDir)
-	if err != nil {
-		t.Fatal(err)
-	}
 	optionsImportPath, err := filepath.Abs(optionsDir)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	forEachCase(t, func(t *testing.T, tc *Testcase, dirPath string) {
+		req := buildRequest(t, tc, dirPath, optionsImportPath)
+
+		resp := modules.Generate(req, nil, false)
+
+		if tc.ExpectFail {
+			if resp.Error == nil {
+				t.Errorf("Expect failed, but got success")
+			}
+			return
+		}
+		if resp.Error != nil {
+			t.Fatalf("Expect success, but the plugin failed: %s", resp.GetError())
+		}
+
+		if tc.ExpectResultIsNull {
+			if len(resp.File) != 0 {
+				t.Errorf("Expect result is null, but got %d of results", len(resp.File))
+			}
+			return
+		}
+
+		if len(resp.File) != len(tc.ExpectResultFiles) {
+			t.Fatalf("Expect %d of results, but got %d of results", len(tc.ExpectResultFiles), len(resp.File))
+		}
+		for _, file := range resp.File {
+			if !slices.Contains(tc.ExpectResultFiles, file.GetName()) {
+				t.Fatalf("unexpected output file %s, want one of %v", file.GetName(), tc.ExpectResultFiles)
+			}
+			expected, err := os.ReadFile(filepath.Join(dirPath, file.GetName()))
+			if err != nil {
+				t.Fatalf("unexpected output file %s: %v", file.GetName(), err)
+			}
+			require.Equal(t, string(expected), file.GetContent(), "%s: %s differs from the expected file", tc.Name, file.GetName())
+			if _, err := compileSchema(file.GetName(), file.GetContent()); err != nil {
+				t.Errorf("%s is not a valid schema: %v", file.GetName(), err)
+			}
+		}
+	})
+}
+
+func forEachCase(t *testing.T, f func(t *testing.T, tc *Testcase, dirPath string)) {
+	dirs, err := os.ReadDir(testdataDir)
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, dir := range dirs {
 		tc, err := loadTestcase(testdataDir, dir)
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		t.Run(dir.Name(), func(t *testing.T) {
-			dirPath := filepath.Join(testdataDir, dir.Name())
-			req := buildRequest(t, tc, dirPath, optionsImportPath)
-
-			resp := modules.Generate(req, nil, false)
-
-			if tc.ExpectFail {
-				if resp.Error == nil {
-					t.Errorf("Expect failed, but got success")
-				}
-				return
-			}
-			if resp.Error != nil {
-				t.Fatalf("Expect success, but the plugin failed: %s", resp.GetError())
-			}
-
-			if tc.ExpectResultIsNull {
-				if len(resp.File) != 0 {
-					t.Errorf("Expect result is null, but got %d of results", len(resp.File))
-				}
-				return
-			}
-
-			if len(resp.File) != len(tc.ExpectResultFiles) {
-				t.Fatalf("Expect %d of results, but got %d of results", len(tc.ExpectResultFiles), len(resp.File))
-			}
-			for _, file := range resp.File {
-				if !slices.Contains(tc.ExpectResultFiles, file.GetName()) {
-					t.Fatalf("unexpected output file %s, want one of %v", file.GetName(), tc.ExpectResultFiles)
-				}
-				expected, err := os.ReadFile(filepath.Join(dirPath, file.GetName()))
-				if err != nil {
-					t.Fatalf("unexpected output file %s: %v", file.GetName(), err)
-				}
-				require.Equal(t, string(expected), file.GetContent(), "%s: %s differs from the expected file", tc.Name, file.GetName())
-			}
-		})
+		dirPath := filepath.Join(testdataDir, dir.Name())
+		t.Run(dir.Name(), func(t *testing.T) { f(t, tc, dirPath) })
 	}
 }
 
