@@ -1,0 +1,12 @@
+name: "plugin-enum-value-descriptions"
+description: "enum values as an anyOf of consts with descriptions"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  enum_value_descriptions: "true"
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

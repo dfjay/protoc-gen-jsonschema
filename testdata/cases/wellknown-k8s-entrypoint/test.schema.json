@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.k8s.io.apimachinery.pkg.util.intstr.IntOrString",
+  "$defs": {
+    ".k8s.io.apimachinery.pkg.util.intstr.IntOrString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "description": "A number or a name.",
+      "deprecated": true,
+      "examples": [
+        8080,
+        "http"
+      ]
+    }
+  }
+}

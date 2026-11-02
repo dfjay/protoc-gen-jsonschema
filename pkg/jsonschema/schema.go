@@ -144,6 +144,7 @@ func DeepCopy(origin *Schema) *Schema {
 	dst.Deprecated = utils.ClonePtr(origin.Deprecated)
 	dst.ReadOnly = utils.ClonePtr(origin.ReadOnly)
 	dst.WriteOnly = utils.ClonePtr(origin.WriteOnly)
+	dst.Examples = slices.Clone(origin.Examples)
 
 	dst.Extras = maps.Clone(origin.Extras)
 

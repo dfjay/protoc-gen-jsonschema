@@ -31,6 +31,5 @@
     ".tests.Values.implicit_camel_case": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

@@ -47,6 +47,5 @@
     ".tests.Wrapper.bar": {
       "$ref": "#/$defs/.cloud.ilsa.config.InstanceConfig"
     }
-  },
-  "type": "object"
+  }
 }

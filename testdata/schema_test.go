@@ -156,10 +156,17 @@ func (g *generator) entrypoint(t *testing.T, content, name string) protoreflect.
 		}
 	}
 	var root struct {
-		Ref string `json:"$ref"`
+		Ref   string `json:"$ref"`
+		AllOf []struct {
+			Ref string `json:"$ref"`
+		} `json:"allOf"`
 	}
 	if err := yaml.Unmarshal(data, &root); err != nil {
 		t.Fatal(err)
+	}
+	// Drafts up to 07 put a $ref with siblings in allOf.
+	if root.Ref == "" && len(root.AllOf) > 0 {
+		root.Ref = root.AllOf[0].Ref
 	}
 	_, fullName, ok := strings.Cut(root.Ref, "/.")
 	if !ok {

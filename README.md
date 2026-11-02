@@ -189,6 +189,7 @@ zero values in the generated reference do not necessarily match them.
 | `respect_protojson_int64` | `true` | Represent 64-bit integers and their wrappers as decimal strings. Set to `false` for integer values. Ignored in Lenient mode. |
 | `mandatory_nullable` | `false` | Set to `true` to disable automatic nullability for optional fields and oneof members in Canonical mode. Explicit `nullable` annotations still apply. |
 | `respect_field_behavior` | `true` | Apply `google.api.field_behavior`: `REQUIRED`, `OUTPUT_ONLY`, and `INPUT_ONLY`. |
+| `enum_value_descriptions` | `false` | Write enums as an `anyOf` of one `const` per value, with the value's comment as `description` and `deprecated` from its option, so editors show them on completion. Some code generators handle `enum` better. |
 | `additional_properties` | `DoNothing` | Control unknown object properties; see [below](#additional-properties). |
 | `visibility_level` | `0` | Omit messages and fields whose annotated visibility level is below this threshold. A visible reference to a hidden type is an error. |
 | `int64_as_string` | `true` | Deprecated alias for `respect_protojson_int64`. If both are supplied, this alias takes precedence. |
@@ -248,10 +249,22 @@ protoc -I . -I path/to/protoc-gen-jsonschema/proto \
   --jsonschema_out=. form.proto
 ```
 
-Annotations support titles and descriptions, required fields, nullability,
-string patterns and lengths, numeric bounds, array constraints, object
-constraints, and enum mappings. Explicit descriptions take precedence over
-comments; otherwise, descriptor comments become schema descriptions.
+Annotations support titles and descriptions, examples, required fields,
+nullability, string patterns and lengths, numeric bounds, array constraints,
+object constraints, and enum mappings. Explicit descriptions take precedence over
+comments; otherwise, descriptor comments become schema descriptions. Examples
+are JSON values in the ProtoJSON form of the field or message, and need draft-06
+or later:
+
+```proto
+string city = 3 [(dfjay.jsonschema.field) = {
+  examples: [{string_value: "Berlin"}, {string_value: "Lisbon"}]
+}];
+```
+
+The protobuf `deprecated` option on a message, field, or enum becomes
+`deprecated: true` in draft 2019-09 and later; earlier drafts have no such
+keyword. Deprecated enum values are marked with `enum_value_descriptions`.
 
 See the generated [annotation reference](options.md) for all fields and
 [annotation test cases](testdata/cases) for working examples. Some annotation

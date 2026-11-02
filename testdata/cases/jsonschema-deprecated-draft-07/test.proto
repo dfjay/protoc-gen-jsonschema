@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  string current = 1;
+
+  string old_string = 2 [deprecated = true];
+
+  repeated string old_list = 3 [deprecated = true];
+
+  map<string, string> old_map = 4 [deprecated = true];
+
+  Legacy legacy = 5 [deprecated = true];
+
+  Status status = 6;
+}
+
+message Legacy {
+  option deprecated = true;
+
+  string name = 1;
+}
+
+enum Status {
+  option deprecated = true;
+
+  STATUS_UNSPECIFIED = 0;
+  // Values are marked only with enum_value_descriptions.
+  STATUS_OLD = 1 [deprecated = true];
+}

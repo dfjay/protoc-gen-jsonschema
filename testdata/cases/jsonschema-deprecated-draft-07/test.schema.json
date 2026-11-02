@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/.tests.Values",
+  "definitions": {
+    ".tests.Legacy": {
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/.tests.Legacy.name"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Legacy.name": {
+      "type": "string"
+    },
+    ".tests.Status": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_OLD"
+      ]
+    },
+    ".tests.Values": {
+      "properties": {
+        "current": {
+          "$ref": "#/definitions/.tests.Values.current"
+        },
+        "oldString": {
+          "$ref": "#/definitions/.tests.Values.old_string"
+        },
+        "oldList": {
+          "$ref": "#/definitions/.tests.Values.old_list"
+        },
+        "oldMap": {
+          "$ref": "#/definitions/.tests.Values.old_map"
+        },
+        "legacy": {
+          "$ref": "#/definitions/.tests.Values.legacy"
+        },
+        "status": {
+          "$ref": "#/definitions/.tests.Values.status"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.current": {
+      "type": "string"
+    },
+    ".tests.Values.legacy": {
+      "$ref": "#/definitions/.tests.Legacy"
+    },
+    ".tests.Values.old_list": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    ".tests.Values.old_map": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    ".tests.Values.old_string": {
+      "type": "string"
+    },
+    ".tests.Values.status": {
+      "$ref": "#/definitions/.tests.Status"
+    }
+  }
+}

@@ -53,6 +53,5 @@
     ".tests.Root.nickname": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

@@ -1,0 +1,11 @@
+name: "jsonschema-deprecated"
+description: "deprecated on messages, fields and enums becomes deprecated: true"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

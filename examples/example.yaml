@@ -99,4 +99,3 @@ $defs:
     $ref: '#/$defs/.schema.FirstForm'
 $ref: '#/$defs/.schema.Values'
 $schema: https://json-schema.org/draft/2020-12/schema
-type: object

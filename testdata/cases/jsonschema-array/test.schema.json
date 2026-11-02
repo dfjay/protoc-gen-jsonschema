@@ -158,6 +158,5 @@
       "title": "My Title",
       "description": "My Description"
     }
-  },
-  "type": "object"
+  }
 }

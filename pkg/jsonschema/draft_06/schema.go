@@ -2,6 +2,7 @@ package draft_06
 
 import (
 	"maps"
+	"reflect"
 	"slices"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
@@ -114,6 +115,7 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 
 	dst.Title = origin.Title
 	dst.Description = origin.Description
+	dst.Examples = slices.Clone(origin.Examples)
 	dst.Default = utils.ClonePtr(origin.Default)
 
 	dst.Extras = maps.Clone(origin.Extras)
@@ -123,10 +125,29 @@ func deepCopy(origin *jsonschema.Schema) *Schema {
 	if origin.IsBooleanSchema != nil && !*origin.IsBooleanSchema {
 		dst.Not = &Schema{}
 	}
+	refBesideKeywords(dst)
 	return dst
 }
 
+// refBesideKeywords moves $ref into allOf: this draft ignores keywords beside it.
+func refBesideKeywords(dst *Schema) {
+	if dst.Ref == "" {
+		return
+	}
+	// $schema and definitions still work beside $ref.
+	rest := *dst
+	rest.Ref, rest.Version, rest.Definitions = "", "", nil
+	if reflect.ValueOf(rest).IsZero() {
+		return
+	}
+	dst.AllOf = append([]*Schema{{Ref: dst.Ref}}, dst.AllOf...)
+	dst.Ref = ""
+}
+
 func deepCopyArray(arr []*jsonschema.Schema) []*Schema {
+	if len(arr) == 0 {
+		return nil
+	}
 	dst := make([]*Schema, len(arr))
 	for i, schema := range arr {
 		dst[i] = deepCopy(schema)

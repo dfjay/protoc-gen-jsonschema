@@ -1,0 +1,12 @@
+name: "jsonschema-examples-draft-07"
+description: "draft-07 keeps examples beside a $ref by moving the $ref into allOf"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  draft: Draft07
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/.tests.Values",
+  "definitions": {
+    ".tests.Point": {
+      "properties": {
+        "x": {
+          "$ref": "#/definitions/.tests.Point.x"
+        },
+        "y": {
+          "$ref": "#/definitions/.tests.Point.y"
+        }
+      },
+      "type": "object",
+      "examples": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    ".tests.Point.x": {
+      "type": "integer"
+    },
+    ".tests.Point.y": {
+      "type": "integer"
+    },
+    ".tests.Values": {
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/.tests.Values.name"
+        },
+        "count": {
+          "$ref": "#/definitions/.tests.Values.count"
+        },
+        "tags": {
+          "$ref": "#/definitions/.tests.Values.tags"
+        },
+        "limits": {
+          "$ref": "#/definitions/.tests.Values.limits"
+        },
+        "point": {
+          "$ref": "#/definitions/.tests.Values.point"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.count": {
+      "type": "integer",
+      "examples": [
+        3
+      ]
+    },
+    ".tests.Values.limits": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "type": "object",
+      "examples": [
+        {
+          "cpu": 2
+        }
+      ]
+    },
+    ".tests.Values.name": {
+      "type": "string",
+      "examples": [
+        "Ada",
+        "Grace"
+      ]
+    },
+    ".tests.Values.point": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/.tests.Point"
+        }
+      ],
+      "examples": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    ".tests.Values.tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array",
+      "examples": [
+        [
+          "a",
+          "b"
+        ]
+      ]
+    }
+  }
+}

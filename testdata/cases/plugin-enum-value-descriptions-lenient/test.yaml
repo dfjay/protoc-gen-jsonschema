@@ -1,0 +1,13 @@
+name: "plugin-enum-value-descriptions-lenient"
+description: "enum_value_descriptions in Lenient mode"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  enum_value_descriptions: "true"
+  protojson_mode: Lenient
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

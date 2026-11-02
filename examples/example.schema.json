@@ -174,13 +174,16 @@
       "type": "string"
     },
     ".schema.Values.first": {
-      "$ref": "#/definitions/.schema.FirstForm",
+      "allOf": [
+        {
+          "$ref": "#/definitions/.schema.FirstForm"
+        }
+      ],
       "title": "A lorem ipsum",
       "description": "This is a comment"
     },
     ".schema.Values.second": {
       "$ref": "#/definitions/.schema.FirstForm"
     }
-  },
-  "type": "object"
+  }
 }

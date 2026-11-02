@@ -101,6 +101,7 @@
 | required | [bool](#bool) | optional | required explicitly controls whether this field is required in the output JSON Schema. When set to true, the field is always required regardless of other options. When set to false, the field is never required regardless of other options. When not set, the default behavior is used (based on plugin options).
 
 default: not set |
+| examples | [google.protobuf.Value](#google-protobuf-Value) | repeated | Example values of the field in its JSON form, written as `examples`: an array for a repeated field, an object for a map. Needs draft-06 or later. |
 | default | [google.protobuf.Any](#google-protobuf-Any) |  |  |
 | array | [ArrayKeywords](#dfjay-jsonschema-ArrayKeywords) |  |  |
 | numeric | [NumericKeywords](#dfjay-jsonschema-NumericKeywords) |  |  |
@@ -141,6 +142,7 @@ default: not set |
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 | entrypoint | [bool](#bool) |  | Write a schema of this message to its own file: Form in form.proto gives form.Form.schema.json, a nested Outer.Inner gives form.Outer.Inner.schema.json. Any number of messages can set it, alongside entrypoint_message. Skipped when hidden by visibility_level. default: false |
+| examples | [google.protobuf.Value](#google-protobuf-Value) | repeated | Example values of the message in its JSON form, written as `examples`. Needs draft-06 or later. |
 | object | [ObjectKeywords](#dfjay-jsonschema-ObjectKeywords) |  |  |
 
 
@@ -231,6 +233,9 @@ default: true example: - --jsonschema_opt=respect_field_behavior=true - --jsonsc
 Use Canonical to generate types, document an API or check protobuf output; use Lenient to check JSON or YAML that people write and a protobuf parser reads, such as config files.
 
 default: Canonical example: - --jsonschema_opt=protojson_mode=Canonical - --jsonschema_opt=protojson_mode=Lenient |
+| enum_value_descriptions | [bool](#bool) |  | enum_value_descriptions writes an enum as an `anyOf` of one `const` per value instead of `enum`, so each value carries its comment as `description` and, in draft 2019-09 and later, `deprecated` when the value is deprecated. Editors show them when completing the value. Some code generators handle `enum` better.
+
+default: false example: - --jsonschema_opt=enum_value_descriptions=true |
 
 
 

@@ -72,6 +72,5 @@
     ".tests.Values.messages2": {
       "$ref": "#/$defs/.tests.MandatorySetAdditionalPropertiesToTrue"
     }
-  },
-  "type": "object"
+  }
 }

@@ -35,7 +35,7 @@ func (g *MultiDraftGenerator) Generate(registry *jsonschema.Registry, entrypoint
 	rootSchema := &jsonschema.Schema{}
 	rootSchema.Title = proto.GetTitleOrEmpty(fileOptions)
 	rootSchema.Description = proto.GetDescriptionOrEmpty(fileOptions)
-	rootSchema.Type = "object"
+	// No type: the entrypoint may not be an object, such as IntOrString.
 
 	rootSchema.Ref = toRefId(entrypointMessage)
 

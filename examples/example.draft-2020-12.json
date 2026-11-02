@@ -181,6 +181,5 @@
     ".schema.Values.second": {
       "$ref": "#/$defs/.schema.FirstForm"
     }
-  },
-  "type": "object"
+  }
 }

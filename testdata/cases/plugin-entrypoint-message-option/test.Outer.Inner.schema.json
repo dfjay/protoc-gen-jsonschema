@@ -13,6 +13,5 @@
     ".tests.Outer.Inner.value": {
       "type": "integer"
     }
-  },
-  "type": "object"
+  }
 }

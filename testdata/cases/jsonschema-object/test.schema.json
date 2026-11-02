@@ -69,6 +69,5 @@
     ".tests.Values.messages2": {
       "$ref": "#/$defs/.tests.MyMessage2"
     }
-  },
-  "type": "object"
+  }
 }

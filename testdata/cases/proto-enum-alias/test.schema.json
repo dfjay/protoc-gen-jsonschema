@@ -34,6 +34,5 @@
     ".tests.Values.by_number": {
       "$ref": "#/$defs/.tests.ByNumber"
     }
-  },
-  "type": "object"
+  }
 }

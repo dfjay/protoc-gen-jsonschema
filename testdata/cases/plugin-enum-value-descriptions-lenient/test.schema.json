@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Custom": {
+      "anyOf": [
+        {
+          "const": "text",
+          "description": "Text."
+        },
+        {
+          "const": 1,
+          "description": "Number."
+        }
+      ]
+    },
+    ".tests.Priority": {
+      "anyOf": [
+        {
+          "const": "PRIORITY_LOW",
+          "description": "Lowest."
+        },
+        {
+          "const": "PRIORITY_HIGH"
+        },
+        {
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        }
+      ]
+    },
+    ".tests.Status": {
+      "anyOf": [
+        {
+          "const": "STATUS_UNSPECIFIED",
+          "description": "Not set."
+        },
+        {
+          "const": "STATUS_PENDING",
+          "description": "Being prepared."
+        },
+        {
+          "const": "STATUS_WAITING"
+        },
+        {
+          "const": "STATUS_QUEUED",
+          "description": "Replaced by STATUS_PENDING.",
+          "deprecated": true
+        },
+        {
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        }
+      ],
+      "description": "Order status."
+    },
+    ".tests.Values": {
+      "properties": {
+        "status": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.status"
+            }
+          ]
+        },
+        "priority": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.priority"
+            }
+          ]
+        },
+        "custom": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.custom"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.custom": {
+      "$ref": "#/$defs/.tests.Custom"
+    },
+    ".tests.Values.priority": {
+      "$ref": "#/$defs/.tests.Priority"
+    },
+    ".tests.Values.status": {
+      "$ref": "#/$defs/.tests.Status"
+    }
+  }
+}

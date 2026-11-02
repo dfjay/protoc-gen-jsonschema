@@ -13,6 +13,5 @@
     ".tests.Public.name": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

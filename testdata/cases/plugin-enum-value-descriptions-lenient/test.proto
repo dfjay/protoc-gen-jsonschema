@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package tests;
+
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  Status status = 1;
+
+  Priority priority = 2;
+
+  Custom custom = 3;
+}
+
+// Order status.
+enum Status {
+  option allow_alias = true;
+
+  // Not set.
+  STATUS_UNSPECIFIED = 0;
+  // Being prepared.
+  STATUS_PENDING = 1;
+  STATUS_WAITING = 1;
+  // Replaced by STATUS_PENDING.
+  STATUS_QUEUED = 2 [deprecated = true];
+}
+
+enum Priority {
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToNumber};
+
+  // Lowest.
+  PRIORITY_LOW = 0;
+  PRIORITY_HIGH = 1;
+}
+
+enum Custom {
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToCustom};
+
+  // Text.
+  CUSTOM_TEXT = 0 [(dfjay.jsonschema.enum_value) = {custom_value: {value: "\"text\""}}];
+  // Number.
+  CUSTOM_NUMBER = 1 [(dfjay.jsonschema.enum_value) = {custom_value: {value: "1"}}];
+}

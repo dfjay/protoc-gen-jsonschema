@@ -11,6 +11,7 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	descriptorpb "google.golang.org/protobuf/types/descriptorpb"
 	anypb "google.golang.org/protobuf/types/known/anypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -387,8 +388,18 @@ type PluginOptions struct {
 	// - --jsonschema_opt=protojson_mode=Canonical
 	// - --jsonschema_opt=protojson_mode=Lenient
 	ProtojsonMode ProtojsonMode `protobuf:"varint,20,opt,name=protojson_mode,json=protojsonMode,proto3,enum=dfjay.jsonschema.ProtojsonMode" json:"protojson_mode,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// *
+	// enum_value_descriptions writes an enum as an `anyOf` of one `const` per value
+	// instead of `enum`, so each value carries its comment as `description` and,
+	// in draft 2019-09 and later, `deprecated` when the value is deprecated. Editors
+	// show them when completing the value. Some code generators handle `enum` better.
+	//
+	// default: false
+	// example:
+	// - --jsonschema_opt=enum_value_descriptions=true
+	EnumValueDescriptions bool `protobuf:"varint,21,opt,name=enum_value_descriptions,json=enumValueDescriptions,proto3" json:"enum_value_descriptions,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *PluginOptions) Reset() {
@@ -512,6 +523,13 @@ func (x *PluginOptions) GetProtojsonMode() ProtojsonMode {
 	return ProtojsonMode_ProtojsonModeDefault
 }
 
+func (x *PluginOptions) GetEnumValueDescriptions() bool {
+	if x != nil {
+		return x.EnumValueDescriptions
+	}
+	return false
+}
+
 type FileOptions struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// *
@@ -601,8 +619,12 @@ type MessageOptions struct {
 	// Any number of messages can set it, alongside entrypoint_message. Skipped when
 	// hidden by visibility_level.
 	// default: false
-	Entrypoint    bool            `protobuf:"varint,4,opt,name=entrypoint,proto3" json:"entrypoint,omitempty"`
-	Object        *ObjectKeywords `protobuf:"bytes,10,opt,name=object,proto3" json:"object,omitempty"`
+	Entrypoint bool `protobuf:"varint,4,opt,name=entrypoint,proto3" json:"entrypoint,omitempty"`
+	// *
+	// Example values of the message in its JSON form, written as `examples`.
+	// Needs draft-06 or later.
+	Examples      []*structpb.Value `protobuf:"bytes,5,rep,name=examples,proto3" json:"examples,omitempty"`
+	Object        *ObjectKeywords   `protobuf:"bytes,10,opt,name=object,proto3" json:"object,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -663,6 +685,13 @@ func (x *MessageOptions) GetEntrypoint() bool {
 		return x.Entrypoint
 	}
 	return false
+}
+
+func (x *MessageOptions) GetExamples() []*structpb.Value {
+	if x != nil {
+		return x.Examples
+	}
+	return nil
 }
 
 func (x *MessageOptions) GetObject() *ObjectKeywords {
@@ -750,11 +779,15 @@ type FieldOptions struct {
 	// When not set, the default behavior is used (based on plugin options).
 	//
 	// default: not set
-	Required      *bool            `protobuf:"varint,6,opt,name=required,proto3,oneof" json:"required,omitempty"`
-	Default       *anypb.Any       `protobuf:"bytes,10,opt,name=default,proto3" json:"default,omitempty"`
-	Array         *ArrayKeywords   `protobuf:"bytes,11,opt,name=array,proto3" json:"array,omitempty"`
-	Numeric       *NumericKeywords `protobuf:"bytes,12,opt,name=numeric,proto3" json:"numeric,omitempty"`
-	String_       *StringKeywords  `protobuf:"bytes,13,opt,name=string,proto3" json:"string,omitempty"`
+	Required *bool `protobuf:"varint,6,opt,name=required,proto3,oneof" json:"required,omitempty"`
+	// *
+	// Example values of the field in its JSON form, written as `examples`: an array
+	// for a repeated field, an object for a map. Needs draft-06 or later.
+	Examples      []*structpb.Value `protobuf:"bytes,7,rep,name=examples,proto3" json:"examples,omitempty"`
+	Default       *anypb.Any        `protobuf:"bytes,10,opt,name=default,proto3" json:"default,omitempty"`
+	Array         *ArrayKeywords    `protobuf:"bytes,11,opt,name=array,proto3" json:"array,omitempty"`
+	Numeric       *NumericKeywords  `protobuf:"bytes,12,opt,name=numeric,proto3" json:"numeric,omitempty"`
+	String_       *StringKeywords   `protobuf:"bytes,13,opt,name=string,proto3" json:"string,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -822,6 +855,13 @@ func (x *FieldOptions) GetRequired() bool {
 		return *x.Required
 	}
 	return false
+}
+
+func (x *FieldOptions) GetExamples() []*structpb.Value {
+	if x != nil {
+		return x.Examples
+	}
+	return nil
 }
 
 func (x *FieldOptions) GetDefault() *anypb.Any {
@@ -1297,7 +1337,7 @@ var File_dfjay_jsonschema_options_proto protoreflect.FileDescriptor
 
 const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\n" +
-	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\"\xdf\x05\n" +
+	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x97\x06\n" +
 	"\rPluginOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12,\n" +
@@ -1312,19 +1352,21 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\x1arespect_protojson_presence\x18\x11 \x01(\bR\x18respectProtojsonPresence\x126\n" +
 	"\x17respect_protojson_int64\x18\x12 \x01(\bR\x15respectProtojsonInt64\x124\n" +
 	"\x16respect_field_behavior\x18\x13 \x01(\bR\x14respectFieldBehavior\x12F\n" +
-	"\x0eprotojson_mode\x18\x14 \x01(\x0e2\x1f.dfjay.jsonschema.ProtojsonModeR\rprotojsonMode\"\x9f\x01\n" +
+	"\x0eprotojson_mode\x18\x14 \x01(\x0e2\x1f.dfjay.jsonschema.ProtojsonModeR\rprotojsonMode\x126\n" +
+	"\x17enum_value_descriptions\x18\x15 \x01(\bR\x15enumValueDescriptions\"\x9f\x01\n" +
 	"\vFileOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12\x14\n" +
 	"\x05title\x18\x05 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\"\xcd\x01\n" +
+	"\vdescription\x18\x06 \x01(\tR\vdescription\"\x81\x02\n" +
 	"\x0eMessageOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1e\n" +
 	"\n" +
 	"entrypoint\x18\x04 \x01(\bR\n" +
-	"entrypoint\x128\n" +
+	"entrypoint\x122\n" +
+	"\bexamples\x18\x05 \x03(\v2\x16.google.protobuf.ValueR\bexamples\x128\n" +
 	"\x06object\x18\n" +
 	" \x01(\v2 .dfjay.jsonschema.ObjectKeywordsR\x06object\"\xe2\x01\n" +
 	"\x0eObjectKeywords\x128\n" +
@@ -1333,13 +1375,14 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\x0emax_properties\x18\x03 \x01(\rH\x02R\rmaxProperties\x88\x01\x01B\x18\n" +
 	"\x16_additional_propertiesB\x11\n" +
 	"\x0f_min_propertiesB\x11\n" +
-	"\x0f_max_properties\"\x99\x03\n" +
+	"\x0f_max_properties\"\xcd\x03\n" +
 	"\fFieldOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
 	"\bnullable\x18\x05 \x01(\bR\bnullable\x12\x1f\n" +
-	"\brequired\x18\x06 \x01(\bH\x00R\brequired\x88\x01\x01\x12.\n" +
+	"\brequired\x18\x06 \x01(\bH\x00R\brequired\x88\x01\x01\x122\n" +
+	"\bexamples\x18\a \x03(\v2\x16.google.protobuf.ValueR\bexamples\x12.\n" +
 	"\adefault\x18\n" +
 	" \x01(\v2\x14.google.protobuf.AnyR\adefault\x125\n" +
 	"\x05array\x18\v \x01(\v2\x1f.dfjay.jsonschema.ArrayKeywordsR\x05array\x12;\n" +
@@ -1440,39 +1483,42 @@ var file_dfjay_jsonschema_options_proto_goTypes = []any{
 	(*StringKeywords)(nil),                // 11: dfjay.jsonschema.StringKeywords
 	(*EnumOptions)(nil),                   // 12: dfjay.jsonschema.EnumOptions
 	(*EnumValueOptions)(nil),              // 13: dfjay.jsonschema.EnumValueOptions
-	(*anypb.Any)(nil),                     // 14: google.protobuf.Any
-	(*descriptorpb.FileOptions)(nil),      // 15: google.protobuf.FileOptions
-	(*descriptorpb.MessageOptions)(nil),   // 16: google.protobuf.MessageOptions
-	(*descriptorpb.FieldOptions)(nil),     // 17: google.protobuf.FieldOptions
-	(*descriptorpb.EnumOptions)(nil),      // 18: google.protobuf.EnumOptions
-	(*descriptorpb.EnumValueOptions)(nil), // 19: google.protobuf.EnumValueOptions
+	(*structpb.Value)(nil),                // 14: google.protobuf.Value
+	(*anypb.Any)(nil),                     // 15: google.protobuf.Any
+	(*descriptorpb.FileOptions)(nil),      // 16: google.protobuf.FileOptions
+	(*descriptorpb.MessageOptions)(nil),   // 17: google.protobuf.MessageOptions
+	(*descriptorpb.FieldOptions)(nil),     // 18: google.protobuf.FieldOptions
+	(*descriptorpb.EnumOptions)(nil),      // 19: google.protobuf.EnumOptions
+	(*descriptorpb.EnumValueOptions)(nil), // 20: google.protobuf.EnumValueOptions
 }
 var file_dfjay_jsonschema_options_proto_depIdxs = []int32{
 	2,  // 0: dfjay.jsonschema.PluginOptions.draft:type_name -> dfjay.jsonschema.Draft
 	0,  // 1: dfjay.jsonschema.PluginOptions.additional_properties:type_name -> dfjay.jsonschema.PluginAdditionalProperties
 	1,  // 2: dfjay.jsonschema.PluginOptions.protojson_mode:type_name -> dfjay.jsonschema.ProtojsonMode
-	7,  // 3: dfjay.jsonschema.MessageOptions.object:type_name -> dfjay.jsonschema.ObjectKeywords
-	14, // 4: dfjay.jsonschema.FieldOptions.default:type_name -> google.protobuf.Any
-	9,  // 5: dfjay.jsonschema.FieldOptions.array:type_name -> dfjay.jsonschema.ArrayKeywords
-	10, // 6: dfjay.jsonschema.FieldOptions.numeric:type_name -> dfjay.jsonschema.NumericKeywords
-	11, // 7: dfjay.jsonschema.FieldOptions.string:type_name -> dfjay.jsonschema.StringKeywords
-	3,  // 8: dfjay.jsonschema.EnumOptions.mapping_type:type_name -> dfjay.jsonschema.EnumOptions.MappingType
-	14, // 9: dfjay.jsonschema.EnumValueOptions.custom_value:type_name -> google.protobuf.Any
-	15, // 10: dfjay.jsonschema.file:extendee -> google.protobuf.FileOptions
-	16, // 11: dfjay.jsonschema.message:extendee -> google.protobuf.MessageOptions
-	17, // 12: dfjay.jsonschema.field:extendee -> google.protobuf.FieldOptions
-	18, // 13: dfjay.jsonschema.enum:extendee -> google.protobuf.EnumOptions
-	19, // 14: dfjay.jsonschema.enum_value:extendee -> google.protobuf.EnumValueOptions
-	5,  // 15: dfjay.jsonschema.file:type_name -> dfjay.jsonschema.FileOptions
-	6,  // 16: dfjay.jsonschema.message:type_name -> dfjay.jsonschema.MessageOptions
-	8,  // 17: dfjay.jsonschema.field:type_name -> dfjay.jsonschema.FieldOptions
-	12, // 18: dfjay.jsonschema.enum:type_name -> dfjay.jsonschema.EnumOptions
-	13, // 19: dfjay.jsonschema.enum_value:type_name -> dfjay.jsonschema.EnumValueOptions
-	20, // [20:20] is the sub-list for method output_type
-	20, // [20:20] is the sub-list for method input_type
-	15, // [15:20] is the sub-list for extension type_name
-	10, // [10:15] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	14, // 3: dfjay.jsonschema.MessageOptions.examples:type_name -> google.protobuf.Value
+	7,  // 4: dfjay.jsonschema.MessageOptions.object:type_name -> dfjay.jsonschema.ObjectKeywords
+	14, // 5: dfjay.jsonschema.FieldOptions.examples:type_name -> google.protobuf.Value
+	15, // 6: dfjay.jsonschema.FieldOptions.default:type_name -> google.protobuf.Any
+	9,  // 7: dfjay.jsonschema.FieldOptions.array:type_name -> dfjay.jsonschema.ArrayKeywords
+	10, // 8: dfjay.jsonschema.FieldOptions.numeric:type_name -> dfjay.jsonschema.NumericKeywords
+	11, // 9: dfjay.jsonschema.FieldOptions.string:type_name -> dfjay.jsonschema.StringKeywords
+	3,  // 10: dfjay.jsonschema.EnumOptions.mapping_type:type_name -> dfjay.jsonschema.EnumOptions.MappingType
+	15, // 11: dfjay.jsonschema.EnumValueOptions.custom_value:type_name -> google.protobuf.Any
+	16, // 12: dfjay.jsonschema.file:extendee -> google.protobuf.FileOptions
+	17, // 13: dfjay.jsonschema.message:extendee -> google.protobuf.MessageOptions
+	18, // 14: dfjay.jsonschema.field:extendee -> google.protobuf.FieldOptions
+	19, // 15: dfjay.jsonschema.enum:extendee -> google.protobuf.EnumOptions
+	20, // 16: dfjay.jsonschema.enum_value:extendee -> google.protobuf.EnumValueOptions
+	5,  // 17: dfjay.jsonschema.file:type_name -> dfjay.jsonschema.FileOptions
+	6,  // 18: dfjay.jsonschema.message:type_name -> dfjay.jsonschema.MessageOptions
+	8,  // 19: dfjay.jsonschema.field:type_name -> dfjay.jsonschema.FieldOptions
+	12, // 20: dfjay.jsonschema.enum:type_name -> dfjay.jsonschema.EnumOptions
+	13, // 21: dfjay.jsonschema.enum_value:type_name -> dfjay.jsonschema.EnumValueOptions
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	17, // [17:22] is the sub-list for extension type_name
+	12, // [12:17] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_dfjay_jsonschema_options_proto_init() }

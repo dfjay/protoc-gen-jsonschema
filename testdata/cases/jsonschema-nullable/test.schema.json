@@ -85,6 +85,5 @@
     ".tests.Values.strings": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

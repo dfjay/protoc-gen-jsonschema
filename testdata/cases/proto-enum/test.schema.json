@@ -84,6 +84,5 @@
     ".tests.Values.map_to_string": {
       "$ref": "#/$defs/.tests.MapToString"
     }
-  },
-  "type": "object"
+  }
 }

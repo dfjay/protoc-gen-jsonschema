@@ -152,6 +152,5 @@
     ".samples.Values.value": {
       "type": "string"
     }
-  },
-  "type": "object"
+  }
 }

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Custom": {
+      "anyOf": [
+        {
+          "const": "text",
+          "description": "Text."
+        },
+        {
+          "const": 1,
+          "description": "Number."
+        }
+      ]
+    },
+    ".tests.Priority": {
+      "anyOf": [
+        {
+          "const": 0,
+          "description": "Lowest."
+        },
+        {
+          "const": 1
+        }
+      ],
+      "type": "integer"
+    },
+    ".tests.Status": {
+      "anyOf": [
+        {
+          "const": "STATUS_UNSPECIFIED",
+          "description": "Not set."
+        },
+        {
+          "const": "STATUS_PENDING",
+          "description": "Being prepared."
+        },
+        {
+          "const": "STATUS_WAITING"
+        },
+        {
+          "const": "STATUS_QUEUED",
+          "description": "Replaced by STATUS_PENDING.",
+          "deprecated": true
+        }
+      ],
+      "type": "string",
+      "description": "Order status."
+    },
+    ".tests.Values": {
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/.tests.Values.status"
+        },
+        "priority": {
+          "$ref": "#/$defs/.tests.Values.priority"
+        },
+        "custom": {
+          "$ref": "#/$defs/.tests.Values.custom"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.custom": {
+      "$ref": "#/$defs/.tests.Custom"
+    },
+    ".tests.Values.priority": {
+      "$ref": "#/$defs/.tests.Priority"
+    },
+    ".tests.Values.status": {
+      "$ref": "#/$defs/.tests.Status"
+    }
+  }
+}

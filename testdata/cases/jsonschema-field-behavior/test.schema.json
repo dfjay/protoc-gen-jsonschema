@@ -143,6 +143,5 @@
       "type": "array",
       "readOnly": true
     }
-  },
-  "type": "object"
+  }
 }
