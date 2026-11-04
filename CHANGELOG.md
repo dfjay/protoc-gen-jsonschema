@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.11.0...v0.12.0) (2026-11-04)
+
+
+### Features
+
+* apply protovalidate rules ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+
 ## [0.11.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.10.0...v0.11.0) (2026-11-02)
 
 This release adds multiple entrypoints per proto file, examples, deprecation annotations and optional descriptions for individual enum values. It also fixes validation of non-object entrypoints and preserves keywords alongside references in older JSON Schema drafts.
