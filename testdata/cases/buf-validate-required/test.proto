@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  string name = 1 [(buf.validate.field).required = true];
+  Nested nested = 2 [(buf.validate.field).required = true];
+  string ignored = 4 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).ignore = IGNORE_ALWAYS
+  ];
+  oneof choice {
+    // A required member must be the one set.
+    string a = 5 [(buf.validate.field).required = true];
+    string b = 6;
+  }
+  // An absent field without presence is zero, which these rules reject.
+  int32 positive = 7 [(buf.validate.field).int32.gt = 0];
+  Level level = 8 [(buf.validate.field).enum.not_in = 0];
+  repeated string tags = 9 [(buf.validate.field).repeated.min_items = 1];
+  map<string, string> labels = 10 [(buf.validate.field).map.min_pairs = 1];
+  string code = 11 [(buf.validate.field).string.pattern = "^[A-Z]+$"];
+  // These accept their zero value, or skip the rules for it.
+  int32 any_count = 12 [(buf.validate.field).int32.gte = 0];
+  string skippable = 13 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
+  ];
+  // A field with presence may be absent.
+  optional int32 maybe = 14 [(buf.validate.field).int32.gt = 0];
+}
+
+enum Level {
+  LEVEL_UNSPECIFIED = 0;
+  LEVEL_LOW = 1;
+}
+
+message Nested {
+  string value = 1;
+}

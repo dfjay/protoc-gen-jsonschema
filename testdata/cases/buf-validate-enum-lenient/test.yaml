@@ -1,0 +1,12 @@
+name: "buf-validate-enum-lenient"
+description: "protovalidate enum rules in Lenient mode"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  protojson_mode: Lenient
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

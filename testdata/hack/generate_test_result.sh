@@ -42,6 +42,7 @@ function generateProtoFile() {
   command="$command \
   -I ./proto \
   -I testdata/cases/$proto_dir \
+  -I testdata/include \
   testdata/cases/$proto_dir/*.proto
   "
 

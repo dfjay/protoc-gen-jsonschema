@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  repeated string tags = 1 [(buf.validate.field).repeated = {
+    min_items: 1
+    max_items: 5
+    unique: true
+    items: {string: {min_len: 2}}
+  }];
+  // An empty list is exempt from min_items.
+  repeated int32 scores = 2 [
+    (buf.validate.field).repeated = {min_items: 2, items: {int32: {gte: 0}}},
+    (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
+  ];
+  map<string, int32> limits = 4 [(buf.validate.field).map = {
+    min_pairs: 1
+    max_pairs: 10
+    keys: {string: {pattern: "^[a-z]+$"}}
+    values: {int32: {gt: 0}}
+  }];
+  // An empty message is exempt from the rules inside it.
+  repeated Child children = 5 [(buf.validate.field).repeated.items.ignore = IGNORE_IF_ZERO_VALUE];
+  map<string, Child> named = 6 [(buf.validate.field).map.values.ignore = IGNORE_IF_ZERO_VALUE];
+}
+
+message Child {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  int32 count = 2;
+  optional int32 extra = 3;
+}

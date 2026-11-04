@@ -1,0 +1,14 @@
+name: "buf-validate-int64-numbers"
+description: "protovalidate 64-bit bounds with respect_protojson_int64=false"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_protojson_int64: false
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true

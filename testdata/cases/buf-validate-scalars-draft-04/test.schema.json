@@ -1,0 +1,502 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/.tests.Values",
+  "definitions": {
+    ".tests.Values": {
+      "properties": {
+        "range": {
+          "$ref": "#/definitions/.tests.Values.range"
+        },
+        "outside": {
+          "$ref": "#/definitions/.tests.Values.outside"
+        },
+        "oneOf": {
+          "$ref": "#/definitions/.tests.Values.one_of"
+        },
+        "notOneOf": {
+          "$ref": "#/definitions/.tests.Values.not_one_of"
+        },
+        "constant": {
+          "$ref": "#/definitions/.tests.Values.constant"
+        },
+        "big": {
+          "$ref": "#/definitions/.tests.Values.big"
+        },
+        "finite": {
+          "$ref": "#/definitions/.tests.Values.finite"
+        },
+        "positive": {
+          "$ref": "#/definitions/.tests.Values.positive"
+        },
+        "notZero": {
+          "$ref": "#/definitions/.tests.Values.not_zero"
+        },
+        "mustBeTrue": {
+          "$ref": "#/definitions/.tests.Values.must_be_true"
+        },
+        "code": {
+          "$ref": "#/definitions/.tests.Values.code"
+        },
+        "name": {
+          "$ref": "#/definitions/.tests.Values.name"
+        },
+        "slug": {
+          "$ref": "#/definitions/.tests.Values.slug"
+        },
+        "safe": {
+          "$ref": "#/definitions/.tests.Values.safe"
+        },
+        "color": {
+          "$ref": "#/definitions/.tests.Values.color"
+        },
+        "email": {
+          "$ref": "#/definitions/.tests.Values.email"
+        },
+        "id": {
+          "$ref": "#/definitions/.tests.Values.id"
+        },
+        "ip": {
+          "$ref": "#/definitions/.tests.Values.ip"
+        },
+        "link": {
+          "$ref": "#/definitions/.tests.Values.link"
+        },
+        "host": {
+          "$ref": "#/definitions/.tests.Values.host"
+        },
+        "v4": {
+          "$ref": "#/definitions/.tests.Values.v4"
+        },
+        "ignored": {
+          "$ref": "#/definitions/.tests.Values.ignored"
+        },
+        "optionalEmail": {
+          "$ref": "#/definitions/.tests.Values.optional_email"
+        },
+        "presenceEmail": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/.tests.Values.presence_email"
+            }
+          ]
+        },
+        "letters": {
+          "$ref": "#/definitions/.tests.Values.letters"
+        },
+        "outsideInf": {
+          "$ref": "#/definitions/.tests.Values.outside_inf"
+        },
+        "upToInf": {
+          "$ref": "#/definitions/.tests.Values.up_to_inf"
+        },
+        "onlyInf": {
+          "$ref": "#/definitions/.tests.Values.only_inf"
+        },
+        "dot": {
+          "$ref": "#/definitions/.tests.Values.dot"
+        },
+        "folded": {
+          "$ref": "#/definitions/.tests.Values.folded"
+        },
+        "smile": {
+          "$ref": "#/definitions/.tests.Values.smile"
+        },
+        "noNull": {
+          "$ref": "#/definitions/.tests.Values.no_null"
+        },
+        "groups": {
+          "$ref": "#/definitions/.tests.Values.groups"
+        },
+        "exemptNull": {
+          "$ref": "#/definitions/.tests.Values.exempt_null"
+        },
+        "wrappedItems": {
+          "$ref": "#/definitions/.tests.Values.wrapped_items"
+        },
+        "wrapped": {
+          "$ref": "#/definitions/.tests.Values.wrapped"
+        }
+      },
+      "type": "object",
+      "required": [
+        "range",
+        "oneOf",
+        "notOneOf",
+        "constant",
+        "big",
+        "positive",
+        "notZero",
+        "mustBeTrue",
+        "code",
+        "name",
+        "slug",
+        "color",
+        "email",
+        "id",
+        "ip",
+        "host",
+        "v4",
+        "letters",
+        "outsideInf",
+        "onlyInf",
+        "dot",
+        "folded",
+        "smile",
+        "noNull",
+        "groups"
+      ]
+    },
+    ".tests.Values.big": {
+      "type": "string",
+      "enum": [
+        "1",
+        "2"
+      ],
+      "pattern": "^-?(0|[1-9][0-9]*)$",
+      "description": "64-bit integers are strings: bounds do not apply, in does."
+    },
+    ".tests.Values.code": {
+      "type": "string",
+      "maxLength": 3,
+      "minLength": 3
+    },
+    ".tests.Values.color": {
+      "type": "string",
+      "enum": [
+        "red",
+        "green"
+      ]
+    },
+    ".tests.Values.constant": {
+      "type": "integer",
+      "enum": [
+        7
+      ]
+    },
+    ".tests.Values.dot": {
+      "type": "string",
+      "pattern": "^a[^\\n]c$",
+      "description": "\".\" matches \\r in RE2; (?i) and \\x{...} have no ECMA-262 syntax."
+    },
+    ".tests.Values.email": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9.!#$%\u0026'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    },
+    ".tests.Values.exempt_null": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "not": {}
+        }
+      ],
+      "description": "null is the zero value, which the rules skip."
+    },
+    ".tests.Values.finite": {
+      "type": "number"
+    },
+    ".tests.Values.folded": {
+      "type": "string",
+      "pattern": "^[Aa][Bb]$"
+    },
+    ".tests.Values.groups": {
+      "type": "string",
+      "pattern": "^(?:a)(?:b)(?:(?:c))?$",
+      "description": "RE2 allows group names ECMA-262 does not."
+    },
+    ".tests.Values.host": {
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "maxLength": 253
+            },
+            {
+              "maxLength": 254,
+              "pattern": "\\.$"
+            }
+          ]
+        },
+        {
+          "pattern": "[^0-9.][^.]*\\.?$"
+        }
+      ],
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\\.?$"
+    },
+    ".tests.Values.id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    ".tests.Values.ignored": {
+      "type": "string"
+    },
+    ".tests.Values.ip": {
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "pattern": "^(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(?:\\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}$"
+            },
+            {
+              "format": "ipv6"
+            },
+            {
+              "pattern": "^(?:(?:[0-9A-Fa-f]{1,4}:){6}[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|::(?:[0-9A-Fa-f]{1,4}:){5}[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)%[\\s\\S]+$"
+            }
+          ]
+        }
+      ],
+      "type": "string"
+    },
+    ".tests.Values.letters": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z])+(?:(?:-[0-9]))?$",
+      "description": "RE2 syntax becomes ECMA-262."
+    },
+    ".tests.Values.link": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    ".tests.Values.must_be_true": {
+      "type": "boolean",
+      "enum": [
+        true
+      ]
+    },
+    ".tests.Values.name": {
+      "type": "string",
+      "maxLength": 64,
+      "minLength": 1
+    },
+    ".tests.Values.no_null": {
+      "not": {}
+    },
+    ".tests.Values.not_one_of": {
+      "allOf": [
+        {
+          "not": {
+            "enum": [
+              0
+            ]
+          }
+        }
+      ],
+      "type": "integer"
+    },
+    ".tests.Values.not_zero": {
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "not": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          ],
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ],
+      "description": "not_in alone keeps NaN and the infinities."
+    },
+    ".tests.Values.one_of": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    ".tests.Values.only_inf": {
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "not": {}
+            }
+          ],
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.optional_email": {
+      "anyOf": [
+        {
+          "enum": [
+            ""
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9.!#$%\u0026'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+        }
+      ],
+      "description": "The empty string is exempt from the rules."
+    },
+    ".tests.Values.outside": {
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "minimum": 10,
+              "exclusiveMinimum": true
+            },
+            {
+              "maximum": 5,
+              "exclusiveMaximum": true
+            }
+          ]
+        }
+      ],
+      "type": "integer",
+      "description": "A lower bound above the upper one means outside the range."
+    },
+    ".tests.Values.outside_inf": {
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "maximum": 0,
+                  "exclusiveMaximum": true
+                }
+              ]
+            }
+          ],
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "-Infinity"
+          ]
+        }
+      ],
+      "description": "Outside a range with an infinite bound."
+    },
+    ".tests.Values.positive": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0.1,
+          "exclusiveMinimum": true
+        },
+        {
+          "type": "string",
+          "enum": [
+            "Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.presence_email": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9.!#$%\u0026'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+      "description": "A field with presence is not exempt when zero."
+    },
+    ".tests.Values.range": {
+      "type": "integer",
+      "maximum": 100,
+      "minimum": 0,
+      "exclusiveMinimum": true
+    },
+    ".tests.Values.safe": {
+      "allOf": [
+        {
+          "not": {
+            "enum": [
+              "admin"
+            ]
+          }
+        },
+        {
+          "not": {
+            "pattern": "\\.\\."
+          }
+        }
+      ],
+      "type": "string"
+    },
+    ".tests.Values.slug": {
+      "allOf": [
+        {
+          "pattern": "^a\\."
+        },
+        {
+          "pattern": "z$"
+        },
+        {
+          "pattern": "-"
+        }
+      ],
+      "type": "string",
+      "pattern": "^(?:[\\--.a-z])+$"
+    },
+    ".tests.Values.smile": {
+      "type": "string",
+      "pattern": "^😀$"
+    },
+    ".tests.Values.up_to_inf": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.v4": {
+      "type": "string",
+      "pattern": "^(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(?:\\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}$"
+    },
+    ".tests.Values.wrapped": {
+      "type": "integer",
+      "minimum": 1
+    },
+    ".tests.Values.wrapped_items": {
+      "items": {
+        "anyOf": [
+          {
+            "enum": [
+              0
+            ]
+          },
+          {
+            "type": "integer",
+            "minimum": 1
+          }
+        ]
+      },
+      "type": "array"
+    }
+  }
+}

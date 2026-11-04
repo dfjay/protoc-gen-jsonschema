@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Values": {
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "url": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              },
+              "required": [
+                "url"
+              ]
+            },
+            {
+              "properties": {
+                "mail": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              },
+              "required": [
+                "mail"
+              ]
+            }
+          ]
+        },
+        {
+          "properties": {
+            "only": {
+              "not": {
+                "type": "null"
+              }
+            }
+          },
+          "required": [
+            "only"
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "email": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "const": ""
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "email"
+              ]
+            },
+            {
+              "properties": {
+                "phone": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "const": ""
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "phone"
+              ]
+            }
+          ]
+        },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "nickname": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "const": ""
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "nickname"
+              ]
+            },
+            {
+              "properties": {
+                "handle": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "const": ""
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "handle"
+              ]
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "nickname": {
+                        "not": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "const": ""
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "nickname"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "handle": {
+                        "not": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "const": ""
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "handle"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "url": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.url"
+            }
+          ]
+        },
+        "mail": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.mail"
+            }
+          ]
+        },
+        "only": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.only"
+            }
+          ]
+        },
+        "email": {
+          "$ref": "#/$defs/.tests.Values.email"
+        },
+        "phone": {
+          "$ref": "#/$defs/.tests.Values.phone"
+        },
+        "nickname": {
+          "$ref": "#/$defs/.tests.Values.nickname"
+        },
+        "handle": {
+          "$ref": "#/$defs/.tests.Values.handle"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.email": {
+      "type": "string"
+    },
+    ".tests.Values.handle": {
+      "type": "string"
+    },
+    ".tests.Values.mail": {
+      "type": "string"
+    },
+    ".tests.Values.nickname": {
+      "type": "string"
+    },
+    ".tests.Values.only": {
+      "type": "string"
+    },
+    ".tests.Values.phone": {
+      "type": "string"
+    },
+    ".tests.Values.url": {
+      "type": "string"
+    }
+  }
+}

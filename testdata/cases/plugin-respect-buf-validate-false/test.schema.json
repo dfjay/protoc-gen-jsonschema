@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Values": {
+      "properties": {
+        "range": {
+          "$ref": "#/$defs/.tests.Values.range"
+        },
+        "outside": {
+          "$ref": "#/$defs/.tests.Values.outside"
+        },
+        "oneOf": {
+          "$ref": "#/$defs/.tests.Values.one_of"
+        },
+        "notOneOf": {
+          "$ref": "#/$defs/.tests.Values.not_one_of"
+        },
+        "constant": {
+          "$ref": "#/$defs/.tests.Values.constant"
+        },
+        "big": {
+          "$ref": "#/$defs/.tests.Values.big"
+        },
+        "finite": {
+          "$ref": "#/$defs/.tests.Values.finite"
+        },
+        "positive": {
+          "$ref": "#/$defs/.tests.Values.positive"
+        },
+        "notZero": {
+          "$ref": "#/$defs/.tests.Values.not_zero"
+        },
+        "mustBeTrue": {
+          "$ref": "#/$defs/.tests.Values.must_be_true"
+        },
+        "code": {
+          "$ref": "#/$defs/.tests.Values.code"
+        },
+        "name": {
+          "$ref": "#/$defs/.tests.Values.name"
+        },
+        "slug": {
+          "$ref": "#/$defs/.tests.Values.slug"
+        },
+        "safe": {
+          "$ref": "#/$defs/.tests.Values.safe"
+        },
+        "color": {
+          "$ref": "#/$defs/.tests.Values.color"
+        },
+        "email": {
+          "$ref": "#/$defs/.tests.Values.email"
+        },
+        "id": {
+          "$ref": "#/$defs/.tests.Values.id"
+        },
+        "ip": {
+          "$ref": "#/$defs/.tests.Values.ip"
+        },
+        "link": {
+          "$ref": "#/$defs/.tests.Values.link"
+        },
+        "ignored": {
+          "$ref": "#/$defs/.tests.Values.ignored"
+        },
+        "optionalEmail": {
+          "$ref": "#/$defs/.tests.Values.optional_email"
+        },
+        "presenceEmail": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Values.presence_email"
+            }
+          ]
+        },
+        "letters": {
+          "$ref": "#/$defs/.tests.Values.letters"
+        },
+        "outsideInf": {
+          "$ref": "#/$defs/.tests.Values.outside_inf"
+        },
+        "upToInf": {
+          "$ref": "#/$defs/.tests.Values.up_to_inf"
+        },
+        "onlyInf": {
+          "$ref": "#/$defs/.tests.Values.only_inf"
+        },
+        "dot": {
+          "$ref": "#/$defs/.tests.Values.dot"
+        },
+        "folded": {
+          "$ref": "#/$defs/.tests.Values.folded"
+        },
+        "smile": {
+          "$ref": "#/$defs/.tests.Values.smile"
+        },
+        "noNull": {
+          "$ref": "#/$defs/.tests.Values.no_null"
+        },
+        "groups": {
+          "$ref": "#/$defs/.tests.Values.groups"
+        },
+        "exemptNull": {
+          "$ref": "#/$defs/.tests.Values.exempt_null"
+        },
+        "wrappedItems": {
+          "$ref": "#/$defs/.tests.Values.wrapped_items"
+        },
+        "wrapped": {
+          "$ref": "#/$defs/.tests.Values.wrapped"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.big": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$",
+      "description": "64-bit integers are strings: bounds do not apply, in does."
+    },
+    ".tests.Values.code": {
+      "type": "string"
+    },
+    ".tests.Values.color": {
+      "type": "string"
+    },
+    ".tests.Values.constant": {
+      "type": "integer"
+    },
+    ".tests.Values.dot": {
+      "type": "string",
+      "description": "\".\" matches \\r in RE2; (?i) and \\x{...} have no ECMA-262 syntax."
+    },
+    ".tests.Values.email": {
+      "type": "string"
+    },
+    ".tests.Values.exempt_null": {
+      "type": "null",
+      "description": "null is the zero value, which the rules skip."
+    },
+    ".tests.Values.finite": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.folded": {
+      "type": "string"
+    },
+    ".tests.Values.groups": {
+      "type": "string",
+      "description": "RE2 allows group names ECMA-262 does not."
+    },
+    ".tests.Values.id": {
+      "type": "string"
+    },
+    ".tests.Values.ignored": {
+      "type": "string"
+    },
+    ".tests.Values.ip": {
+      "type": "string"
+    },
+    ".tests.Values.letters": {
+      "type": "string",
+      "description": "RE2 syntax becomes ECMA-262."
+    },
+    ".tests.Values.link": {
+      "type": "string"
+    },
+    ".tests.Values.must_be_true": {
+      "type": "boolean"
+    },
+    ".tests.Values.name": {
+      "type": "string"
+    },
+    ".tests.Values.no_null": {
+      "type": "null"
+    },
+    ".tests.Values.not_one_of": {
+      "type": "integer"
+    },
+    ".tests.Values.not_zero": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ],
+      "description": "not_in alone keeps NaN and the infinities."
+    },
+    ".tests.Values.one_of": {
+      "type": "integer"
+    },
+    ".tests.Values.only_inf": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.optional_email": {
+      "type": "string",
+      "description": "The empty string is exempt from the rules."
+    },
+    ".tests.Values.outside": {
+      "type": "integer",
+      "description": "A lower bound above the upper one means outside the range."
+    },
+    ".tests.Values.outside_inf": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ],
+      "description": "Outside a range with an infinite bound."
+    },
+    ".tests.Values.positive": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.presence_email": {
+      "type": "string",
+      "description": "A field with presence is not exempt when zero."
+    },
+    ".tests.Values.range": {
+      "type": "integer"
+    },
+    ".tests.Values.safe": {
+      "type": "string"
+    },
+    ".tests.Values.slug": {
+      "type": "string"
+    },
+    ".tests.Values.smile": {
+      "type": "string"
+    },
+    ".tests.Values.up_to_inf": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "enum": [
+            "NaN",
+            "Infinity",
+            "-Infinity"
+          ]
+        }
+      ]
+    },
+    ".tests.Values.wrapped": {
+      "type": "integer"
+    },
+    ".tests.Values.wrapped_items": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    }
+  }
+}

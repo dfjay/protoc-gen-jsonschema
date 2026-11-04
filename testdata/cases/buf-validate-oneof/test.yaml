@@ -1,0 +1,13 @@
+name: "buf-validate-oneof"
+description: "protovalidate oneof and message oneof rules"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true

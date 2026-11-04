@@ -175,3 +175,29 @@ var (
 func NewBooleanSchema(b bool) *Schema {
 	return &Schema{IsBooleanSchema: &b}
 }
+
+// Walk calls f for schema and every schema nested in it.
+func Walk(schema *Schema, f func(*Schema)) {
+	if schema == nil {
+		return
+	}
+	f(schema)
+	for _, list := range [][]*Schema{schema.AllOf, schema.AnyOf, schema.OneOf, schema.PrefixItems} {
+		for _, s := range list {
+			Walk(s, f)
+		}
+	}
+	for _, s := range []*Schema{schema.Not, schema.If, schema.Then, schema.Else, schema.Items, schema.Contains,
+		schema.AdditionalProperties, schema.PropertyNames, schema.ContentSchema} {
+		Walk(s, f)
+	}
+	for _, m := range []*SchemaMap{schema.Definitions, schema.DependentSchemas, schema.Properties, schema.PatternProperties} {
+		if m == nil {
+			continue
+		}
+		for _, key := range m.Keys() {
+			s, _ := m.Get(key)
+			Walk(s, f)
+		}
+	}
+}

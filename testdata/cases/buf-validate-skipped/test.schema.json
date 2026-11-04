@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Status": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_ACTIVE",
+        "STATUS_RUNNING"
+      ]
+    },
+    ".tests.Values": {
+      "properties": {
+        "address": {
+          "$ref": "#/$defs/.tests.Values.address"
+        },
+        "header": {
+          "$ref": "#/$defs/.tests.Values.header"
+        },
+        "utf8": {
+          "$ref": "#/$defs/.tests.Values.utf8"
+        },
+        "payload": {
+          "$ref": "#/$defs/.tests.Values.payload"
+        },
+        "timeout": {
+          "$ref": "#/$defs/.tests.Values.timeout"
+        },
+        "at": {
+          "$ref": "#/$defs/.tests.Values.at"
+        },
+        "byId": {
+          "$ref": "#/$defs/.tests.Values.by_id"
+        },
+        "multiLine": {
+          "$ref": "#/$defs/.tests.Values.multi_line"
+        },
+        "huge": {
+          "$ref": "#/$defs/.tests.Values.huge"
+        },
+        "uniqueFloats": {
+          "$ref": "#/$defs/.tests.Values.unique_floats"
+        },
+        "uniqueStatuses": {
+          "$ref": "#/$defs/.tests.Values.unique_statuses"
+        },
+        "excluded": {
+          "$ref": "#/$defs/.tests.Values.excluded"
+        },
+        "even": {
+          "$ref": "#/$defs/.tests.Values.even"
+        }
+      },
+      "type": "object",
+      "required": [
+        "multiLine",
+        "huge",
+        "excluded"
+      ]
+    },
+    ".tests.Values.address": {
+      "type": "string"
+    },
+    ".tests.Values.at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    ".tests.Values.by_id": {
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      },
+      "propertyNames": {
+        "pattern": "^-?(0|[1-9][0-9]*)$"
+      },
+      "type": "object",
+      "description": "Integer keys are strings in JSON: their rules are skipped."
+    },
+    ".tests.Values.even": {
+      "type": "integer"
+    },
+    ".tests.Values.excluded": {
+      "allOf": [
+        {
+          "not": {
+            "enum": [
+              "1"
+            ]
+          }
+        }
+      ],
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)$",
+      "description": "Bounds of a 64-bit integer string are skipped, and do not filter not_in."
+    },
+    ".tests.Values.header": {
+      "type": "string"
+    },
+    ".tests.Values.huge": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$",
+      "description": "A bound beyond 2^53 has no exact JSON Schema number."
+    },
+    ".tests.Values.multi_line": {
+      "type": "string",
+      "description": "Multi-line mode has no ECMA-262 form."
+    },
+    ".tests.Values.payload": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    ".tests.Values.timeout": {
+      "type": "string",
+      "pattern": "^-?[0-9]+(\\.[0-9]{1,9})?s$"
+    },
+    ".tests.Values.unique_floats": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ],
+        "description": "NaN differs from itself: uniqueItems would reject [\"NaN\", \"NaN\"]."
+      },
+      "type": "array",
+      "description": "NaN differs from itself: uniqueItems would reject [\"NaN\", \"NaN\"]."
+    },
+    ".tests.Values.unique_statuses": {
+      "items": {
+        "$ref": "#/$defs/.tests.Status",
+        "description": "Aliases are equal values with different names."
+      },
+      "type": "array",
+      "description": "Aliases are equal values with different names."
+    },
+    ".tests.Values.utf8": {
+      "type": "string"
+    }
+  }
+}

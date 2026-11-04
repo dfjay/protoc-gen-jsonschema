@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Values": {
+      "properties": {
+        "signed": {
+          "$ref": "#/$defs/.tests.Values.signed"
+        },
+        "unsigned": {
+          "$ref": "#/$defs/.tests.Values.unsigned"
+        },
+        "outside": {
+          "$ref": "#/$defs/.tests.Values.outside"
+        },
+        "wrapped": {
+          "$ref": "#/$defs/.tests.Values.wrapped"
+        }
+      },
+      "type": "object",
+      "required": [
+        "unsigned",
+        "outside"
+      ]
+    },
+    ".tests.Values.outside": {
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 100
+            },
+            {
+              "exclusiveMaximum": -100
+            }
+          ]
+        }
+      ],
+      "type": "integer",
+      "description": "A lower bound above the upper one means outside the range."
+    },
+    ".tests.Values.signed": {
+      "type": "integer",
+      "maximum": 1000000,
+      "exclusiveMinimum": -5
+    },
+    ".tests.Values.unsigned": {
+      "type": "integer",
+      "exclusiveMaximum": 20,
+      "minimum": 10
+    },
+    ".tests.Values.wrapped": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

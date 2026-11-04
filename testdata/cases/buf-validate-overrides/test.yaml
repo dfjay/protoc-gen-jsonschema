@@ -1,0 +1,11 @@
+name: "buf-validate-overrides"
+description: "field options take precedence over protovalidate rules"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

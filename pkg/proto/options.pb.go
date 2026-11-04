@@ -398,8 +398,23 @@ type PluginOptions struct {
 	// example:
 	// - --jsonschema_opt=enum_value_descriptions=true
 	EnumValueDescriptions bool `protobuf:"varint,21,opt,name=enum_value_descriptions,json=enumValueDescriptions,proto3" json:"enum_value_descriptions,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// *
+	// respect_buf_validate applies protovalidate rules (`buf.validate.field`,
+	// `buf.validate.oneof` and `buf.validate.message` from buf/validate/validate.proto)
+	// that JSON Schema can express: `required`, numeric bounds, string lengths, patterns
+	// and formats, enum and repeated and map rules, `ignore`, and oneof rules. CEL rules,
+	// rules for integer map keys, patterns with no ECMA-262 form, and bytes, duration,
+	// timestamp, any and field_mask rules are skipped. A `numeric`, `string` or `array`
+	// field option replaces the protovalidate rules of the same kind. A field without
+	// presence whose zero value the rules reject becomes required.
+	//
+	// default: true
+	// example:
+	// - --jsonschema_opt=respect_buf_validate=true
+	// - --jsonschema_opt=respect_buf_validate=false
+	RespectBufValidate bool `protobuf:"varint,22,opt,name=respect_buf_validate,json=respectBufValidate,proto3" json:"respect_buf_validate,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *PluginOptions) Reset() {
@@ -526,6 +541,13 @@ func (x *PluginOptions) GetProtojsonMode() ProtojsonMode {
 func (x *PluginOptions) GetEnumValueDescriptions() bool {
 	if x != nil {
 		return x.EnumValueDescriptions
+	}
+	return false
+}
+
+func (x *PluginOptions) GetRespectBufValidate() bool {
+	if x != nil {
+		return x.RespectBufValidate
 	}
 	return false
 }
@@ -1337,7 +1359,7 @@ var File_dfjay_jsonschema_options_proto protoreflect.FileDescriptor
 
 const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\n" +
-	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x97\x06\n" +
+	"\x1edfjay/jsonschema/options.proto\x12\x10dfjay.jsonschema\x1a google/protobuf/descriptor.proto\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc9\x06\n" +
 	"\rPluginOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12,\n" +
@@ -1353,7 +1375,8 @@ const file_dfjay_jsonschema_options_proto_rawDesc = "" +
 	"\x17respect_protojson_int64\x18\x12 \x01(\bR\x15respectProtojsonInt64\x124\n" +
 	"\x16respect_field_behavior\x18\x13 \x01(\bR\x14respectFieldBehavior\x12F\n" +
 	"\x0eprotojson_mode\x18\x14 \x01(\x0e2\x1f.dfjay.jsonschema.ProtojsonModeR\rprotojsonMode\x126\n" +
-	"\x17enum_value_descriptions\x18\x15 \x01(\bR\x15enumValueDescriptions\"\x9f\x01\n" +
+	"\x17enum_value_descriptions\x18\x15 \x01(\bR\x15enumValueDescriptions\x120\n" +
+	"\x14respect_buf_validate\x18\x16 \x01(\bR\x12respectBufValidate\"\x9f\x01\n" +
 	"\vFileOptions\x12)\n" +
 	"\x10visibility_level\x18\x01 \x01(\rR\x0fvisibilityLevel\x12-\n" +
 	"\x12entrypoint_message\x18\x02 \x01(\tR\x11entrypointMessage\x12\x14\n" +

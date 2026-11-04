@@ -1,0 +1,14 @@
+name: "buf-validate-scalars-draft-04"
+description: "protovalidate scalar rules in draft-04"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  draft: Draft04
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true

@@ -67,14 +67,20 @@ Tests and `just golden` shell out to `protoc` (CI pins its version in
   `format: int64`; float NaN/Infinity as strings; map keys are strings; well-known types
   use their JSON form.
 - Required precedence, highest first: `(dfjay.jsonschema.field).required`, proto2
-  `required` / editions `LEGACY_REQUIRED`, `google.api.field_behavior` REQUIRED, then
-  `respect_protojson_presence` (default true: nothing else is required).
+  `required` / editions `LEGACY_REQUIRED`, `(buf.validate.field).required` (or
+  rules that reject the zero value of a field without presence) or
+  `google.api.field_behavior` REQUIRED, then `respect_protojson_presence` (default
+  true: nothing else is required).
 - Editions: take presence from the resolved `field_presence` feature (`isOptionalField`,
   `fieldPresence`); groups and DELIMITED fields are messages. When changing the supported
   editions in `Generate`, update `TestSupportedEditions`.
 - Use `protobuf-go` directly (`pluginpb`, `protodesc`, `protoreflect`). Don't use
   `protogen` (it requires `go_package` on every file) or `protoc-gen-star`.
-- Don't link googleapis: `google.api.field_behavior` is read from the request descriptors.
+- Don't link googleapis or protovalidate: `google.api.field_behavior` and the
+  `buf.validate` rules are read from the request descriptors. A field option of the same
+  kind (`numeric`, `string`, `array`) replaces protovalidate rules. Test cases import
+  third-party protos from `testdata/include`. `TestProtovalidate` checks the mapping
+  against protovalidate-go: give a new rule a case with `checkProtovalidate: true`.
 - Report errors in `CodeGeneratorResponse.Error`, wrapped with the file path; `main.go`
   exits non-zero only when it cannot talk to `protoc`. Log through `logger` (stderr).
 - A new plugin option needs: a documented field in `PluginOptions` in

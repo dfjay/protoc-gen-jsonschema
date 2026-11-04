@@ -1,0 +1,13 @@
+name: "buf-validate-ignore-always"
+description: "IGNORE_ALWAYS also skips the rules inside the message"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true

@@ -11,11 +11,26 @@ Two more checks run on every generated schema:
   draft and resolves every `$ref`.
 - `TestRoundTrip` fills the entrypoint message with random values, writes it
   with `protojson`, sometimes with `EmitDefaultValues`, and validates the JSON
-  against the schema. Fields whose annotations narrow the schema (numeric,
-  string and array keywords, non-string enum mappings, object property counts)
-  are left unset, and such messages are written without defaults. On failure,
-  [rapid](https://pkg.go.dev/pgregory.net/rapid) prints a minimized message and
-  how to rerun it.
+  against the schema. Fields whose annotations or protovalidate rules narrow
+  the schema (numeric, string and array keywords, non-string enum mappings,
+  object property counts) are left unset, and such messages are written without
+  defaults. The schema may still require such a field, where protovalidate
+  rejects its zero value; the test accepts errors only about such fields
+  missing from the message at the error's location. On failure, [rapid](https://pkg.go.dev/pgregory.net/rapid) prints a
+  minimized message and how to rerun it.
+- `TestProtovalidate`, for cases with `checkProtovalidate: true`, fills fields
+  with values at and around the limits of their protovalidate rules and checks
+  that the schema accepts the ProtoJSON of a message exactly when
+  [protovalidate-go](https://github.com/bufbuild/protovalidate-go) accepts the
+  message, written with and without `EmitDefaultValues`. Such a case uses only rules the schema expresses, and no field
+  options that replace them. Candidate values are sorted into those
+  protovalidate accepts and rejects, and each field must see both.
+- `TestPatterns`, for the same cases, runs each translated protovalidate
+  pattern in an ECMA-262 engine ([goja](https://github.com/dop251/goja)) and
+  checks it matches the same sample strings as the RE2 original.
+- `TestIPFormats`, for the same cases, checks the `ip` and `ipv6` rules, which
+  `TestProtovalidate` leaves out with `uri` and `uri_ref`, against protovalidate
+  on sample addresses, including IPv6 addresses with a zone.
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for prerequisites. Run the following
 commands from the repository root:
@@ -75,15 +90,30 @@ expectFail: false
 | `expectFail` | Expect a plugin generation error; defaults to `false`. |
 | `expectedBehaviorDescription` | Optional descriptive metadata; not asserted by the runner. |
 | `skipRoundTrip` | Why `TestRoundTrip` skips the case, when its schema deliberately differs from what `protojson` writes. |
+| `checkProtovalidate` | Run `TestProtovalidate` on the case. |
 
-The runner adds the case directory and the repository's `proto` directory to
-the include path. Golden regeneration compiles every `.proto` in the case
-directory, so keep its inputs consistent with `inputFiles`.
+The runner adds the case directory, the repository's `proto` directory, and
+`testdata/include` to the include path. `testdata/include` holds third-party
+protos the cases import: `buf/validate/validate.proto` from protovalidate
+v1.2.2. Golden regeneration compiles every `.proto` in the case directory, so
+keep its inputs consistent with `inputFiles`.
 
 ## Case index
 
 | Case | Checks |
 |------|--------|
+| `buf-validate-collections` | protovalidate `repeated` and `map` rules, with `items`, `keys` and `values`; `IGNORE_IF_ZERO_VALUE` exempts empty message elements |
+| `buf-validate-enum` | protovalidate `enum` rules restrict the allowed names |
+| `buf-validate-enum-lenient` | protovalidate `enum` rules allow names and numbers in Lenient mode |
+| `buf-validate-ignore-always` | `IGNORE_ALWAYS` also skips the rules inside the field's message |
+| `buf-validate-int64-numbers` | protovalidate 64-bit bounds with `respect_protojson_int64=false` |
+| `buf-validate-oneof` | `(buf.validate.oneof).required` and `(buf.validate.message).oneof` |
+| `buf-validate-overrides` | field options take precedence over protovalidate rules, also for `required` and wrapped zero values; enum rules on custom values, including objects and values shared by numbers |
+| `buf-validate-required` | protovalidate `required`, on fields without presence and oneof members too; rules that reject the zero value of a field without presence make it required |
+| `buf-validate-scalars` | protovalidate number, string and bool rules, `ignore`, wrappers, RE2 patterns, bounds narrowing 64-bit `in`, `hostname`, `ipv4` and `uuid` as patterns, and IPv6 zones |
+| `buf-validate-scalars-draft-04` | protovalidate scalar rules in draft-04 |
+| `buf-validate-scalars-lenient` | protovalidate numeric rules accept only numbers in Lenient mode, within the range of 32-bit types |
+| `buf-validate-skipped` | protovalidate rules without a JSON Schema form are left out |
 | `jsonschema-array` | array validation keywords |
 | `jsonschema-deprecated` | the `deprecated` option on messages, fields and enums becomes `deprecated: true` |
 | `jsonschema-deprecated-draft-07` | draft-07 has no `deprecated` keyword, so it is left out |
@@ -124,6 +154,7 @@ directory, so keep its inputs consistent with `inputFiles`.
 | `plugin-preserve-field-name-false` | field names follow `json_name` |
 | `plugin-preserve-field-name-true` | field names keep the proto names, ignoring `json_name` |
 | `plugin-protojson-mode-lenient` | `protojson_mode=Lenient` accepts what ProtoJSON parsers accept |
+| `plugin-respect-buf-validate-false` | `respect_buf_validate=false` ignores protovalidate rules |
 | `plugin-respect-protojson-int64-false` | `respect_protojson_int64=false` writes 64-bit integers as integers |
 | `plugin-respect-protojson-int64-map` | 64-bit integer map values are strings; the map stays an object |
 | `plugin-respect-protojson-no-required` | `respect_protojson_presence` adds no automatic `required` |

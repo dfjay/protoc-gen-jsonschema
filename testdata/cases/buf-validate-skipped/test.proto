@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  string address = 1 [(buf.validate.field).string.address = true];
+  string header = 2 [(buf.validate.field).string.well_known_regex = KNOWN_REGEX_HTTP_HEADER_NAME];
+  string utf8 = 3 [(buf.validate.field).string.max_bytes = 8];
+  bytes payload = 4 [(buf.validate.field).bytes = {min_len: 1, prefix: "\x01"}];
+  google.protobuf.Duration timeout = 5 [(buf.validate.field).duration.gt = {seconds: 1}];
+  google.protobuf.Timestamp at = 6 [(buf.validate.field).timestamp.lt_now = true];
+  // Integer keys are strings in JSON: their rules are skipped.
+  map<int32, string> by_id = 8 [(buf.validate.field).map = {
+    keys: {int32: {gt: 0}}
+    values: {string: {min_len: 1}}
+  }];
+  // Multi-line mode has no ECMA-262 form.
+  string multi_line = 9 [(buf.validate.field).string.pattern = "(?m)^abc$"];
+  // A bound beyond 2^53 has no exact JSON Schema number.
+  uint64 huge = 10 [(buf.validate.field).uint64 = {gte: 9007199254740993}];
+  // NaN differs from itself: uniqueItems would reject ["NaN", "NaN"].
+  repeated double unique_floats = 11 [(buf.validate.field).repeated.unique = true];
+  // Aliases are equal values with different names.
+  repeated Status unique_statuses = 12 [(buf.validate.field).repeated.unique = true];
+  // Bounds of a 64-bit integer string are skipped, and do not filter not_in.
+  int64 excluded = 13 [(buf.validate.field).int64 = {gt: 10, not_in: [1]}];
+  int32 even = 7 [(buf.validate.field).cel = {id: "even", message: "must be even", expression: "this % 2 == 0"}];
+}
+
+enum Status {
+  option allow_alias = true;
+
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACTIVE = 1;
+  STATUS_RUNNING = 1;
+}

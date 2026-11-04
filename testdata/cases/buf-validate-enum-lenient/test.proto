@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  Status defined = 1 [(buf.validate.field).enum.defined_only = true];
+  Status active = 2 [(buf.validate.field).enum = {in: [1, 2]}];
+  Status not_unspecified = 3 [(buf.validate.field).enum = {not_in: [0]}];
+  Status done = 4 [(buf.validate.field).enum.const = 3];
+  // Unset is exempt from the rules.
+  Status optional_active = 6 [
+    (buf.validate.field).enum = {in: [1, 2]},
+    (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
+  ];
+}
+
+enum Status {
+  option allow_alias = true;
+
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACTIVE = 1;
+  STATUS_RUNNING = 1;
+  STATUS_PAUSED = 2;
+  STATUS_DONE = 3;
+}

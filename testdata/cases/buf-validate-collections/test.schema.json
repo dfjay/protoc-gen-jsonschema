@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Child": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/.tests.Child.name"
+        },
+        "count": {
+          "$ref": "#/$defs/.tests.Child.count"
+        },
+        "extra": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/.tests.Child.extra"
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "name"
+      ]
+    },
+    ".tests.Child.count": {
+      "type": "integer"
+    },
+    ".tests.Child.extra": {
+      "type": "integer"
+    },
+    ".tests.Child.name": {
+      "type": "string",
+      "minLength": 1
+    },
+    ".tests.Values": {
+      "properties": {
+        "tags": {
+          "$ref": "#/$defs/.tests.Values.tags"
+        },
+        "scores": {
+          "$ref": "#/$defs/.tests.Values.scores"
+        },
+        "limits": {
+          "$ref": "#/$defs/.tests.Values.limits"
+        },
+        "children": {
+          "$ref": "#/$defs/.tests.Values.children"
+        },
+        "named": {
+          "$ref": "#/$defs/.tests.Values.named"
+        }
+      },
+      "type": "object",
+      "required": [
+        "tags",
+        "limits"
+      ]
+    },
+    ".tests.Values.children": {
+      "items": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/$defs/unvalidated.tests.Child"
+              }
+            ],
+            "properties": {
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "const": ""
+                  }
+                ]
+              },
+              "count": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "const": 0
+                  }
+                ]
+              },
+              "extra": {
+                "type": "null"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/.tests.Child"
+          }
+        ],
+        "description": "An empty message is exempt from the rules inside it."
+      },
+      "type": "array",
+      "description": "An empty message is exempt from the rules inside it."
+    },
+    ".tests.Values.limits": {
+      "additionalProperties": {
+        "type": "integer",
+        "exclusiveMinimum": 0
+      },
+      "propertyNames": {
+        "pattern": "^(?:[a-z])+$"
+      },
+      "type": "object",
+      "maxProperties": 10,
+      "minProperties": 1
+    },
+    ".tests.Values.named": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/$defs/unvalidated.tests.Child"
+              }
+            ],
+            "properties": {
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "const": ""
+                  }
+                ]
+              },
+              "count": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "const": 0
+                  }
+                ]
+              },
+              "extra": {
+                "type": "null"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/.tests.Child"
+          }
+        ]
+      },
+      "type": "object"
+    },
+    ".tests.Values.scores": {
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "maxItems": 0
+            },
+            {
+              "minItems": 2
+            }
+          ]
+        }
+      ],
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "An empty list is exempt from min_items."
+      },
+      "type": "array",
+      "description": "An empty list is exempt from min_items."
+    },
+    ".tests.Values.tags": {
+      "items": {
+        "type": "string",
+        "minLength": 2
+      },
+      "type": "array",
+      "maxItems": 5,
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "unvalidated.tests.Child": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/unvalidated.tests.Child.name"
+        },
+        "count": {
+          "$ref": "#/$defs/unvalidated.tests.Child.count"
+        },
+        "extra": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/unvalidated.tests.Child.extra"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "unvalidated.tests.Child.count": {
+      "type": "integer"
+    },
+    "unvalidated.tests.Child.extra": {
+      "type": "integer"
+    },
+    "unvalidated.tests.Child.name": {
+      "type": "string"
+    }
+  }
+}
