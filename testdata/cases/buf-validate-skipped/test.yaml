@@ -1,0 +1,11 @@
+name: "buf-validate-skipped"
+description: "protovalidate rules without a JSON Schema form are skipped"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

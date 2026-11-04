@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  option (buf.validate.message).oneof = {fields: ["email", "phone"], required: true};
+  option (buf.validate.message).oneof = {fields: ["nickname", "handle"]};
+
+  oneof contact {
+    option (buf.validate.oneof).required = true;
+
+    string url = 1;
+    string mail = 2;
+  }
+  oneof single {
+    option (buf.validate.oneof).required = true;
+
+    string only = 3;
+  }
+  string email = 4;
+  string phone = 5;
+  string nickname = 6;
+  string handle = 7;
+}

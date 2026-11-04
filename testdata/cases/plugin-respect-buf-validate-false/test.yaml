@@ -1,0 +1,12 @@
+name: "plugin-respect-buf-validate-false"
+description: "respect_buf_validate=false ignores protovalidate rules"
+
+inputFiles: ["test.proto"]
+inputParameters:
+  respect_buf_validate: false
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""

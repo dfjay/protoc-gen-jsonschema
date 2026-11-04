@@ -38,6 +38,7 @@ func GetPluginOptions(params Parameters) (*PluginOptions, error) {
 	options.RespectProtojsonPresence = parseBool("respect_protojson_presence", true)
 	options.RespectFieldBehavior = parseBool("respect_field_behavior", true)
 	options.EnumValueDescriptions = parseBool("enum_value_descriptions", false)
+	options.RespectBufValidate = parseBool("respect_buf_validate", true)
 	if _, ok := params["int64_as_string"]; ok {
 		options.RespectProtojsonInt64 = parseBool("int64_as_string", true)
 	} else {

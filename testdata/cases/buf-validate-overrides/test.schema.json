@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Priority": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    ".tests.Shape": {
+      "enum": [
+        {
+          "kind": "box"
+        },
+        "round"
+      ],
+      "description": "Custom values may be objects, and distinct numbers may share one."
+    },
+    ".tests.Values": {
+      "properties": {
+        "notRequired": {
+          "$ref": "#/$defs/.tests.Values.not_required"
+        },
+        "replaced": {
+          "$ref": "#/$defs/.tests.Values.replaced"
+        },
+        "bounded": {
+          "$ref": "#/$defs/.tests.Values.bounded"
+        },
+        "list": {
+          "$ref": "#/$defs/.tests.Values.list"
+        },
+        "priority": {
+          "$ref": "#/$defs/.tests.Values.priority"
+        },
+        "wrapped": {
+          "$ref": "#/$defs/.tests.Values.wrapped"
+        },
+        "optionalPositive": {
+          "$ref": "#/$defs/.tests.Values.optional_positive"
+        },
+        "shape": {
+          "$ref": "#/$defs/.tests.Values.shape"
+        },
+        "notRound": {
+          "$ref": "#/$defs/.tests.Values.not_round"
+        },
+        "shapes": {
+          "$ref": "#/$defs/.tests.Values.shapes"
+        }
+      },
+      "type": "object",
+      "required": [
+        "priority"
+      ]
+    },
+    ".tests.Values.bounded": {
+      "type": "integer",
+      "maximum": 9
+    },
+    ".tests.Values.list": {
+      "items": {
+        "type": "string",
+        "maxLength": 4,
+        "description": "It replaces the list rules, not the item rules."
+      },
+      "type": "array",
+      "maxItems": 9,
+      "description": "It replaces the list rules, not the item rules."
+    },
+    ".tests.Values.not_required": {
+      "type": "string",
+      "description": "The field option takes precedence over required."
+    },
+    ".tests.Values.not_round": {
+      "$ref": "#/$defs/.tests.Shape",
+      "description": "SHAPE_CIRCLE keeps \"round\"."
+    },
+    ".tests.Values.optional_positive": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "The field option decides required, though the rules reject zero."
+    },
+    ".tests.Values.priority": {
+      "$ref": "#/$defs/.tests.Priority",
+      "enum": [
+        1
+      ],
+      "description": "Enum rules apply to the mapped values."
+    },
+    ".tests.Values.replaced": {
+      "type": "string",
+      "maxLength": 10,
+      "description": "A field option of the same kind replaces the rules."
+    },
+    ".tests.Values.shape": {
+      "$ref": "#/$defs/.tests.Shape",
+      "enum": [
+        {
+          "kind": "box"
+        },
+        "round"
+      ]
+    },
+    ".tests.Values.shapes": {
+      "items": {
+        "$ref": "#/$defs/.tests.Shape",
+        "description": "Distinct values with the same JSON: no uniqueItems."
+      },
+      "type": "array",
+      "description": "Distinct values with the same JSON: no uniqueItems."
+    },
+    ".tests.Values.wrapped": {
+      "items": {
+        "type": "integer",
+        "minimum": 5,
+        "description": "Without its rules, a wrapped zero is not exempt from the field option."
+      },
+      "type": "array",
+      "description": "Without its rules, a wrapped zero is not exempt from the field option."
+    }
+  }
+}

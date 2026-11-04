@@ -14,6 +14,7 @@ import (
 	goproto "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -48,15 +49,26 @@ func generate(req *pluginpb.CodeGeneratorRequest, log logger) ([]*pluginpb.CodeG
 		return nil, fmt.Errorf("invalid request: %w", err)
 	}
 
-	// Imported files too: their types can appear in a schema.
-	visitor := NewVisitor(pluginOptions, files)
-	for _, fdp := range req.GetProtoFile() {
-		file, err := files.FindFileByPath(fdp.GetName())
+	visitor, err := visitFiles(req, pluginOptions, files)
+	if err != nil {
+		return nil, err
+	}
+	if visitor.unvalidated {
+		// The schemas without protovalidate rules, which unvalidated refs name.
+		options := goproto.CloneOf(pluginOptions)
+		options.RespectBufValidate = false
+		plain, err := visitFiles(req, options, files)
 		if err != nil {
 			return nil, err
 		}
-		if err := visitor.VisitFile(file); err != nil {
-			return nil, fmt.Errorf("%s: %w", file.Path(), err)
+		for _, key := range plain.registry.GetKeys() {
+			schema := plain.registry.GetSchema(key)
+			jsonschema.Walk(schema, func(s *jsonschema.Schema) {
+				if !s.Ref.IsEmpty() {
+					s.Ref = jsonschema.RefId(unvalidatedPrefix) + s.Ref
+				}
+			})
+			visitor.registry.AddSchema(unvalidatedPrefix+key, schema)
 		}
 	}
 	log.Debugf("# of IntermediateSchemas: %d", len(visitor.registry.GetKeys()))
@@ -252,4 +264,20 @@ func (l logger) Debugf(format string, args ...any) {
 	if l.debug {
 		l.Logf(format, args...)
 	}
+}
+
+// visitFiles builds the schemas of every file in the request, imported files
+// too: their types can appear in a schema.
+func visitFiles(req *pluginpb.CodeGeneratorRequest, pluginOptions *proto.PluginOptions, files *protoregistry.Files) (*FrontendVisitor, error) {
+	visitor := NewVisitor(pluginOptions, files)
+	for _, fdp := range req.GetProtoFile() {
+		file, err := files.FindFileByPath(fdp.GetName())
+		if err != nil {
+			return nil, err
+		}
+		if err := visitor.VisitFile(file); err != nil {
+			return nil, fmt.Errorf("%s: %w", file.Path(), err)
+		}
+	}
+	return visitor, nil
 }

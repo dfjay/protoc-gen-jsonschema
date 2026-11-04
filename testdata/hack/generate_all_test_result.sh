@@ -37,6 +37,7 @@ for proto_dir in $proto_dirs; do
   command="$command \
   -I ./proto \
   -I testdata/cases/$proto_dir \
+  -I testdata/include \
   testdata/cases/$proto_dir/*.proto
   "
 

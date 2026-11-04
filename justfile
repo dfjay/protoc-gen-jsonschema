@@ -50,7 +50,7 @@ golden case="":
 # Dump the descriptors protoc sends the plugin for a testdata case into .bin/, for debugging
 dump-descriptors case="plugin-consist-output":
     mkdir -p "{{bin}}/descriptors"
-    protoc -I proto -I testdata/cases/{{case}} --include_imports --include_source_info \
+    protoc -I proto -I testdata/cases/{{case}} -I testdata/include --include_imports --include_source_info \
         --descriptor_set_out="{{bin}}/descriptors/{{case}}.pb" testdata/cases/{{case}}/test.proto
     @echo "{{bin}}/descriptors/{{case}}.pb (read with: protoc --decode=google.protobuf.FileDescriptorSet google/protobuf/descriptor.proto < FILE)"
 

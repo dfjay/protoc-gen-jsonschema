@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Status": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_ACTIVE",
+        "STATUS_RUNNING",
+        "STATUS_PAUSED",
+        "STATUS_DONE"
+      ]
+    },
+    ".tests.Values": {
+      "properties": {
+        "defined": {
+          "$ref": "#/$defs/.tests.Values.defined"
+        },
+        "active": {
+          "$ref": "#/$defs/.tests.Values.active"
+        },
+        "notUnspecified": {
+          "$ref": "#/$defs/.tests.Values.not_unspecified"
+        },
+        "done": {
+          "$ref": "#/$defs/.tests.Values.done"
+        },
+        "optionalActive": {
+          "$ref": "#/$defs/.tests.Values.optional_active"
+        }
+      },
+      "type": "object",
+      "required": [
+        "active",
+        "notUnspecified",
+        "done"
+      ]
+    },
+    ".tests.Values.active": {
+      "$ref": "#/$defs/.tests.Status",
+      "enum": [
+        "STATUS_ACTIVE",
+        "STATUS_RUNNING",
+        "STATUS_PAUSED"
+      ]
+    },
+    ".tests.Values.defined": {
+      "$ref": "#/$defs/.tests.Status"
+    },
+    ".tests.Values.done": {
+      "$ref": "#/$defs/.tests.Status",
+      "enum": [
+        "STATUS_DONE"
+      ]
+    },
+    ".tests.Values.not_unspecified": {
+      "$ref": "#/$defs/.tests.Status",
+      "allOf": [
+        {
+          "not": {
+            "enum": [
+              "STATUS_UNSPECIFIED"
+            ]
+          }
+        }
+      ]
+    },
+    ".tests.Values.optional_active": {
+      "anyOf": [
+        {
+          "enum": [
+            "STATUS_UNSPECIFIED"
+          ]
+        },
+        {
+          "$ref": "#/$defs/.tests.Status",
+          "enum": [
+            "STATUS_ACTIVE",
+            "STATUS_RUNNING",
+            "STATUS_PAUSED"
+          ]
+        }
+      ],
+      "description": "Unset is exempt from the rules."
+    }
+  }
+}

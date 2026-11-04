@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  int32 range = 1 [(buf.validate.field).int32 = {gt: 0, lte: 100}];
+  // A lower bound above the upper one means outside the range.
+  int32 outside = 2 [(buf.validate.field).int32 = {gt: 10, lt: 5}];
+  int32 one_of = 3 [(buf.validate.field).int32 = {in: [1, 2, 3]}];
+  int32 not_one_of = 4 [(buf.validate.field).int32 = {not_in: [0]}];
+  uint32 constant = 5 [(buf.validate.field).uint32.const = 7];
+  // 64-bit integers are strings: bounds apply only through in.
+  int64 big = 6 [(buf.validate.field).int64 = {gte: 1, in: [1, 2]}];
+  double finite = 7 [(buf.validate.field).double.finite = true];
+  float positive = 8 [(buf.validate.field).float.gt = 0.1];
+  // not_in alone keeps NaN and the infinities.
+  double not_zero = 9 [(buf.validate.field).double = {not_in: [0]}];
+  bool must_be_true = 10 [(buf.validate.field).bool.const = true];
+
+  string code = 11 [(buf.validate.field).string.len = 3];
+  string name = 12 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string slug = 13 [(buf.validate.field).string = {pattern: "^[a-z.-]+$", prefix: "a.", suffix: "z", contains: "-"}];
+  string safe = 14 [(buf.validate.field).string = {not_contains: "..", not_in: ["admin"]}];
+  string color = 15 [(buf.validate.field).string = {in: ["red", "green"]}];
+  string email = 16 [(buf.validate.field).string.email = true];
+  string id = 17 [(buf.validate.field).string.uuid = true];
+  string ip = 18 [(buf.validate.field).string.ip = true];
+  string link = 19 [(buf.validate.field).string.uri_ref = true];
+  string host = 20 [(buf.validate.field).string.hostname = true];
+  string v4 = 21 [(buf.validate.field).string.ipv4 = true];
+
+  string ignored = 23 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).ignore = IGNORE_ALWAYS
+  ];
+  // The empty string is exempt from the rules.
+  string optional_email = 24 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
+  ];
+  // A field with presence is not exempt when zero.
+  optional string presence_email = 25 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
+  ];
+  // RE2 syntax becomes ECMA-262.
+  string letters = 27 [(buf.validate.field).string.pattern = "\\A[[:alpha:]]+(?P<tail>-[[:digit:]])?\\z"];
+  // Outside a range with an infinite bound.
+  double outside_inf = 28 [(buf.validate.field).double = {gt: inf, lt: 0}];
+  double up_to_inf = 29 [(buf.validate.field).double.lte = inf];
+  double only_inf = 30 [(buf.validate.field).double.const = inf];
+  // "." matches \r in RE2; (?i) and \x{...} have no ECMA-262 syntax.
+  string dot = 31 [(buf.validate.field).string.pattern = "^a.c$"];
+  string folded = 32 [(buf.validate.field).string.pattern = "(?i)^ab$"];
+  string smile = 33 [(buf.validate.field).string.pattern = "^\\x{1F600}$"];
+  google.protobuf.NullValue no_null = 34 [(buf.validate.field).enum.not_in = 0];
+  // RE2 allows group names ECMA-262 does not.
+  string groups = 35 [(buf.validate.field).string.pattern = "^(?P<1>a)(?P<x>b)(?P<x>c)?$"];
+  // null is the zero value, which the rules skip.
+  google.protobuf.NullValue exempt_null = 36 [
+    (buf.validate.field).enum.not_in = 0,
+    (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
+  ];
+  repeated google.protobuf.Int32Value wrapped_items = 37 [(buf.validate.field).repeated.items = {
+    int32: {gte: 1}
+    ignore: IGNORE_IF_ZERO_VALUE
+  }];
+  google.protobuf.Int32Value wrapped = 26 [(buf.validate.field).int32.gte = 1];
+  // Bounds filter in, so only 11 remains.
+  int64 filtered = 38 [(buf.validate.field).int64 = {gt: 10, in: [1, 11]}];
+  // An IPv6 address may have a zone.
+  string ipv6 = 39 [(buf.validate.field).string.ipv6 = true];
+  google.protobuf.StringValue wrapped_ip = 40 [(buf.validate.field).string.ip = true];
+}

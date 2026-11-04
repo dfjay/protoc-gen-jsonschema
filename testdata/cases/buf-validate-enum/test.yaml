@@ -1,0 +1,13 @@
+name: "buf-validate-enum"
+description: "protovalidate enum rules"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true

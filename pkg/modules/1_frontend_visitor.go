@@ -2,6 +2,7 @@ package modules
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/jsonschema"
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
@@ -14,7 +15,15 @@ import (
 type FrontendVisitor struct {
 	registry      *jsonschema.Registry
 	pluginOptions *proto.PluginOptions
-	behaviors     fieldBehaviors
+	ext           extensions
+	// unvalidated is set when a schema refers to a message without rules.
+	unvalidated bool
+}
+
+// extensions reads options defined in other packages' .proto files.
+type extensions struct {
+	behaviors fieldBehaviors
+	validate  bufValidate
 }
 
 // NewVisitor returns a visitor of the files in files.
@@ -24,7 +33,10 @@ func NewVisitor(pluginOptions *proto.PluginOptions, files *protoregistry.Files) 
 		pluginOptions: pluginOptions,
 	}
 	if pluginOptions.GetRespectFieldBehavior() {
-		v.behaviors = newFieldBehaviors(files)
+		v.ext.behaviors = newFieldBehaviors(files)
+	}
+	if pluginOptions.GetRespectBufValidate() {
+		v.ext.validate = newBufValidate(files)
 	}
 	return v
 }
@@ -65,9 +77,9 @@ func (v *FrontendVisitor) visitMessage(message protoreflect.MessageDescriptor) e
 
 	var schema *jsonschema.Schema
 	if isWellKnownMessage(message) {
-		schema = buildFromWellKnownMessage(v.pluginOptions, v.behaviors, message, mo)
+		schema = buildFromWellKnownMessage(v.pluginOptions, v.ext, message, mo)
 	} else {
-		schema = buildFromMessage(v.pluginOptions, v.behaviors, message, mo)
+		schema = buildFromMessage(v.pluginOptions, v.ext, message, mo)
 	}
 	v.registry.AddSchema(fullyQualifiedName(message), schema)
 
@@ -95,13 +107,28 @@ func (v *FrontendVisitor) visitField(field protoreflect.FieldDescriptor) error {
 		return fmt.Errorf("%s: multiple_of must be greater than 0, got %d", fullyQualifiedName(field), numeric.GetMultipleOf())
 	}
 
+	rules := v.ext.validate.fieldRules(field)
 	var schema *jsonschema.Schema
 	if field.IsMap() {
-		schema = buildFromMapField(v.pluginOptions, field, fo)
+		schema = buildFromMapField(v.pluginOptions, field, fo, rules)
 	} else {
-		schema = buildFromField(v.pluginOptions, field, fo)
+		schema = buildFromField(v.pluginOptions, field, fo, rules)
 	}
-	readOnly, writeOnly := v.behaviors.has(field, "OUTPUT_ONLY"), v.behaviors.has(field, "INPUT_ONLY")
+	if (fo == nil || fo.Required == nil) && !field.HasPresence() && ruleBool(rules, "required") {
+		// protovalidate's required also rejects the zero value.
+		schema.AllOf = append(schema.AllOf, &jsonschema.Schema{Not: unsetValue(v.pluginOptions, field)})
+	}
+	ignored := v.ext.validate.ignoresAlways(field)
+	jsonschema.Walk(schema, func(s *jsonschema.Schema) {
+		if ignored != nil && s.Ref == toRefId(ignored) {
+			s.Ref = jsonschema.RefId(unvalidatedPrefix) + s.Ref
+		}
+		// Also set by an empty message element under IGNORE_IF_ZERO_VALUE.
+		if strings.HasPrefix(string(s.Ref), unvalidatedPrefix) {
+			v.unvalidated = true
+		}
+	})
+	readOnly, writeOnly := v.ext.behaviors.has(field, "OUTPUT_ONLY"), v.ext.behaviors.has(field, "INPUT_ONLY")
 	if (readOnly || writeOnly) && schema.Ref != "" {
 		// Draft-07 ignores the keywords beside $ref.
 		schema.AllOf = append(schema.AllOf, &jsonschema.Schema{Ref: schema.Ref})

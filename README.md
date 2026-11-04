@@ -189,6 +189,7 @@ zero values in the generated reference do not necessarily match them.
 | `respect_protojson_int64` | `true` | Represent 64-bit integers and their wrappers as decimal strings. Set to `false` for integer values. Ignored in Lenient mode. |
 | `mandatory_nullable` | `false` | Set to `true` to disable automatic nullability for optional fields and oneof members in Canonical mode. Explicit `nullable` annotations still apply. |
 | `respect_field_behavior` | `true` | Apply `google.api.field_behavior`: `REQUIRED`, `OUTPUT_ONLY`, and `INPUT_ONLY`. |
+| `respect_buf_validate` | `true` | Apply the protovalidate rules JSON Schema can express; see [protovalidate rules](#protovalidate-rules). |
 | `enum_value_descriptions` | `false` | Write enums as an `anyOf` of one `const` per value, with the value's comment as `description` and `deprecated` from its option, so editors show them on completion. Some code generators handle `enum` better. |
 | `additional_properties` | `DoNothing` | Control unknown object properties; see [below](#additional-properties). |
 | `visibility_level` | `0` | Omit messages and fields whose annotated visibility level is below this threshold. A visible reference to a hidden type is an error. |
@@ -308,7 +309,9 @@ this order, from highest priority to lowest:
 
 1. The field annotation `required: true` or `required: false`.
 2. Proto2 `required` or editions `LEGACY_REQUIRED`.
-3. `google.api.field_behavior = REQUIRED` on fields outside a oneof, when enabled.
+3. `(buf.validate.field).required`, protovalidate rules that reject the zero
+   value of a field without presence, or `google.api.field_behavior = REQUIRED`
+   on fields outside a oneof, when enabled.
 4. With `respect_protojson_presence=false`, fields that are neither optional,
    repeated, maps, nor oneof members become required.
 
@@ -318,12 +321,56 @@ annotation `nullable: true` explicitly permits `null`. Types whose JSON form
 already accepts `null`, such as `google.protobuf.Value`, retain that behavior.
 Editions use the resolved `field_presence` feature to determine optionality.
 
-Oneofs allow no member to be set, or one member to be set. In Lenient mode, a
-member set to `null` normally counts as unset.
+Oneofs allow no member to be set, or one member to be set; with
+`(buf.validate.oneof).required`, exactly one. In Lenient mode, a member set to
+`null` normally counts as unset.
 
 `OUTPUT_ONLY` and `INPUT_ONLY` field behaviors become `readOnly` and `writeOnly`
 annotations in draft-07 and later. Earlier drafts omit these keywords. These
 annotations do not themselves prohibit a property from appearing in input.
+
+### protovalidate rules
+
+With `respect_buf_validate` (the default), [protovalidate](https://protovalidate.com)
+rules from `buf/validate/validate.proto` become schema keywords. The plugin reads
+them from the request's descriptors and does not depend on protovalidate.
+
+| Rules | JSON Schema |
+| --- | --- |
+| `required` | `required`, after the field annotation and proto2 `required`; see [above](#presence-and-nullability). A field without presence must also be nonzero, and a required oneof member must be the member set. Rules that reject the zero value of a field without presence also make it `required`: protovalidate checks an absent field as its zero value |
+| Numbers: `gt`, `gte`, `lt`, `lte`, `const`, `in`, `not_in`, `finite` | `exclusiveMinimum`, `minimum`, `exclusiveMaximum`, `maximum`, `const`, `enum`, `not`; a lower bound above the upper one means outside the range. In Canonical mode, `"NaN"`, `"Infinity"`, and `"-Infinity"` remain where the rules accept them |
+| Strings: `len`, `min_len`, `max_len`, `pattern`, `prefix`, `suffix`, `contains`, `not_contains`, `const`, `in`, `not_in` | `minLength`, `maxLength`, `pattern`, `const`, `enum`, `not` |
+| Strings: `email`, `hostname`, `ipv4`, `uuid` | A `pattern` of protovalidate's definition, checked whatever the validator does with `format`. The formats differ: `email` follows RFC 5321 rather than the HTML standard, `hostname` allows no trailing dot but a numeric last label, and `uuid` exists only in 2019-09 and later |
+| Strings: `ip`, `ipv6`, `uri`, `uri_ref` | `format`, which the validator may not check; for `ip`, a `pattern` for IPv4, and for `ip` and `ipv6`, a `pattern` of an IPv6 address with a zone, such as `fe80::1%eth0`, which protovalidate accepts |
+| `bool.const` | `const` |
+| Enums: `const`, `in`, `not_in`, `defined_only` | The allowed values in the enum's JSON mapping: names, and numbers in Lenient mode, or custom values. `not_in` keeps a custom value that an allowed number shares. For `NullValue`, `null` stands for 0 |
+| `repeated`: `min_items`, `max_items`, `unique`, `items` | `minItems`, `maxItems`, `uniqueItems`, rules of the items. `unique` is skipped where equal JSON and equal values differ: for `float` and `double`, where NaN differs from itself, enums with aliases or with numbers sharing a custom value, and in Lenient mode integers, enums and `bytes`, which have several JSON forms |
+| `map`: `min_pairs`, `max_pairs`, `keys`, `values` | `minProperties`, `maxProperties`, `propertyNames` for string keys, rules of the values |
+| `(buf.validate.oneof).required`, `(buf.validate.message).oneof` | One, or at most one, of the fields; a zero value of a field without presence counts as unset |
+| `ignore: IGNORE_IF_ZERO_VALUE` | The rules, or the zero value; for a message in `items` or map `values`, an object with no field set, which refers to the message schema without rules under an `unvalidated` key. Fields of a message `oneof` rule default to it |
+| `ignore: IGNORE_ALWAYS` | No rules for the field or inside its message: the field, or its `items` or map `values` with this setting, refers to a copy of the message schemas without rules, under `unvalidated` keys such as `unvalidated.pkg.Message` |
+
+Rules apply to wrapper types such as `Int32Value` too. RE2 patterns are
+translated to ECMA-262 by meaning: `.` also matches `\r` in RE2, `(?i)` becomes
+classes of both cases, and so on. A pattern with no translation, such as one in
+multi-line mode or with a class beyond the Basic Multilingual Plane, is skipped.
+CEL rules, other string formats, rules for integer map keys, and rules for
+`bytes`, `Duration`, `Timestamp`, `Any`, and `FieldMask` have no JSON Schema
+form and are skipped. A field annotation with `numeric`, `string`, or `array`
+keywords replaces the protovalidate rules of that kind.
+
+Numeric rules make Lenient mode accept only JSON numbers, as numeric
+annotations do: integers within the range of 32-bit types, and not negative for
+unsigned ones. In Canonical mode, bounds do not apply to
+64-bit integers written as strings, but they do narrow `const` and `in`, and
+`not_in` applies. An integer bound beyond 2^53, which a JSON Schema number
+cannot hold exactly, is skipped. In Lenient mode, a `float` bound is compared as
+written, while parsers round the input to a `float` first.
+
+Translated patterns run in the validator's ECMA-262 engine. Without its
+`unicode` flag, which JSON Schema leaves to the validator, `.` matches half of a
+character beyond the Basic Multilingual Plane. Unlike RE2, a backtracking engine
+can take exponential time on nested repetitions such as `(a+)+`.
 
 ### Well-known types
 

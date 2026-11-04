@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+import "google/protobuf/wrappers.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  // The field option takes precedence over required.
+  string not_required = 1 [
+    (buf.validate.field).required = true,
+    (dfjay.jsonschema.field) = {required: false}
+  ];
+  // A field option of the same kind replaces the rules.
+  string replaced = 2 [
+    (buf.validate.field).string.min_len = 5,
+    (dfjay.jsonschema.field) = {string: {max_length: 10}}
+  ];
+  int32 bounded = 3 [
+    (buf.validate.field).int32.gt = 0,
+    (dfjay.jsonschema.field) = {numeric: {inclusive_maximum: 9}}
+  ];
+  // It replaces the list rules, not the item rules.
+  repeated string list = 4 [
+    (buf.validate.field).repeated = {min_items: 3, items: {string: {max_len: 4}}},
+    (dfjay.jsonschema.field) = {array: {max_items: 9}}
+  ];
+  // Enum rules apply to the mapped values.
+  Priority priority = 5 [(buf.validate.field).enum = {in: [1]}];
+  // Without its rules, a wrapped zero is not exempt from the field option.
+  repeated google.protobuf.Int32Value wrapped = 6 [
+    (buf.validate.field).repeated.items = {
+      int32: {gte: 1}
+      ignore: IGNORE_IF_ZERO_VALUE
+    },
+    (dfjay.jsonschema.field) = {numeric: {inclusive_minimum: 5}}
+  ];
+  // The field option decides required, though the rules reject zero.
+  int32 optional_positive = 7 [
+    (buf.validate.field).int32.gt = 0,
+    (dfjay.jsonschema.field) = {required: false}
+  ];
+  Shape shape = 8 [(buf.validate.field).enum = {in: [0, 1]}];
+  // SHAPE_CIRCLE keeps "round".
+  Shape not_round = 9 [(buf.validate.field).enum = {not_in: [1]}];
+  // Distinct values with the same JSON: no uniqueItems.
+  repeated Shape shapes = 10 [(buf.validate.field).repeated.unique = true];
+}
+
+// Custom values may be objects, and distinct numbers may share one.
+enum Shape {
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToCustom};
+
+  SHAPE_BOX = 0 [(dfjay.jsonschema.enum_value) = {custom_value: {value: "{\"kind\": \"box\"}"}}];
+  SHAPE_ROUND = 1 [(dfjay.jsonschema.enum_value) = {custom_value: {value: "\"round\""}}];
+  SHAPE_CIRCLE = 2 [(dfjay.jsonschema.enum_value) = {custom_value: {value: "\"round\""}}];
+}
+
+enum Priority {
+  option (dfjay.jsonschema.enum) = {mapping_type: MapToNumber};
+
+  PRIORITY_LOW = 0;
+  PRIORITY_HIGH = 1;
+}

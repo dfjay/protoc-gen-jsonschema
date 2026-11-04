@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/.tests.Values",
+  "$defs": {
+    ".tests.Child": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/.tests.Child.name"
+        },
+        "grandchild": {
+          "$ref": "#/$defs/.tests.Child.grandchild"
+        }
+      },
+      "type": "object",
+      "required": [
+        "name"
+      ]
+    },
+    ".tests.Child.grandchild": {
+      "$ref": "#/$defs/.tests.Grandchild"
+    },
+    ".tests.Child.name": {
+      "type": "string",
+      "minLength": 2
+    },
+    ".tests.Grandchild": {
+      "properties": {
+        "age": {
+          "$ref": "#/$defs/.tests.Grandchild.age"
+        },
+        "status": {
+          "$ref": "#/$defs/.tests.Grandchild.status"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Grandchild.age": {
+      "type": "integer",
+      "minimum": 0
+    },
+    ".tests.Grandchild.status": {
+      "$ref": "#/$defs/.tests.Status"
+    },
+    ".tests.Plain": {
+      "properties": {
+        "note": {
+          "$ref": "#/$defs/.tests.Plain.note"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Plain.note": {
+      "type": "string"
+    },
+    ".tests.Status": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_ACTIVE"
+      ]
+    },
+    ".tests.Values": {
+      "properties": {
+        "checked": {
+          "$ref": "#/$defs/.tests.Values.checked"
+        },
+        "ignored": {
+          "$ref": "#/$defs/.tests.Values.ignored"
+        },
+        "ignoredList": {
+          "$ref": "#/$defs/.tests.Values.ignored_list"
+        },
+        "ignoredMap": {
+          "$ref": "#/$defs/.tests.Values.ignored_map"
+        },
+        "ignoredItems": {
+          "$ref": "#/$defs/.tests.Values.ignored_items"
+        },
+        "ignoredValues": {
+          "$ref": "#/$defs/.tests.Values.ignored_values"
+        },
+        "plain": {
+          "$ref": "#/$defs/.tests.Values.plain"
+        }
+      },
+      "type": "object"
+    },
+    ".tests.Values.checked": {
+      "$ref": "#/$defs/.tests.Child"
+    },
+    ".tests.Values.ignored": {
+      "$ref": "#/$defs/unvalidated.tests.Child",
+      "description": "Neither this field's rules nor Child's apply."
+    },
+    ".tests.Values.ignored_items": {
+      "items": {
+        "$ref": "#/$defs/unvalidated.tests.Child"
+      },
+      "type": "array"
+    },
+    ".tests.Values.ignored_list": {
+      "items": {
+        "$ref": "#/$defs/unvalidated.tests.Child"
+      },
+      "type": "array"
+    },
+    ".tests.Values.ignored_map": {
+      "additionalProperties": {
+        "$ref": "#/$defs/unvalidated.tests.Child"
+      },
+      "type": "object"
+    },
+    ".tests.Values.ignored_values": {
+      "additionalProperties": {
+        "$ref": "#/$defs/unvalidated.tests.Child"
+      },
+      "type": "object"
+    },
+    ".tests.Values.plain": {
+      "$ref": "#/$defs/.tests.Plain",
+      "description": "Plain has no rules: it keeps its schema."
+    },
+    "unvalidated.tests.Child": {
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/unvalidated.tests.Child.name"
+        },
+        "grandchild": {
+          "$ref": "#/$defs/unvalidated.tests.Child.grandchild"
+        }
+      },
+      "type": "object"
+    },
+    "unvalidated.tests.Child.grandchild": {
+      "$ref": "#/$defs/unvalidated.tests.Grandchild"
+    },
+    "unvalidated.tests.Child.name": {
+      "type": "string"
+    },
+    "unvalidated.tests.Grandchild": {
+      "properties": {
+        "age": {
+          "$ref": "#/$defs/unvalidated.tests.Grandchild.age"
+        },
+        "status": {
+          "$ref": "#/$defs/unvalidated.tests.Grandchild.status"
+        }
+      },
+      "type": "object"
+    },
+    "unvalidated.tests.Grandchild.age": {
+      "type": "integer"
+    },
+    "unvalidated.tests.Grandchild.status": {
+      "$ref": "#/$defs/unvalidated.tests.Status"
+    },
+    "unvalidated.tests.Status": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_ACTIVE"
+      ]
+    }
+  }
+}

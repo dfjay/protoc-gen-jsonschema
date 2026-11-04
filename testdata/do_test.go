@@ -38,10 +38,16 @@ type Testcase struct {
 
 	// Why TestRoundTrip skips the case.
 	SkipRoundTrip string `json:"skipRoundTrip"`
+
+	// Check the schema against protovalidate in TestProtovalidate.
+	CheckProtovalidate bool `json:"checkProtovalidate"`
 }
 
 const testdataDir = "./cases"
 const optionsDir = "../proto"
+
+// includeDir holds third-party protos the cases import, such as protovalidate.
+const includeDir = "./include"
 
 // TestPlugin compares the output of each case byte for byte with the files
 // `just golden` writes through the real protoc.
@@ -115,6 +121,7 @@ func buildRequest(t *testing.T, tc *Testcase, dirPath, optionsImportPath string)
 	args := []string{
 		"-I", dirPath,
 		"-I", optionsImportPath,
+		"-I", includeDir,
 		"--include_imports",
 		"--include_source_info",
 		"--descriptor_set_out=" + descriptorSet,

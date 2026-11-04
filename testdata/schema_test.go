@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/dfjay/protoc-gen-jsonschema/pkg/modules"
 	options "github.com/dfjay/protoc-gen-jsonschema/pkg/proto"
 	"github.com/santhosh-tekuri/jsonschema/v6"
+	"github.com/santhosh-tekuri/jsonschema/v6/kind"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/encoding/protowire"
 	"google.golang.org/protobuf/proto"
@@ -95,7 +97,7 @@ func TestRoundTrip(t *testing.T) {
 					if err != nil {
 						rt.Fatal(err)
 					}
-					if err := schema.Validate(doc); err != nil {
+					if err := schema.Validate(doc); err != nil && !g.onlyMissing(err.(*jsonschema.ValidationError), message) {
 						rt.Fatalf("%s\nprotojson wrote:\n%s", err, out)
 					}
 				})
@@ -111,7 +113,50 @@ type generator struct {
 	behaviors protoreflect.ExtensionDescriptor
 	anyTypes  []protoreflect.MessageDescriptor
 
+	bufField, bufOneof, bufMessage protoreflect.ExtensionDescriptor
+
 	skippedConstrained bool
+}
+
+// onlyMissing reports whether err only says that constrained fields, which
+// the generator leaves unset, are missing in an instance of root.
+func (g *generator) onlyMissing(err *jsonschema.ValidationError, root protoreflect.MessageDescriptor) bool {
+	only := func(cause *jsonschema.ValidationError) bool { return g.onlyMissing(cause, root) }
+	switch k := err.ErrorKind.(type) {
+	case *kind.Required:
+		md := g.messageAt(root, err.InstanceLocation)
+		return md != nil && !slices.ContainsFunc(k.Missing, func(property string) bool {
+			fd := md.Fields().ByName(protoreflect.Name(g.fieldNames(md)[property]))
+			return fd == nil || !g.constrained(fd)
+		})
+	case *kind.OneOf, *kind.AnyOf:
+		return slices.ContainsFunc(err.Causes, only)
+	}
+	return len(err.Causes) > 0 && !slices.ContainsFunc(err.Causes, func(cause *jsonschema.ValidationError) bool { return !only(cause) })
+}
+
+// messageAt returns the message at location in an instance of md, or nil.
+func (g *generator) messageAt(md protoreflect.MessageDescriptor, location []string) protoreflect.MessageDescriptor {
+	for i := 0; i < len(location); i++ {
+		fd := md.Fields().ByName(protoreflect.Name(g.fieldNames(md)[location[i]]))
+		if fd == nil {
+			return nil
+		}
+		if fd.IsList() || fd.IsMap() {
+			// The index or key of the element.
+			if i++; i >= len(location) {
+				return nil
+			}
+		}
+		md = fd.Message()
+		if fd.IsMap() {
+			md = fd.MapValue().Message()
+		}
+		if md == nil {
+			return nil
+		}
+	}
+	return md
 }
 
 func newGenerator(t *testing.T, req *pluginpb.CodeGeneratorRequest) *generator {
@@ -132,6 +177,14 @@ func newGenerator(t *testing.T, req *pluginpb.CodeGeneratorRequest) *generator {
 		g.anyTypes = appendMessages(g.anyTypes, fd.Messages())
 		return true
 	})
+	if g.opts.GetRespectBufValidate() {
+		find := func(name protoreflect.FullName) protoreflect.ExtensionDescriptor {
+			d, _ := files.FindDescriptorByName(name)
+			xd, _ := d.(protoreflect.ExtensionDescriptor)
+			return xd
+		}
+		g.bufField, g.bufOneof, g.bufMessage = find("buf.validate.field"), find("buf.validate.oneof"), find("buf.validate.message")
+	}
 	return g
 }
 
@@ -203,30 +256,93 @@ func (g *generator) message(t *rapid.T, md protoreflect.MessageDescriptor, depth
 		if !required && (depth >= maxDepth || !rapid.Bool().Draw(t, string(fd.Name()))) {
 			continue
 		}
-		minLen := 0
-		if required {
-			minLen = 1 // protojson omits empty collections.
+		g.set(t, m, fd, depth, required)
+	}
+	g.exclusive(t, m, depth)
+	return m
+}
+
+// set sets fd to a random value; a required one is written by protojson.
+func (g *generator) set(t *rapid.T, m *dynamicpb.Message, fd protoreflect.FieldDescriptor, depth int, required bool) {
+	minLen := 0
+	if required {
+		minLen = 1 // protojson omits empty collections.
+	}
+	switch {
+	case fd.IsMap():
+		mp := m.Mutable(fd).Map()
+		for range rapid.IntRange(minLen, 2).Draw(t, "len") {
+			mp.Set(g.scalar(t, fd.MapKey(), false).MapKey(), g.value(t, fd.MapValue(), depth))
 		}
-		switch {
-		case fd.IsMap():
-			mp := m.Mutable(fd).Map()
-			for range rapid.IntRange(minLen, 2).Draw(t, "len") {
-				mp.Set(g.scalar(t, fd.MapKey(), false).MapKey(), g.value(t, fd.MapValue(), depth))
+	case fd.IsList():
+		list := m.Mutable(fd).List()
+		for range rapid.IntRange(minLen, 2).Draw(t, "len") {
+			list.Append(g.value(t, fd, depth))
+		}
+	default:
+		m.Set(fd, g.value(t, fd, depth))
+		// protojson omits implicit-presence zero values. An enum with only
+		// the zero value cannot do better.
+		for range 100 {
+			if !required || m.Has(fd) {
+				break
 			}
-		case fd.IsList():
-			list := m.Mutable(fd).List()
-			for range rapid.IntRange(minLen, 2).Draw(t, "len") {
-				list.Append(g.value(t, fd, depth))
-			}
-		default:
 			m.Set(fd, g.value(t, fd, depth))
-			// protojson omits implicit-presence zero values.
-			for required && !m.Has(fd) {
-				m.Set(fd, g.value(t, fd, depth))
+		}
+	}
+}
+
+// exclusive satisfies the protovalidate oneof rules of m.
+func (g *generator) exclusive(t *rapid.T, m *dynamicpb.Message, depth int) {
+	md := m.Descriptor()
+	pick := func(fields []protoreflect.FieldDescriptor) {
+		for _, fd := range fields {
+			if !g.hidden(fd) && !g.constrained(fd) {
+				g.set(t, m, fd, depth, true)
+				return
+			}
+		}
+		t.Fatalf("no field of %s can satisfy its oneof rule", md.FullName())
+	}
+	for oneof := range listOf(md.Oneofs()) {
+		if oneof.IsSynthetic() {
+			continue
+		}
+		if bufBool(bufRules(oneof, g.bufOneof), "required") && m.WhichOneof(oneof) == nil {
+			pick(slices.Collect(listOf(oneof.Fields())))
+		}
+		// A required member must be the one set.
+		for fd := range listOf(oneof.Fields()) {
+			if bufBool(g.fieldRules(fd), "required") {
+				g.set(t, m, fd, depth, true)
 			}
 		}
 	}
-	return m
+	rules := bufRules(md, g.bufMessage)
+	if rules == nil {
+		return
+	}
+	oneofRules := rules.Get(rules.Descriptor().Fields().ByName("oneof")).List()
+	for i := range oneofRules.Len() {
+		rule := oneofRules.Get(i).Message()
+		names := rule.Get(rule.Descriptor().Fields().ByName("fields")).List()
+		var fields []protoreflect.FieldDescriptor
+		for j := range names.Len() {
+			fields = append(fields, md.Fields().ByName(protoreflect.Name(names.Get(j).String())))
+		}
+		var set []protoreflect.FieldDescriptor
+		for _, fd := range fields {
+			if m.Has(fd) {
+				set = append(set, fd)
+			}
+		}
+		for _, fd := range set[min(1, len(set)):] {
+			m.Clear(fd)
+		}
+		if len(set) == 0 && bufBool(rule, "required") {
+			pick(fields)
+		}
+	}
 }
 
 func (g *generator) value(t *rapid.T, fd protoreflect.FieldDescriptor, depth int) protoreflect.Value {
@@ -338,7 +454,7 @@ func (g *generator) required(fd protoreflect.FieldDescriptor) bool {
 		return true
 	}
 	inOneof := fd.ContainingOneof() != nil && !fd.ContainingOneof().IsSynthetic()
-	if !inOneof && g.opts.GetRespectFieldBehavior() && g.hasBehavior(fd, "REQUIRED") {
+	if bufBool(g.fieldRules(fd), "required") || !inOneof && g.opts.GetRespectFieldBehavior() && g.hasBehavior(fd, "REQUIRED") {
 		return true
 	}
 	if g.opts.GetRespectProtojsonPresence() {
@@ -353,6 +469,9 @@ func (g *generator) required(fd protoreflect.FieldDescriptor) bool {
 }
 
 func (g *generator) constrained(fd protoreflect.FieldDescriptor) bool {
+	if rules := g.fieldRules(fd); rules != nil && rules.WhichOneof(rules.Descriptor().Oneofs().ByName("type")) != nil {
+		return true
+	}
 	fo := options.GetFieldOptions(fd)
 	if fo.GetNumeric() != nil || fo.GetString_() != nil || fo.GetArray() != nil {
 		return true
@@ -394,4 +513,72 @@ func (g *generator) hasBehavior(fd protoreflect.FieldDescriptor, name protorefle
 		}
 	}
 	return false
+}
+
+// fieldRules returns the protovalidate FieldRules of fd unless they are ignored.
+func (g *generator) fieldRules(fd protoreflect.FieldDescriptor) protoreflect.Message {
+	rules := bufRules(fd, g.bufField)
+	if rules == nil {
+		return nil
+	}
+	if ignore := rules.Descriptor().Fields().ByName("ignore"); rules.Has(ignore) && rules.Get(ignore).Enum() == 3 { // IGNORE_ALWAYS
+		return nil
+	}
+	return rules
+}
+
+// bufRules returns the protovalidate option xd of desc: a known extension
+// once protovalidate-go is linked, else parsed from the unknown fields.
+func bufRules(desc protoreflect.Descriptor, xd protoreflect.ExtensionDescriptor) protoreflect.Message {
+	if xd == nil {
+		return nil
+	}
+	opts := desc.Options().ProtoReflect()
+	var known protoreflect.Message
+	opts.Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+		if fd.FullName() == xd.FullName() {
+			known = v.Message()
+		}
+		return known == nil
+	})
+	if known != nil {
+		return known
+	}
+	var raw []byte
+	b := opts.GetUnknown()
+	for len(b) > 0 {
+		num, typ, n := protowire.ConsumeTag(b)
+		m := protowire.ConsumeFieldValue(num, typ, b[n:])
+		if num == xd.Number() && typ == protowire.BytesType {
+			v, _ := protowire.ConsumeBytes(b[n : n+m])
+			raw = append(raw, v...)
+		}
+		b = b[n+m:]
+	}
+	if raw == nil {
+		return nil
+	}
+	msg := dynamicpb.NewMessage(xd.Message())
+	if err := proto.Unmarshal(raw, msg); err != nil {
+		panic(err)
+	}
+	return msg
+}
+
+func bufBool(m protoreflect.Message, name protoreflect.Name) bool {
+	v, ok := ruleVal(m, name)
+	return ok && v.Bool()
+}
+
+func listOf[T any](list interface {
+	Len() int
+	Get(int) T
+}) func(func(T) bool) {
+	return func(yield func(T) bool) {
+		for i := range list.Len() {
+			if !yield(list.Get(i)) {
+				return
+			}
+		}
+	}
 }

@@ -35,6 +35,14 @@ just check    # Format check, vet, lint, and tests in both Go modules.
 Tests invoke `protoc`. The `testdata` directory is a separate Go module, so a
 root-level `go test ./...` does not run the fixture suite. `just test` runs both.
 
+Third-party protos that test cases import live in `testdata/include`, which
+every `protoc` invocation adds to the include path. To update
+`buf/validate/validate.proto`, copy it from a
+[protovalidate release](https://github.com/bufbuild/protovalidate/releases),
+update the version named in the [test guide](testdata/README.md), and bump
+`buf.build/go/protovalidate` in `testdata/go.mod` to a release built on it:
+`TestProtovalidate` checks the schemas against that library.
+
 ## Make a change
 
 1. Keep changes focused on one behavior or problem.

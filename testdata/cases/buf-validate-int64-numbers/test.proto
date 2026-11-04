@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+import "google/protobuf/wrappers.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  int64 signed = 1 [(buf.validate.field).int64 = {gt: -5, lte: 1000000}];
+  uint64 unsigned = 2 [(buf.validate.field).uint64 = {gte: 10, lt: 20}];
+  // A lower bound above the upper one means outside the range.
+  sint64 outside = 3 [(buf.validate.field).sint64 = {gt: 100, lt: -100}];
+  google.protobuf.Int64Value wrapped = 4 [(buf.validate.field).int64.gte = 0];
+}

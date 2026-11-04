@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package tests;
+
+import "buf/validate/validate.proto";
+import "dfjay/jsonschema/options.proto";
+
+option (dfjay.jsonschema.file) = {entrypoint_message: "Values"};
+
+message Values {
+  Child checked = 1;
+  // Neither this field's rules nor Child's apply.
+  Child ignored = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).ignore = IGNORE_ALWAYS
+  ];
+  repeated Child ignored_list = 3 [(buf.validate.field).ignore = IGNORE_ALWAYS];
+  map<string, Child> ignored_map = 4 [(buf.validate.field).ignore = IGNORE_ALWAYS];
+  repeated Child ignored_items = 6 [(buf.validate.field).repeated.items.ignore = IGNORE_ALWAYS];
+  map<string, Child> ignored_values = 7 [(buf.validate.field).map.values.ignore = IGNORE_ALWAYS];
+  // Plain has no rules: it keeps its schema.
+  Plain plain = 5 [(buf.validate.field).ignore = IGNORE_ALWAYS];
+}
+
+message Child {
+  string name = 1 [(buf.validate.field).string.min_len = 2];
+  Grandchild grandchild = 2;
+}
+
+message Grandchild {
+  int32 age = 1 [(buf.validate.field).int32.gte = 0];
+  Status status = 2;
+}
+
+message Plain {
+  string note = 1;
+}
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACTIVE = 1;
+}

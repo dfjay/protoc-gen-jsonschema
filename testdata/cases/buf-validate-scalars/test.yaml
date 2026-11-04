@@ -1,0 +1,13 @@
+name: "buf-validate-scalars"
+description: "protovalidate number, string and bool rules"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true

@@ -236,6 +236,9 @@ default: Canonical example: - --jsonschema_opt=protojson_mode=Canonical - --json
 | enum_value_descriptions | [bool](#bool) |  | enum_value_descriptions writes an enum as an `anyOf` of one `const` per value instead of `enum`, so each value carries its comment as `description` and, in draft 2019-09 and later, `deprecated` when the value is deprecated. Editors show them when completing the value. Some code generators handle `enum` better.
 
 default: false example: - --jsonschema_opt=enum_value_descriptions=true |
+| respect_buf_validate | [bool](#bool) |  | respect_buf_validate applies protovalidate rules (`buf.validate.field`, `buf.validate.oneof` and `buf.validate.message` from buf/validate/validate.proto) that JSON Schema can express: `required`, numeric bounds, string lengths, patterns and formats, enum and repeated and map rules, `ignore`, and oneof rules. CEL rules, rules for integer map keys, patterns with no ECMA-262 form, and bytes, duration, timestamp, any and field_mask rules are skipped. A `numeric`, `string` or `array` field option replaces the protovalidate rules of the same kind. A field without presence whose zero value the rules reject becomes required.
+
+default: true example: - --jsonschema_opt=respect_buf_validate=true - --jsonschema_opt=respect_buf_validate=false |
 
 
 

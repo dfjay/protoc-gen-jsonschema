@@ -1,0 +1,13 @@
+name: "buf-validate-required"
+description: "protovalidate required and its precedence"
+
+inputFiles: ["test.proto"]
+inputParameters: {}
+
+expectResultFiles: ["test.schema.json"]
+expectResultIsNull: false
+expectFail: false
+
+expectedBehaviorDescription: ""
+
+checkProtovalidate: true
