@@ -77,4 +77,5 @@ message Values {
   int64 filtered = 38 [(buf.validate.field).int64 = {gt: 10, in: [1, 11]}];
   // An IPv6 address may have a zone.
   string ipv6 = 39 [(buf.validate.field).string.ipv6 = true];
+  google.protobuf.StringValue wrapped_ip = 40 [(buf.validate.field).string.ip = true];
 }

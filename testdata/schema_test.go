@@ -281,8 +281,12 @@ func (g *generator) set(t *rapid.T, m *dynamicpb.Message, fd protoreflect.FieldD
 		}
 	default:
 		m.Set(fd, g.value(t, fd, depth))
-		// protojson omits implicit-presence zero values.
-		for required && !m.Has(fd) {
+		// protojson omits implicit-presence zero values. An enum with only
+		// the zero value cannot do better.
+		for range 100 {
+			if !required || m.Has(fd) {
+				break
+			}
 			m.Set(fd, g.value(t, fd, depth))
 		}
 	}

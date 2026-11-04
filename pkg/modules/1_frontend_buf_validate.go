@@ -239,7 +239,7 @@ func ruleUint(m protoreflect.Message, name protoreflect.Name) uint64 {
 
 // ruleSize reads a size rule as a JSON Schema length.
 func ruleSize(m protoreflect.Message, name protoreflect.Name) *int {
-	return new(int(min(ruleUint(m, name), math.MaxInt32)))
+	return new(int(min(ruleUint(m, name), math.MaxInt)))
 }
 
 func ruleMessage(m protoreflect.Message, name protoreflect.Name) protoreflect.Message {

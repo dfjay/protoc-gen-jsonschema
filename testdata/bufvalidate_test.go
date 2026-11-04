@@ -379,7 +379,7 @@ func isInt64Kind(kind protoreflect.Kind) bool {
 func (o *oracle) size(t *rapid.T, rules protoreflect.Message, name protoreflect.Name) int {
 	limit := 3
 	if v, ok := ruleVal(rules, name); ok {
-		limit = min(int(v.Uint())+1, 6)
+		limit = min(int(v.Uint())+1, 11)
 	}
 	return rapid.SampledFrom([]int{0, 1, 1, 1, 2, limit}).Draw(t, "size")
 }
@@ -770,7 +770,14 @@ func TestIPFormats(t *testing.T) {
 				}
 				for _, s := range samples {
 					m := dynamicpb.NewMessage(message)
-					m.Set(fd, protoreflect.ValueOfString(s))
+					value := protoreflect.ValueOfString(s)
+					if fd.Message() != nil {
+						// A StringValue holds the string.
+						wrapper := m.NewField(fd).Message()
+						wrapper.Set(fd.Message().Fields().ByName("value"), value)
+						value = protoreflect.ValueOfMessage(wrapper)
+					}
+					m.Set(fd, value)
 					want, err := violations(m)
 					if err != nil {
 						t.Fatal(err)

@@ -28,7 +28,7 @@ message Values {
   // These accept their zero value, or skip the rules for it.
   int32 any_count = 12 [(buf.validate.field).int32.gte = 0];
   string skippable = 13 [
-    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.min_len = 2,
     (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE
   ];
   // A field with presence may be absent.
