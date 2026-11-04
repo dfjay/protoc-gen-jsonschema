@@ -688,6 +688,9 @@ func TestPatterns(t *testing.T) {
 		}
 		req := buildRequest(t, tc, dirPath, optionsImportPath)
 		resp := modules.Generate(req, nil, false)
+		if resp.Error != nil {
+			t.Fatal(resp.GetError())
+		}
 		g := newGenerator(t, req)
 		vm := goja.New()
 		for _, file := range resp.File {
