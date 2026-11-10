@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.12.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.11.0...v0.12.0) (2026-11-10)
+
+Generated schemas now reflect supported protovalidate rules by default. This release also publishes the schema annotations to the Buf Schema Registry, so Buf projects can resolve them as a dependency.
+
+### ⚠ BREAKING CHANGES
+
+* **protovalidate:** Existing `buf.validate` annotations now affect schemas by default, including annotations on referenced imported types. Regeneration can tighten accepted values, require fields and enforce oneof rules. Set `respect_buf_validate=false` to ignore these annotations as in 0.11.x. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+
+### Features
+
+* **protovalidate rules:** New option `respect_buf_validate` (default `true`) maps supported numeric, string, boolean, enum, repeated and map rules to schema constraints, including rules on wrapper types. Compatible RE2 patterns are translated to ECMA-262. Rules are read from the request descriptors; the plugin does not link protovalidate. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+* **Required fields:** `(buf.validate.field).required`, and rules that reject the zero value of a field without presence, can make fields required. An explicitly required field without presence must also be nonzero; a required oneof member must be selected. The per-field `required` option takes precedence, followed by proto2 `required` and editions `LEGACY_REQUIRED`. Protovalidate requirements also suppress automatic null allowances. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+* **Oneofs:** `(buf.validate.oneof).required` requires exactly one set member. `(buf.validate.message).oneof` requires exactly one of its listed fields when `required: true`, or at most one otherwise. Zero values of fields without presence count as unset. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+* **Overrides and exemptions:** Field annotations with `numeric`, `string` or `array` keywords replace the corresponding protovalidate rules; an array override retains item rules. Supported `IGNORE_IF_ZERO_VALUE` exemptions include empty messages in repeated items and map values. `IGNORE_ALWAYS` skips protovalidate rules for the annotated field or element and its nested messages, while retaining custom schema annotations. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+* **Numeric representations:** Bounds on 64-bit integers written as strings filter `const` and `in` values but do not otherwise constrain the strings; `not_in` still applies. In Lenient mode, fields with numeric rules accept numbers instead of numeric strings. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+* **Mapping limits:** CEL rules, unsupported string rules and patterns, non-string map-key rules, and type-specific rules for `bytes`, `Duration`, `Timestamp`, `Any` and `FieldMask` are skipped. String map-key constraints require draft-06 or later. Validators control enforcement of emitted `format` keywords. The README documents the full mapping and its limitations. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+* **Buf Schema Registry:** The annotations are available as `buf.build/dfjay-dev/protoc-gen-jsonschema`, with labels matching plugin release tags. Add `buf.build/dfjay-dev/protoc-gen-jsonschema:v0.12.0` to `deps` in `buf.yaml` and run `buf dep update`. Keep the installed executable configured as a local plugin in `buf.gen.yaml`; the README's new "Use with Buf" section shows the configuration. ([#21](https://github.com/dfjay/protoc-gen-jsonschema/issues/21)) ([9609858](https://github.com/dfjay/protoc-gen-jsonschema/commit/96098585abbea7c0cb49f84e63e84140ea0c7a00))
+
+### Upgrading from 0.11.x
+
+* **Regeneration:** Regenerate and review schemas whose reachable types carry `buf.validate` annotations, including imported types. Schemas without these annotations in reachable types retain their existing output. To defer applying the rules, generate with `--jsonschema_opt=respect_buf_validate=false`. ([#18](https://github.com/dfjay/protoc-gen-jsonschema/issues/18)) ([b11ebd8](https://github.com/dfjay/protoc-gen-jsonschema/commit/b11ebd84a2ec00e1c9898dfddf7592a0c8a19ec5))
+
 ## [0.11.0](https://github.com/dfjay/protoc-gen-jsonschema/compare/v0.10.0...v0.11.0) (2026-11-02)
 
 This release adds multiple entrypoints per proto file, examples, deprecation annotations and optional descriptions for individual enum values. It also fixes validation of non-object entrypoints and preserves keywords alongside references in older JSON Schema drafts.
