@@ -1,0 +1,10 @@
+version: v2
+modules:
+  - path: proto
+    name: buf.build/dfjay-dev/protoc-gen-jsonschema
+lint:
+  use:
+    - MINIMAL
+breaking:
+  use:
+    - WIRE_JSON

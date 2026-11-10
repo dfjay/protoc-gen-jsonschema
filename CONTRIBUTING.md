@@ -98,5 +98,10 @@ Before 1.0, breaking changes bump the minor version.
 Describe the problem, the resulting behavior, and how you verified it. Include
 an explanation of intentional changes to generated schemas.
 
+A release also pushes `proto/` to the Buf Schema Registry as
+`buf.build/dfjay-dev/protoc-gen-jsonschema`, labeled with the release tag;
+[buf.yaml](buf.yaml) defines the module. CI runs `buf lint` and, on pull requests, `buf breaking`
+against the base branch.
+
 Release automation owns `CHANGELOG.md` and `.release-please-manifest.json`;
 leave these files to release-please.

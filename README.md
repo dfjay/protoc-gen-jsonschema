@@ -138,6 +138,34 @@ Two entrypoints that get the same file name, such as message `Bar` of
 Output paths preserve the input path relative to the `protoc` include directory,
 under `--jsonschema_out`. Create the output directory before running `protoc`.
 
+### Use with Buf
+
+[Buf](https://buf.build) runs the installed plugin as a local plugin. In
+`buf.gen.yaml`:
+
+```yaml
+version: v2
+plugins:
+  - local: protoc-gen-jsonschema
+    out: gen/jsonschema
+    opt:
+      - entrypoint_message=Form
+      - draft=Draft07
+```
+
+To use [custom schema options](#custom-schema-options), add the annotations
+module to `buf.yaml` and run `buf dep update`:
+
+```yaml
+version: v2
+deps:
+  - buf.build/dfjay-dev/protoc-gen-jsonschema
+```
+
+The module's labels are the plugin's release tags; pin the one you have
+installed with `buf.build/dfjay-dev/protoc-gen-jsonschema:<tag>`. Then
+`buf generate` writes the schemas.
+
 ### Select a format or draft
 
 ```sh
@@ -249,6 +277,10 @@ include path:
 protoc -I . -I path/to/protoc-gen-jsonschema/proto \
   --jsonschema_out=. form.proto
 ```
+
+With [Buf](https://buf.build), depend on the
+[`buf.build/dfjay-dev/protoc-gen-jsonschema`](https://buf.build/dfjay-dev/protoc-gen-jsonschema)
+module instead, as shown in [Use with Buf](#use-with-buf).
 
 Annotations support titles and descriptions, examples, required fields,
 nullability, string patterns and lengths, numeric bounds, array constraints,
