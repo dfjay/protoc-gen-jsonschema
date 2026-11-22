@@ -3,7 +3,7 @@ module github.com/dfjay/protoc-gen-jsonschema/testdata
 go 1.26.0
 
 require (
-	buf.build/go/protovalidate v1.4.0
+	buf.build/go/protovalidate v1.4.1
 	github.com/dfjay/protoc-gen-jsonschema v0.0.0
 	github.com/dop251/goja v0.0.0-20261102140139-622d10077b6c
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
@@ -14,8 +14,8 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.1 // indirect
-	cel.dev/cel-go v0.32.0 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2 // indirect
+	cel.dev/cel-go v0.33.2 // indirect
 	cel.dev/expr v0.25.3 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/dlclark/regexp2/v2 v2.11.0 // indirect
